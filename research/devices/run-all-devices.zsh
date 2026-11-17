@@ -7,11 +7,12 @@
 # Before running: hold the USB phones claim (~/.claude/locks/usb-devices) and meet
 # run-ios-journey.zsh's own conditions (iPhone unlocked, Safari on one tab, same Wi-Fi, pf rule).
 #
-# Usage: ANDROID_SERIAL=<serial> research/devices/run-all-devices.zsh [playwright test arguments...]
+# Usage: ANDROID_SERIALS="<serial> [<serial>...]" research/devices/run-all-devices.zsh [playwright test arguments...]
+#   each serial is a real Android phone or an emulator (adb devices); both routes run on each
 set -uo pipefail
 
 here=${0:A:h}
-serial=${ANDROID_SERIAL:?set ANDROID_SERIAL to the Android phone (adb devices)}
+serials=(${=ANDROID_SERIALS:?set ANDROID_SERIALS to the Android phones and emulators (adb devices)})
 [[ -d ~/.claude/locks/usb-devices ]] || { echo "claim the USB phones first (~/.claude/locks/usb-devices)" >&2; exit 1; }
 
 logs=$(mktemp -d)
@@ -33,9 +34,11 @@ run_target() {
 }
 
 run_target ios-webkit "$here/run-ios-journey.zsh" "$@"
-for route in android-cdp android-playwright; do
-  run_target $route env DEVICE_ROUTE=$route ANDROID_SERIAL=$serial \
-    npx playwright test -c "$here/playwright.devices.config.ts" "$@"
+for serial in $serials; do
+  for route in android-cdp android-playwright; do
+    run_target "$route@$serial" env DEVICE_ROUTE=$route ANDROID_SERIAL=$serial \
+      npx playwright test -c "$here/playwright.devices.config.ts" "$@"
+  done
 done
 
 (( ${#failed} == 0 )) || { echo "failed on: ${failed[*]}" >&2; exit 1; }
