@@ -36,20 +36,27 @@ export interface Io {
 
 const USAGE = 'usage: one-suite --group <name>=<target>,... --list <file>[=<target>] --report <file>[=<target>] [--assertions <file>]';
 
+const FLAGS = new Set(['--list', '--report', '--assertions', '--group']);
+
+/** Adds one flag's value to the arguments read so far. */
+function addArg(args: Args, flag: string, value: string): void {
+  const [left = '', right = ''] = value.split('=');
+  if (flag === '--group') {
+    const targets = right.split(',').filter((t) => t !== '');
+    if (left === '' || targets.length === 0) throw new Error(`--group needs name=target,target: "${value}"`);
+    args.groups[left] = targets;
+  } else if (flag === '--assertions') args.assertions.push(value);
+  else (flag === '--list' ? args.lists : args.reports).push({ file: left, target: right });
+}
+
 export function parseArgs(argv: string[]): Args {
   const args: Args = { lists: [], reports: [], assertions: [], groups: {} };
   for (let i = 0; i < argv.length; i += 2) {
     const flag = String(argv[i]);
     const value = argv[i + 1];
-    if (!['--list', '--report', '--assertions', '--group'].includes(flag)) throw new Error(`unknown argument "${flag}"`);
+    if (!FLAGS.has(flag)) throw new Error(`unknown argument "${flag}"`);
     if (value === undefined) throw new Error(`${flag} needs a value`);
-    const [left = '', right = ''] = value.split('=');
-    if (flag === '--group') {
-      const targets = right.split(',').filter((t) => t !== '');
-      if (left === '' || targets.length === 0) throw new Error(`--group needs name=target,target: "${value}"`);
-      args.groups[left] = targets;
-    } else if (flag === '--assertions') args.assertions.push(value);
-    else (flag === '--list' ? args.lists : args.reports).push({ file: left, target: right });
+    addArg(args, flag, value);
   }
   if (Object.keys(args.groups).length === 0 || args.lists.length === 0 || args.reports.length === 0) throw new Error(USAGE);
   return args;

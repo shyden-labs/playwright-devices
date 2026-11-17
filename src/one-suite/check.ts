@@ -59,43 +59,61 @@ export function testsByTarget(report: JSONReport, unnamedTarget: string): Map<st
 
 const ids = (target: TargetTests | undefined): Set<string> => new Set(target?.tests.map((t) => t.id));
 
-export function checkOneSuite({ listed, ran, groups, assertions }: OneSuiteInput): OneSuiteResult {
+/** What one target ran against what was listed for it: missing, extra, skipped, failed and flaky tests. */
+function runProblems(target: string, expected: TargetTests, run: TargetTests): string[] {
   const problems: string[] = [];
-  const totals: string[] = [];
-  const groupOf = new Map(Object.entries(groups).flatMap(([group, targets]) => targets.map((target) => [target, group] as const)));
-
-  for (const target of new Set([...listed.keys(), ...ran.keys()])) {
-    if (!groupOf.has(target)) problems.push(`${target} is in no declared group`);
+  const listedIds = ids(expected);
+  const ranIds = ids(run);
+  for (const id of listedIds) if (!ranIds.has(id)) problems.push(`${target} did not run "${id}" (listed for it)`);
+  const byStatus: Partial<Record<ReportedTest['status'], (id: string) => string>> = {
+    skipped: (id) => `${target} skipped "${id}"`,
+    unexpected: (id) => `${target} failed "${id}"`,
+    flaky: (id) => `${target} was flaky on "${id}" (it needed a retry)`,
+  };
+  for (const test of run.tests) {
+    const reportStatus = byStatus[test.status];
+    if (!listedIds.has(test.id)) problems.push(`${target} ran "${test.id}", which is not listed for it`);
+    else if (reportStatus !== undefined) problems.push(reportStatus(test.id));
   }
+  return problems;
+}
 
-  for (const [group, targets] of Object.entries(groups)) {
-    const listedTotals = targets.filter((t) => listed.has(t)).map((t) => `${t} ${String(ids(listed.get(t)).size)}`);
-    const sets = targets.filter((t) => listed.has(t)).map((t) => [...ids(listed.get(t))].sort().join('\n'));
-    if (new Set(sets).size > 1) problems.push(`the ${group} group is listed different tests: ${listedTotals.join(', ')}`);
-
-    for (const target of targets) {
-      const expected = listed.get(target);
-      if (expected === undefined) {
-        problems.push(`${target} has no listed tests: pass its --list report`);
-        continue;
-      }
-      const run = ran.get(target);
-      totals.push(`${target}: ${String(run?.tests.length ?? 0)} tests`);
-      if (run === undefined || run.tests.length === 0) {
-        problems.push(`${target} ran no tests (it is in the ${group} group)`);
-        continue;
-      }
-      const ranIds = ids(run);
-      for (const id of ids(expected)) if (!ranIds.has(id)) problems.push(`${target} did not run "${id}" (listed for it)`);
-      for (const test of run.tests) {
-        if (!ids(expected).has(test.id)) problems.push(`${target} ran "${test.id}", which is not listed for it`);
-        else if (test.status === 'skipped') problems.push(`${target} skipped "${test.id}"`);
-        else if (test.status === 'unexpected') problems.push(`${target} failed "${test.id}"`);
-        else if (test.status === 'flaky') problems.push(`${target} was flaky on "${test.id}" (it needed a retry)`);
-      }
+/** The targets of one group: listed alike, each with a total, each run held to its list. */
+function groupProblems(
+  group: string,
+  targets: string[],
+  listed: Map<string, TargetTests>,
+  ran: Map<string, TargetTests>,
+  totals: string[],
+): string[] {
+  const problems: string[] = [];
+  const withList = targets.filter((t) => listed.has(t));
+  const sets = withList.map((t) => [...ids(listed.get(t))].sort((x, y) => x.localeCompare(y)).join('\n'));
+  if (new Set(sets).size > 1) {
+    const listedTotals = withList.map((t) => `${t} ${String(ids(listed.get(t)).size)}`).join(', ');
+    problems.push(`the ${group} group is listed different tests: ${listedTotals}`);
+  }
+  for (const target of targets) {
+    const expected = listed.get(target);
+    if (expected === undefined) {
+      problems.push(`${target} has no listed tests: pass its --list report`);
+      continue;
     }
+    const run = ran.get(target);
+    totals.push(`${target}: ${String(run?.tests.length ?? 0)} tests`);
+    if (run === undefined || run.tests.length === 0) problems.push(`${target} ran no tests (it is in the ${group} group)`);
+    else problems.push(...runProblems(target, expected, run));
   }
+  return problems;
+}
 
+export function checkOneSuite({ listed, ran, groups, assertions }: OneSuiteInput): OneSuiteResult {
+  const totals: string[] = [];
+  const declared = new Set(Object.values(groups).flat());
+  const problems = [...new Set([...listed.keys(), ...ran.keys()])]
+    .filter((t) => !declared.has(t))
+    .map((t) => `${t} is in no declared group`);
+  for (const [group, targets] of Object.entries(groups)) problems.push(...groupProblems(group, targets, listed, ran, totals));
   problems.push(...groupOnlyProblems(listed, groups));
   if (assertions !== undefined) problems.push(...assertionProblems(listed, groups, assertions));
   return { totals, problems };
@@ -118,13 +136,44 @@ function assertionProblems(
         else counted.push([target, count]);
       }
       if (new Set(counted.map(([, count]) => count)).size > 1) {
-        problems.push(
-          `assertions in "${id}" differ in the ${group} group: ${counted.map(([target, count]) => `${target} ${String(count)}`).join(', ')}`,
-        );
+        const each = counted.map(([target, count]) => `${target} ${String(count)}`).join(', ');
+        problems.push(`assertions in "${id}" differ in the ${group} group: ${each}`);
       }
     }
   }
   return problems;
+}
+
+/** Each listed test with the groups it is listed for. */
+function testsWithGroups(
+  listed: Map<string, TargetTests>,
+  groups: Record<string, string[]>,
+): Map<string, { test: ReportedTest; groups: Set<string> }> {
+  const byId = new Map<string, { test: ReportedTest; groups: Set<string> }>();
+  for (const [group, targets] of Object.entries(groups)) {
+    for (const test of targets.flatMap((target) => listed.get(target)?.tests ?? [])) {
+      const entry = byId.get(test.id) ?? { test, groups: new Set<string>() };
+      entry.groups.add(group);
+      byId.set(test.id, entry);
+    }
+  }
+  return byId;
+}
+
+/** One test's group-only problems. */
+function groupOnlyProblemsOf(id: string, test: ReportedTest, inGroups: Set<string>, all: string[]): string[] {
+  const tagged = all.filter((group) => test.tags.includes(`@${group}`));
+  if (tagged.length === 0) {
+    if (inGroups.size === all.length) return [];
+    return [...inGroups].map((group) => `"${id}" runs in the ${group} group only but has no @${group} tag with a group-only reason`);
+  }
+  const reason = test.annotations.find((a) => a.type === 'group-only')?.description?.trim() ?? '';
+  return tagged.flatMap((group) => [
+    ...(reason === '' ? [`"${id}" is tagged @${group} but gives no group-only reason (annotation type "group-only")`] : []),
+    ...all
+      .filter((other) => other !== group && inGroups.has(other))
+      .map((other) => `"${id}" is tagged @${group} but is also listed for the ${other} group`),
+  ]);
 }
 
 /**
@@ -133,31 +182,6 @@ function assertionProblems(
  * listed for any other group.
  */
 function groupOnlyProblems(listed: Map<string, TargetTests>, groups: Record<string, string[]>): string[] {
-  const problems: string[] = [];
-  const byId = new Map<string, { test: ReportedTest; groups: Set<string> }>();
-  for (const [group, targets] of Object.entries(groups)) {
-    for (const target of targets) {
-      for (const test of listed.get(target)?.tests ?? []) {
-        const entry = byId.get(test.id) ?? { test, groups: new Set<string>() };
-        entry.groups.add(group);
-        byId.set(test.id, entry);
-      }
-    }
-  }
   const all = Object.keys(groups);
-  for (const [id, { test, groups: inGroups }] of byId) {
-    const tagged = all.filter((group) => test.tags.includes(`@${group}`));
-    const reason = test.annotations.find((a) => a.type === 'group-only')?.description?.trim() ?? '';
-    for (const group of tagged) {
-      if (reason === '') problems.push(`"${id}" is tagged @${group} but gives no group-only reason (annotation type "group-only")`);
-      for (const other of all) {
-        if (other !== group && inGroups.has(other)) problems.push(`"${id}" is tagged @${group} but is also listed for the ${other} group`);
-      }
-    }
-    if (tagged.length === 0 && inGroups.size < all.length) {
-      for (const group of inGroups)
-        problems.push(`"${id}" runs in the ${group} group only but has no @${group} tag with a group-only reason`);
-    }
-  }
-  return problems;
+  return [...testsWithGroups(listed, groups)].flatMap(([id, { test, groups: inGroups }]) => groupOnlyProblemsOf(id, test, inGroups, all));
 }
