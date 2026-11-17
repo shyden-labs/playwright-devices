@@ -121,9 +121,7 @@ export const test = base.extend<DeviceFixtures>({
       execFileSync('xcrun', ['devicectl', 'device', 'process', 'launch', '--device', udid, 'com.apple.mobilesafari'], { stdio: 'ignore' });
       const tabs = (await fetch(`http://127.0.0.1:${iwdpPort}/json`).then((r) => r.json())) as { url: string }[];
       if (tabs.length !== 1) {
-        throw new Error(
-          `Safari must have exactly one tab open for this route; the proxy lists ${String(tabs.length)}: ${tabs.map((t) => t.url).join(', ')}`,
-        );
+        throw new Error(`Safari must have exactly one tab open for this route; the proxy lists ${String(tabs.length)}`);
       }
       const browser = await webkit.connectOverCDP(`http://127.0.0.1:${iwdpPort}`);
       try {
