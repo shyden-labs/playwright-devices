@@ -13,7 +13,7 @@ in place from day one (shyden-labs/repo-template#149).
 
 | File | What it does |
 | --- | --- |
-| `.github/workflows/ci.yml` | On every pull request and every push to `develop`: install, `npm audit` (any known vulnerability fails), typecheck, lint, format check and unit tests (`build-and-test`), then coverage as one overall threshold over the TypeScript under `scripts/` (`coverage`). Its first step fails unless the default branch is `develop`. |
+| `.github/workflows/ci.yml` | On every pull request and every push to `develop`: install, `node scripts/audit.ts` (`npm audit`: any known vulnerability fails, except one with a dated exception in that script), typecheck, lint, format check and unit tests (`build-and-test`), then coverage as one overall threshold over the TypeScript under `scripts/` (`coverage`). Its first step fails unless the default branch is `develop`. |
 | `.github/dependabot.yml` | Version updates for npm, GitHub Actions and the Node pin, each targeting `develop`. |
 | `docker/node/Dockerfile` | CI's one exact Node version (`FROM node:<major>.<minor>.<patch>`, then `USER node` so it never runs as root), bumped by Dependabot as a pull request of its own (shyden-labs/repo-template#143). |
 | `scripts/npm-ci.ts` | Every workflow installs through it: `npm ci` that fails on any warning npm prints, naming each line (shyden-labs/repo-template#140). |

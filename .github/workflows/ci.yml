@@ -37,9 +37,10 @@ jobs:
           node-version: ${{ steps.node.outputs.version }}
           cache: 'npm'
       - run: node scripts/npm-ci.ts
-      # Any known vulnerability, of any severity and dev dependencies included, fails the build (shyden-labs/repo-template#156).
+      # Any known vulnerability, of any severity and dev dependencies included, fails the build (shyden-labs/repo-template#156),
+      # except an advisory with a dated exception in scripts/audit.ts (shyden-labs/playwright-devices#22).
       - name: Audit
-        run: npm audit --audit-level=low
+        run: node scripts/audit.ts
       # The static checks (issue shyden-labs/repo-template#61); .githooks/pre-push runs the same three before every push.
       - name: Typecheck
         run: npm run typecheck
