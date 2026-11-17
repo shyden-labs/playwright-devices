@@ -26,3 +26,10 @@ $ curl http://127.0.0.1:9222/json
 #   after a second openurl it listed 2 tabs (both data:text/html error pages); after Safari was terminated
 #   it still listed 3. A later openurl of http://127.0.0.1:65535/ timed out (NSPOSIXErrorDomain 60) with
 #   swap at 9.8 of 11 GB, and the measurement was stopped there.
+
+# 2026-11-18 ~00:50 WIB, same simulator, 6 other Claude sessions open, swap 6.5 of 7 GB before boot:
+# - booting the simulator took swap to 9.4 of 10 GB; `simctl openurl <udid> http://127.0.0.1:8765/`
+#   (a local python http.server page) timed out again (NSPOSIXErrorDomain 60), the second time under
+#   swap pressure, never seen with swap low. The tab-lag question stays unmeasured: the probe also gave
+#   the proxy a bad -c argument (SIMULATOR:9222 is not a config it accepts: "Unknown file"), so its
+#   empty tab lists say nothing. Simulator shut down, claims released.
