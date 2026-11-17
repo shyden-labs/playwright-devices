@@ -6,6 +6,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { _android, chromium, test as base, type Page, webkit } from '@playwright/test';
+import { centreOfText } from './android-native.ts';
 import { wrapPageForWda } from './ios-wda-page.ts';
 import { openWdaInput, wdaHttp, type WdaInput } from './wda-input.ts';
 
@@ -18,6 +19,8 @@ const cdpPort = 9222;
 interface DeviceFixtures {
   page: Page;
   fingerScroll: () => Promise<void>;
+  /** A real touch on the item labelled `label` in a native list the page opened (a <select>'s options, a file menu). */
+  nativeChoose: (label: string) => Promise<void>;
 }
 
 function adb(serial: string, ...args: string[]): string {
@@ -42,6 +45,31 @@ function androidSwipeUp(serial: string): void {
   const fromY = String(Math.round(Number(size[2]) * 0.45));
   const toY = String(Math.round(Number(size[2]) * 0.15));
   adb(serial, 'shell', 'input', 'swipe', x, fromY, x, toY, '400');
+}
+
+/** How long a native list may take to open after the tap that opens it (shared with WebDriverAgent's). */
+const nativeCeilingMs = 3000;
+
+/**
+ * Taps the one on-screen node whose text is `label`, read from Android's accessibility dump, with a
+ * real touch from Android's input service. Waits for the list to open up to the ceiling, then fails
+ * naming the texts that were on screen.
+ */
+async function androidTapText(serial: string, label: string): Promise<void> {
+  const deadline = Date.now() + nativeCeilingMs;
+  for (;;) {
+    const xml = adb(serial, 'exec-out', 'uiautomator', 'dump', '/dev/tty');
+    const point = centreOfText(xml, label);
+    if (point !== undefined) {
+      adb(serial, 'shell', 'input', 'tap', String(point.x), String(point.y));
+      return;
+    }
+    if (Date.now() >= deadline) {
+      const texts = [...xml.matchAll(/\btext="([^"]+)"/g)].map((m) => m[1]).join(', ');
+      throw new Error(`no on-screen node with the text "${label}" within ${String(nativeCeilingMs)}ms (on screen: ${texts || 'no text'})`);
+    }
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
 }
 
 const chromePackage = 'com.android.chrome';
@@ -174,5 +202,19 @@ export const test = base.extend<DeviceFixtures>({
     }
     // Fail at the scroll step itself, naming why, so the steps before it are still measured.
     await use(() => Promise.reject(new Error(`DEVICE_ROUTE ${route} has no real finger scroll yet`)));
+  },
+  nativeChoose: async ({ page }, use) => {
+    const route = requiredEnv('DEVICE_ROUTE');
+    const iosInput = iosInputs.get(page);
+    if (route === 'ios-webkit' && iosInput !== undefined) {
+      await use((label) => iosInput.tapNative(label));
+      return;
+    }
+    if (route.startsWith('android-')) {
+      const serial = requiredEnv('ANDROID_SERIAL');
+      await use((label) => androidTapText(serial, label));
+      return;
+    }
+    await use(() => Promise.reject(new Error(`DEVICE_ROUTE ${route} has no way to touch a native list yet`)));
   },
 });

@@ -112,6 +112,81 @@ describe('openWdaInput', () => {
   });
 });
 
+describe('tapNative', () => {
+  const PREDICATE = { using: 'predicate string', value: 'type == "XCUIElementTypeButton" AND label == "Green"' };
+
+  /** WebDriverAgent finding the native button only from the `appearsOn`-th lookup. */
+  function nativeWda(appearsOn = 1) {
+    const sent: Sent[] = [];
+    let lookups = 0;
+    const call: WdaCall = (method, path, body) => {
+      sent.push({ method, path, body });
+      if (path === '/session') return Promise.resolve({ sessionId: 'S' });
+      if (path === '/session/S/element') {
+        lookups += 1;
+        if (lookups < appearsOn) return Promise.reject(new Error('WDA POST /session/S/element 404: no such element'));
+        return Promise.resolve({ 'element-6066-11e4-a52e-4f735466cecf': 'N' });
+      }
+      if (path === '/session/S/element/N/rect') return Promise.resolve({ x: 8, y: 347.7, width: 250, height: 35.7 });
+      return Promise.resolve(null);
+    };
+    return { call, sent, lookups: () => lookups };
+  }
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('finds the native button by type and label and taps the centre of its screen rect', async () => {
+    const { call, sent } = nativeWda();
+    const input = await openWdaInput(call, fakePage());
+    await input.tapNative('Green');
+    expect(sent.find((s) => s.path === '/session/S/element')?.body).toEqual(PREDICATE);
+    expect(sent.at(-1)).toEqual({
+      method: 'POST',
+      path: '/session/S/actions',
+      body: touch(
+        { type: 'pointerMove', duration: 0, x: 133, y: 366 },
+        { type: 'pointerDown', button: 0 },
+        { type: 'pointerUp', button: 0 },
+      ),
+    });
+  });
+
+  it('waits for a native list that is still opening, then taps', async () => {
+    vi.useFakeTimers();
+    const { call, sent, lookups } = nativeWda(3);
+    const input = await openWdaInput(call, fakePage());
+    const tapped = input.tapNative('Green');
+    await vi.advanceTimersByTimeAsync(250);
+    await tapped;
+    expect(lookups()).toBe(3);
+    expect(sent.at(-1)?.path).toBe('/session/S/actions');
+  });
+
+  it('fails at its 3 s ceiling naming the label and the last refusal, without tapping', async () => {
+    vi.useFakeTimers();
+    const { call, sent } = nativeWda(Number.POSITIVE_INFINITY);
+    const input = await openWdaInput(call, fakePage());
+    const tapped = expect(input.tapNative('Green')).rejects.toThrow(
+      'no native button labelled "Green" appeared within 3000ms (last: WDA POST /session/S/element 404: no such element)',
+    );
+    await vi.advanceTimersByTimeAsync(3200);
+    await tapped;
+    expect(sent.some((s) => s.path === '/session/S/actions')).toBe(false);
+  });
+
+  it('escapes a double quote in the label', async () => {
+    const { call, sent } = nativeWda();
+    const input = await openWdaInput(call, fakePage());
+    await input.tapNative('Say "hi"');
+    expect(sent.find((s) => s.path === '/session/S/element')?.body).toEqual({
+      using: 'predicate string',
+      value: 'type == "XCUIElementTypeButton" AND label == "Say \\"hi\\""',
+    });
+  });
+});
+
 describe('wdaHttp', () => {
   it('sends JSON and returns the reply value', async () => {
     const fetchMock = vi.fn(() => Promise.resolve(new Response(JSON.stringify({ value: { ok: 1 } }), { status: 200 })));

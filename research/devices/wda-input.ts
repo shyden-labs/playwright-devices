@@ -13,8 +13,14 @@ export type WdaCall = (method: string, path: string, body?: unknown) => Promise<
 export interface WdaInput extends IosInput {
   /** A real finger dragged up the middle of the screen, from 45% to 15% of its height. */
   swipeUp: () => Promise<void>;
+  /** A real finger tap on the native button labelled `label` (a picker or menu Safari opened). */
+  tapNative: (label: string) => Promise<void>;
   close: () => Promise<void>;
 }
+
+/** How long a native list may take to open after the tap that opens it, and how often to look. */
+const nativeCeilingMs = 3000;
+const nativePollMs = 100;
 
 interface Point {
   x: number;
@@ -93,6 +99,32 @@ export async function openWdaInput(call: WdaCall, page: Page): Promise<WdaInput>
         ],
         400,
       );
+    },
+    tapNative: async (label) => {
+      const predicate = `type == "XCUIElementTypeButton" AND label == "${label.replaceAll('"', '\\"')}"`;
+      const deadline = Date.now() + nativeCeilingMs;
+      let found: Record<string, string> | undefined;
+      // A wait for the list to open, at a stated ceiling; the lookup is the condition, not a retried action.
+      while (found === undefined) {
+        try {
+          found = (await call('POST', `${session}/element`, { using: 'predicate string', value: predicate })) as Record<string, string>;
+        } catch (error) {
+          if (Date.now() >= deadline) {
+            const last = error instanceof Error ? error.message : String(error);
+            throw new Error(`no native button labelled "${label}" appeared within ${String(nativeCeilingMs)}ms (last: ${last})`, {
+              cause: error,
+            });
+          }
+          await new Promise((resolve) => setTimeout(resolve, nativePollMs));
+        }
+      }
+      const rect = (await call('GET', `${session}/element/${String(Object.values(found)[0])}/rect`)) as {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+      };
+      await finger([{ x: Math.round(rect.x + rect.width / 2), y: Math.round(rect.y + rect.height / 2) }], 0);
     },
     close: async () => {
       await call('DELETE', session);
