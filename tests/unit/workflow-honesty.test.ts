@@ -16,7 +16,26 @@ const files = readdirSync(WORKFLOWS)
   .sort();
 const read = (f: string) => readFileSync(`${WORKFLOWS}/${f}`, 'utf8');
 
+/**
+ * Fork pull requests get no secrets, so no workflow naming an environment runs
+ * on pull_request_target (global rule, Shyden 2026-11-13; moved here from the
+ * removed deploy-dev test, shyden-labs/playwright-devices#9).
+ */
+const environmentOnPullRequestTarget = (text: string) =>
+  withoutYamlComments(text).includes('pull_request_target') && /^\s+environment:/m.test(withoutYamlComments(text));
+
 describe('every workflow', () => {
+  it.each(files)('%s names no environment if it runs on pull_request_target', (file) => {
+    expect(environmentOnPullRequestTarget(read(file))).toBe(false);
+  });
+
+  it('refuses a planted environment on pull_request_target, and nothing on a plain pull_request', () => {
+    const job = '    environment: dev\n';
+    expect(environmentOnPullRequestTarget(`on:\n  pull_request_target:\njobs:\n  a:\n${job}`)).toBe(true);
+    expect(environmentOnPullRequestTarget(`on:\n  pull_request:\njobs:\n  a:\n${job}`)).toBe(false);
+    expect(environmentOnPullRequestTarget(`# pull_request_target\non:\n  pull_request:\njobs:\n  a:\n${job}`)).toBe(false);
+  });
+
   it('is judged', () => {
     expect(files).toEqual(['check-release-cut.yml', 'ci.yml', 'sonarcloud.yml']);
   });
