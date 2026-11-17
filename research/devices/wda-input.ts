@@ -15,7 +15,16 @@ export interface WdaInput extends IosInput {
   swipeUp: () => Promise<void>;
   /** A real finger tap on the one visible native button or text labelled `label` (a menu or picker Safari opened). */
   tapNative: (label: string) => Promise<void>;
+  /** A real finger tap on the first (topmost, then leftmost) visible image with `identifier`: a grid's first item. */
+  tapFirstImage: (identifier: string) => Promise<void>;
   close: () => Promise<void>;
+}
+
+interface Rect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
 }
 
 /** How long a native list may take to open after the tap that opens it, and how often to look. */
@@ -138,6 +147,29 @@ export async function openWdaInput(call: WdaCall, page: Page): Promise<WdaInput>
         }
         if (Date.now() >= deadline)
           throw new Error(`no visible native button or text labelled "${label}" appeared within ${String(nativeCeilingMs)}ms`);
+        await new Promise((resolve) => setTimeout(resolve, nativePollMs));
+      }
+    },
+    tapFirstImage: async (identifier) => {
+      const predicate = `type == "XCUIElementTypeImage" AND name == "${identifier}" AND visible == 1`;
+      const deadline = Date.now() + nativeCeilingMs;
+      // A wait for the grid to open, at a stated ceiling, as in tapNative.
+      for (;;) {
+        const found = (await call('POST', `${session}/elements`, { using: 'predicate string', value: predicate })) as Record<
+          string,
+          string
+        >[];
+        if (found.length > 0) {
+          const rects = await Promise.all(
+            found.map(async (element) => (await call('GET', `${session}/element/${String(Object.values(element)[0])}/rect`)) as Rect),
+          );
+          const [first] = rects.sort((a, b) => a.y - b.y || a.x - b.x);
+          if (first !== undefined) {
+            await finger([{ x: Math.round(first.x + first.width / 2), y: Math.round(first.y + first.height / 2) }], 0);
+            return;
+          }
+        }
+        if (Date.now() >= deadline) throw new Error(`no visible image "${identifier}" appeared within ${String(nativeCeilingMs)}ms`);
         await new Promise((resolve) => setTimeout(resolve, nativePollMs));
       }
     },

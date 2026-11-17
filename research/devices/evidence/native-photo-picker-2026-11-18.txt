@@ -1,0 +1,67 @@
+# shyden-labs/playwright-devices#7 AC 4, the native photo picker: journey.spec.ts taps 'Photo' (accept=image/*), then nativeChoosePhoto()
+# The page shows only the chosen file's kind ('an image'): a photo's name and date are personal.
+# iPhone (iOS 27.2): menu Photo Library > the first grid image (XCUIElementTypeImage named PXGGridLayout-Info, topmost then leftmost) > Done.
+#   The library's own first photo is used: no tool adds a photo to iOS Photos from the Mac.
+# Android (Android 16): the fixture pushes fixtures/device-journey.png to /sdcard/Pictures and indexes it, so it is the newest;
+#   Google's photo picker > the first item described 'Photo taken on …' > Done. Removed again after the test.
+# Found on the way (each measured, 2026-11-18 ~03:00-03:30 WIB):
+#  - WebDriverAgent predicates call the identifier 'name' ('identifier' is refused: 500 unknown attribute).
+#  - Both pickers select on tap and return on Done; without Done the picker stayed open and swallowed the next run's touches.
+#  - The photo picker, once a photo is selected, offers Done but no Cancel, so the failure teardown tries Cancel, then Done.
+#  - The iPhone missed the Colour tap in 2 of 3 runs: the file inputs reached x=420.1 on a 420-point screen, so Safari zoomed the
+#    page to 0.977 after typing and a tap computed during the zoom missed (visualViewport.scale 1 -> 0.977). journey.html now keeps
+#    controls inside the viewport (box-sizing, max-width 100%). A failed native step now attaches the phone's screen to the report.
+#  - The iPhone journey with three pickers takes ~24 s, so the device config's timeout is 60 s (30 s timed out once).
+
+## red: before the fixture existed
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.s2iTYx4UD0/ios-webkit.log)
+ios-webkit exit=1
+== android-cdp (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.s2iTYx4UD0/android-cdp.log)
+android-cdp exit=1
+== android-playwright (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.s2iTYx4UD0/android-playwright.log)
+android-playwright exit=1
+failed on: ios-webkit android-cdp android-playwright
+
+## every device, --repeat-each=3, before the viewport fix
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.IDebjzomDQ/ios-webkit.log)
+  ✘  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (43.8s)
+  ✘  2 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (20.3s)
+  ✘  3 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (17.7s)
+    Error: no visible native button or text labelled "Green" appeared within 3000ms
+    Error: no visible native button or text labelled "Green" appeared within 3000ms
+  3 failed
+ios-webkit exit=1
+== android-cdp (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.IDebjzomDQ/android-cdp.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.6s)
+  ✓  2 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.9s)
+  ✓  3 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.3s)
+  3 passed (45.0s)
+android-cdp exit=0
+== android-playwright (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.IDebjzomDQ/android-playwright.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  ✓  2 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  ✓  3 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.1s)
+  3 passed (43.4s)
+android-playwright exit=0
+failed on: ios-webkit
+
+## every device, --repeat-each=3, after the viewport fix
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.hREhgqIQlB/ios-webkit.log)
+  ✓  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (55.5s)
+  ✓  2 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (55.9s)
+  ✓  3 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (55.7s)
+  3 passed (2.8m)
+ios-webkit exit=0
+== android-cdp (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.hREhgqIQlB/android-cdp.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (15.4s)
+  ✓  2 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.1s)
+  ✓  3 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (13.8s)
+  3 passed (46.8s)
+android-cdp exit=0
+== android-playwright (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.hREhgqIQlB/android-playwright.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.3s)
+  ✓  2 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  ✓  3 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  3 passed (43.5s)
+android-playwright exit=0
+every device passed

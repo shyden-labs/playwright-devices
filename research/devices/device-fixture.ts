@@ -6,7 +6,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { _android, chromium, test as base, type Page, webkit } from '@playwright/test';
-import { centreOfText } from './android-native.ts';
+import { centreOfText, firstByDescription } from './android-native.ts';
 import { wrapPageForWda } from './ios-wda-page.ts';
 import { openWdaInput, wdaHttp, type WdaInput } from './wda-input.ts';
 
@@ -26,6 +26,12 @@ interface DeviceFixtures {
    * placed on the phone by this fixture) and touches it, all by real touches.
    */
   nativeChooseFile: (name: string) => Promise<void>;
+  /**
+   * With an image input's native picker open, touches the first photo it shows. On Android the
+   * fixture first adds research/devices/fixtures/device-journey.png, so that is the newest; on the
+   * iPhone the library's own first photo is chosen (no tool can add one to Photos from the Mac).
+   */
+  nativeChoosePhoto: () => Promise<void>;
 }
 
 const fixtureFiles = new URL('fixtures/', import.meta.url);
@@ -79,6 +85,36 @@ async function androidTapText(serial: string, label: string): Promise<void> {
       throw new Error(`no on-screen node with the text "${label}" within ${String(nativeCeilingMs)}ms (on screen: ${texts || 'no text'})`);
     }
     await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+}
+
+/** Taps the first item described `prefix…` once a grid shows it, waiting up to the native ceiling. */
+async function androidTapFirstDescribed(serial: string, prefix: string): Promise<void> {
+  const deadline = Date.now() + nativeCeilingMs;
+  for (;;) {
+    const point = firstByDescription(adb(serial, 'exec-out', 'uiautomator', 'dump', '/dev/tty'), prefix);
+    if (point !== undefined) {
+      adb(serial, 'shell', 'input', 'tap', String(point.x), String(point.y));
+      return;
+    }
+    if (Date.now() >= deadline) throw new Error(`no on-screen item described "${prefix}…" within ${String(nativeCeilingMs)}ms`);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+}
+
+/**
+ * Closes a native picker a failed step left open, so it cannot swallow the next run's first tap
+ * (measured 2026-11-18): the Files picker offers Cancel; the photo picker, once a photo is
+ * selected, offers only Done. Neither present means nothing is open.
+ */
+async function closeIosPicker(nativeChoose: (label: string) => Promise<void>): Promise<void> {
+  for (const label of ['Cancel', 'Done']) {
+    try {
+      await nativeChoose(label);
+      return;
+    } catch {
+      // Not on screen: try the next way out.
+    }
   }
 }
 
@@ -213,11 +249,22 @@ export const test = base.extend<DeviceFixtures>({
     // Fail at the scroll step itself, naming why, so the steps before it are still measured.
     await use(() => Promise.reject(new Error(`DEVICE_ROUTE ${route} has no real finger scroll yet`)));
   },
-  nativeChoose: async ({ page }, use) => {
+  nativeChoose: async ({ page }, use, testInfo) => {
     const route = requiredEnv('DEVICE_ROUTE');
     const iosInput = iosInputs.get(page);
     if (route === 'ios-webkit' && iosInput !== undefined) {
-      await use((label) => iosInput.tapNative(label));
+      const wdaUrl = process.env.WDA_URL ?? 'http://127.0.0.1:8100';
+      await use(async (label) => {
+        try {
+          await iosInput.tapNative(label);
+        } catch (error) {
+          // Keep what the phone showed, so the cause is read from the screen, not guessed. The run's
+          // output folder is git-ignored: the screen can show personal labels (photo dates).
+          const screen = (await (await fetch(`${wdaUrl}/source?format=description`)).json()) as { value: string };
+          await testInfo.attach(`screen when "${label}" was not found`, { body: screen.value, contentType: 'text/plain' });
+          throw error;
+        }
+      });
       return;
     }
     if (route.startsWith('android-')) {
@@ -261,7 +308,7 @@ export const test = base.extend<DeviceFixtures>({
           await nativeChoose(label);
       });
       // A picker left open by a failed step would swallow the next run's first tap (measured 2026-11-18).
-      if (testInfo.status !== testInfo.expectedStatus) await nativeChoose('Cancel').catch(() => undefined);
+      if (testInfo.status !== testInfo.expectedStatus) await closeIosPicker(nativeChoose);
       return;
     }
     if (route.startsWith('android-')) {
@@ -287,5 +334,43 @@ export const test = base.extend<DeviceFixtures>({
       return;
     }
     await use(() => Promise.reject(new Error(`DEVICE_ROUTE ${route} has no way to reach the native file picker yet`)));
+  },
+  nativeChoosePhoto: async ({ page, nativeChoose }, use, testInfo) => {
+    const route = requiredEnv('DEVICE_ROUTE');
+    const iosInput = iosInputs.get(page);
+    if (route === 'ios-webkit' && iosInput !== undefined) {
+      // Measured 2026-11-18 (iOS 27.2): the input's menu offers Photo Library, whose grid items are
+      // images with the identifier PXGGridLayout-Info; a tap selects one and Done returns it.
+      await use(async () => {
+        await nativeChoose('Photo Library');
+        await iosInput.tapFirstImage('PXGGridLayout-Info');
+        await nativeChoose('Done');
+      });
+      if (testInfo.status !== testInfo.expectedStatus) await closeIosPicker(nativeChoose);
+      return;
+    }
+    if (route.startsWith('android-')) {
+      const serial = requiredEnv('ANDROID_SERIAL');
+      const onPhone = '/sdcard/Pictures/device-journey.png';
+      const scan = () =>
+        adb(serial, 'shell', 'am', 'broadcast', '-a', 'android.intent.action.MEDIA_SCANNER_SCAN_FILE', '-d', `file://${onPhone}`);
+      // Measured 2026-11-18 (Android 16): an image input opens Google's photo picker, newest first,
+      // each photo described "Photo taken on <date>".
+      adb(serial, 'push', new URL('device-journey.png', fixtureFiles).pathname, onPhone);
+      scan();
+      try {
+        // Measured 2026-11-18: the tap selects the photo ("1 photos or videos selected") and Done returns it.
+        await use(async () => {
+          await androidTapFirstDescribed(serial, 'Photo taken on ');
+          await nativeChoose('Done');
+        });
+      } finally {
+        adb(serial, 'shell', 'rm', '-f', onPhone);
+        scan();
+        if (testInfo.status !== testInfo.expectedStatus) adb(serial, 'shell', 'input', 'keyevent', 'BACK');
+      }
+      return;
+    }
+    await use(() => Promise.reject(new Error(`DEVICE_ROUTE ${route} has no way to reach the native photo picker yet`)));
   },
 });

@@ -7,7 +7,13 @@
 import { expect } from '@playwright/test';
 import { test } from './device-fixture.ts';
 
-test('a page is read, tapped, typed into and scrolled by real input', async ({ page, fingerScroll, nativeChoose, nativeChooseFile }) => {
+test('a page is read, tapped, typed into and scrolled by real input', async ({
+  page,
+  fingerScroll,
+  nativeChoose,
+  nativeChooseFile,
+  nativeChoosePhoto,
+}) => {
   await page.goto('/journey.html');
   await expect.soft(page.getByRole('heading', { level: 1 })).toBeVisible();
   await expect.soft(page.getByRole('heading', { level: 1 })).toHaveText('Device journey');
@@ -28,6 +34,11 @@ test('a page is read, tapped, typed into and scrolled by real input', async ({ p
   await page.getByLabel('File').tap();
   await nativeChooseFile('device-journey.txt');
   await expect.soft(page.getByTestId('file-result')).toHaveText('device-journey.txt');
+
+  // AC 4: an image input opens the phone's own photo picker; the first photo there is touched.
+  await page.getByLabel('Photo').tap();
+  await nativeChoosePhoto();
+  await expect.soft(page.getByTestId('photo-result')).toHaveText('an image');
 
   await fingerScroll();
   await expect.soft(page.getByTestId('scroll-result')).toHaveText('Scrolled');

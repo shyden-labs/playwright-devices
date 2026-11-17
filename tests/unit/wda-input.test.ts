@@ -228,6 +228,67 @@ describe('tapNative', () => {
   });
 });
 
+describe('tapFirstImage', () => {
+  const ID = (id: string) => ({ 'element-6066-11e4-a52e-4f735466cecf': id });
+  const RECTS: Record<string, { x: number; y: number; width: number; height: number }> = {
+    A: { x: 140.6, y: 277.7, width: 138.9, height: 139 },
+    B: { x: 0, y: 277.7, width: 138.9, height: 139 },
+    C: { x: 0, y: 418.3, width: 138.9, height: 139 },
+  };
+
+  function gridWda(appearsOn = 1) {
+    const sent: Sent[] = [];
+    let lookups = 0;
+    const call: WdaCall = (method, path, body) => {
+      sent.push({ method, path, body });
+      if (path === '/session') return Promise.resolve({ sessionId: 'S' });
+      if (path === '/session/S/elements') {
+        lookups += 1;
+        return Promise.resolve(lookups < appearsOn ? [] : [ID('A'), ID('B'), ID('C')]);
+      }
+      const rect = /^\/session\/S\/element\/(\w)\/rect$/.exec(path)?.[1];
+      if (rect !== undefined) return Promise.resolve(RECTS[rect]);
+      return Promise.resolve(null);
+    };
+    return { call, sent };
+  }
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('taps the centre of the topmost, then leftmost, visible image with the identifier', async () => {
+    const { call, sent } = gridWda();
+    const input = await openWdaInput(call, fakePage());
+    await input.tapFirstImage('PXGGridLayout-Info');
+    expect(sent.find((s) => s.path === '/session/S/elements')?.body).toEqual({
+      using: 'predicate string',
+      value: 'type == "XCUIElementTypeImage" AND name == "PXGGridLayout-Info" AND visible == 1',
+    });
+    expect(sent.at(-1)).toEqual({
+      method: 'POST',
+      path: '/session/S/actions',
+      body: touch(
+        { type: 'pointerMove', duration: 0, x: 69, y: 347 },
+        { type: 'pointerDown', button: 0 },
+        { type: 'pointerUp', button: 0 },
+      ),
+    });
+  });
+
+  it('waits for the grid to appear, and fails at the ceiling naming the identifier', async () => {
+    vi.useFakeTimers();
+    const { call, sent } = gridWda(Number.POSITIVE_INFINITY);
+    const input = await openWdaInput(call, fakePage());
+    const tapped = expect(input.tapFirstImage('PXGGridLayout-Info')).rejects.toThrow(
+      'no visible image "PXGGridLayout-Info" appeared within 3000ms',
+    );
+    await vi.advanceTimersByTimeAsync(3200);
+    await tapped;
+    expect(sent.some((s) => s.path === '/session/S/actions')).toBe(false);
+  });
+});
+
 describe('wdaHttp', () => {
   it('sends JSON and returns the reply value', async () => {
     const fetchMock = vi.fn(() => Promise.resolve(new Response(JSON.stringify({ value: { ok: 1 } }), { status: 200 })));

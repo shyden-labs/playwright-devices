@@ -16,6 +16,10 @@
       select {
         font: inherit;
         min-height: 48px;
+        /* Nothing wider than the screen: an overflowing file input made Safari zoom the page to fit
+           mid-journey, so a tap computed during the zoom missed (measured 2026-11-18). */
+        box-sizing: border-box;
+        max-width: 100%;
       }
       #spacer {
         height: 300vh;
@@ -39,6 +43,8 @@
     <p data-testid="select-result"></p>
     <label>File <input type="file" id="file" /></label>
     <p data-testid="file-result"></p>
+    <label>Photo <input type="file" accept="image/*" id="photo" /></label>
+    <p data-testid="photo-result"></p>
     <p data-testid="scroll-result"></p>
     <div id="spacer"></div>
     <script>
@@ -51,6 +57,12 @@
       document.getElementById('name').addEventListener('input', (event) => show('typed-result', event.target.value));
       document.getElementById('colour').addEventListener('change', (event) => show('select-result', event.target.value));
       document.getElementById('file').addEventListener('change', (event) => show('file-result', event.target.files[0]?.name ?? ''));
+      // The photo's name and date are personal, so only its kind is shown.
+      document
+        .getElementById('photo')
+        .addEventListener('change', (event) =>
+          show('photo-result', event.target.files[0]?.type.startsWith('image/') ? 'an image' : 'not an image'),
+        );
       addEventListener(
         'scroll',
         () => {

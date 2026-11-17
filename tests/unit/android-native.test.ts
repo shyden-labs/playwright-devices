@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { centreOfText } from '../../research/devices/android-native.ts';
+import { centreOfText, firstByDescription } from '../../research/devices/android-native.ts';
 
 /** A cut-down `uiautomator dump` of Chrome's native <select> list, as the OnePlus writes it. */
 const SELECT_LIST = `<?xml version='1.0' encoding='UTF-8' standalone='yes' ?><hierarchy rotation="0">
@@ -30,5 +30,28 @@ describe('centreOfText', () => {
 
   it('refuses a node with no readable bounds', () => {
     expect(() => centreOfText('<node text="Green" />', 'Green')).toThrow('the node with the text "Green" has no bounds');
+  });
+});
+
+describe('firstByDescription', () => {
+  const GRID = `<hierarchy>
+<node content-desc="Media grid" bounds="[0,300][1080,2200]" />
+<node content-desc="Photo taken on Nov 17, 2026 21:29" bounds="[362,300][718,656]" />
+<node content-desc="Photo taken on Nov 18, 2026 02:50" bounds="[0,300][356,656]" />
+<node content-desc="Photo taken on Nov 16, 2026 10:00" bounds="[0,662][356,1018]" />
+</hierarchy>`;
+
+  it('gives the centre of the top-left node whose description starts with the prefix', () => {
+    expect(firstByDescription(GRID, 'Photo taken on ')).toEqual({ x: 178, y: 478 });
+  });
+
+  it('is undefined while no such node is on screen', () => {
+    expect(firstByDescription('<node content-desc="Media grid" bounds="[0,0][1,1]" />', 'Photo taken on ')).toBeUndefined();
+  });
+
+  it('refuses a matching node with no readable bounds', () => {
+    expect(() => firstByDescription('<node content-desc="Photo taken on x" />', 'Photo taken on ')).toThrow(
+      'a node described "Photo taken on x" has no bounds',
+    );
   });
 });

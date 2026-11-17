@@ -6,6 +6,9 @@ export default defineConfig({
   testDir: '.',
   testMatch: 'journey.spec.ts',
   retries: 0,
+  // The journey with its three native pickers takes about 24 s on the iPhone (measured 2026-11-18),
+  // too close to Playwright's default 30 s.
+  timeout: 60_000,
   workers: 1,
   reporter: [['list'], ['json', { outputFile: `evidence/${process.env.DEVICE_ROUTE ?? 'unset'}.json` }]],
   use: { baseURL: `http://localhost:${String(serverPort)}`, trace: 'on' },
