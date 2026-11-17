@@ -1,0 +1,131 @@
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import type { Page } from '@playwright/test';
+import { openWdaInput, wdaHttp, type WdaCall } from '../../research/devices/wda-input.ts';
+
+interface Sent {
+  method: string;
+  path: string;
+  body?: unknown;
+}
+
+/** A WebDriverAgent stand-in: the marker sits under a 68-point toolbar at scale 1, the screen is 420x912. */
+function fakeWda(markerRect = { x: 0, y: 68, width: 100, height: 100 }): { call: WdaCall; sent: Sent[] } {
+  const sent: Sent[] = [];
+  const call: WdaCall = (method, path, body) => {
+    sent.push({ method, path, body });
+    if (path === '/session') return Promise.resolve({ sessionId: 'S' });
+    if (path === '/session/S/element') return Promise.resolve({ 'element-6066-11e4-a52e-4f735466cecf': 'E' });
+    if (path === '/session/S/element/E/rect') return Promise.resolve(markerRect);
+    if (path === '/session/S/window/size') return Promise.resolve({ width: 420, height: 912 });
+    return Promise.resolve(null);
+  };
+  return { call, sent };
+}
+
+function fakePage(): Page & { evaluate: ReturnType<typeof vi.fn> } {
+  return { evaluate: vi.fn(() => Promise.resolve(undefined)) } as unknown as Page & { evaluate: ReturnType<typeof vi.fn> };
+}
+
+function touch(...actions: unknown[]): unknown {
+  return { actions: [{ type: 'pointer', id: 'finger', parameters: { pointerType: 'touch' }, actions }] };
+}
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+describe('openWdaInput', () => {
+  it('opens a WebDriverAgent session and deletes it on close', async () => {
+    const { call, sent } = fakeWda();
+    const input = await openWdaInput(call, fakePage());
+    await input.close();
+    expect(sent[0]).toEqual({ method: 'POST', path: '/session', body: { capabilities: { alwaysMatch: {} } } });
+    expect(sent.at(-1)).toEqual({ method: 'DELETE', path: '/session/S', body: undefined });
+  });
+
+  it('taps the centre of a page box at its screen point, under the toolbar', async () => {
+    const { call, sent } = fakeWda();
+    const input = await openWdaInput(call, fakePage());
+    await input.tapAt({ x: 10, y: 20, width: 30, height: 40 });
+    expect(sent.at(-1)).toEqual({
+      method: 'POST',
+      path: '/session/S/actions',
+      body: touch(
+        { type: 'pointerMove', duration: 0, x: 25, y: 108 },
+        { type: 'pointerDown', button: 0 },
+        { type: 'pointerUp', button: 0 },
+      ),
+    });
+  });
+
+  it('scales the tap point by the marker width WebDriverAgent reads', async () => {
+    const { call, sent } = fakeWda({ x: 0, y: 68, width: 50, height: 50 });
+    const input = await openWdaInput(call, fakePage());
+    await input.tapAt({ x: 10, y: 21, width: 30, height: 40 });
+    const body = sent.at(-1)?.body as { actions: { actions: { x?: number; y?: number }[] }[] };
+    expect(body.actions[0]?.actions[0]).toMatchObject({ x: 13, y: 89 });
+  });
+
+  it('finds the marker by its accessibility id, then removes it from the page', async () => {
+    const { call, sent } = fakeWda();
+    const page = fakePage();
+    const input = await openWdaInput(call, page);
+    await input.tapAt({ x: 10, y: 20, width: 30, height: 40 });
+    const find = sent.find((s) => s.path === '/session/S/element');
+    const label = page.evaluate.mock.calls[0]?.[1] as string;
+    expect(label).toMatch(/^pw-calibrate-/);
+    expect(find?.body).toEqual({ using: 'accessibility id', value: label });
+    expect(page.evaluate.mock.calls).toHaveLength(2);
+    expect(page.evaluate.mock.calls[1]?.[1]).toBe(label);
+  });
+
+  it('removes the marker even when WebDriverAgent cannot find it', async () => {
+    const page = fakePage();
+    const call: WdaCall = (_method, path) =>
+      path === '/session' ? Promise.resolve({ sessionId: 'S' }) : Promise.reject(new Error('no such element'));
+    const input = await openWdaInput(call, page);
+    await expect(input.tapAt({ x: 1, y: 1, width: 1, height: 1 })).rejects.toThrow('no such element');
+    expect(page.evaluate.mock.calls).toHaveLength(2);
+  });
+
+  it('types real keys, one character each', async () => {
+    const { call, sent } = fakeWda();
+    const input = await openWdaInput(call, fakePage());
+    await input.type('Ayu');
+    expect(sent.at(-1)).toEqual({ method: 'POST', path: '/session/S/wda/keys', body: { value: ['A', 'y', 'u'] } });
+  });
+
+  it('swipes a finger up from 45% to 15% of the screen height, in the middle', async () => {
+    const { call, sent } = fakeWda();
+    const input = await openWdaInput(call, fakePage());
+    await input.swipeUp();
+    expect(sent.at(-1)).toEqual({
+      method: 'POST',
+      path: '/session/S/actions',
+      body: touch(
+        { type: 'pointerMove', duration: 0, x: 210, y: 410 },
+        { type: 'pointerDown', button: 0 },
+        { type: 'pointerMove', duration: 400, x: 210, y: 137 },
+        { type: 'pointerUp', button: 0 },
+      ),
+    });
+  });
+});
+
+describe('wdaHttp', () => {
+  it('sends JSON and returns the reply value', async () => {
+    const fetchMock = vi.fn(() => Promise.resolve(new Response(JSON.stringify({ value: { ok: 1 } }), { status: 200 })));
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(wdaHttp('http://127.0.0.1:8101')('POST', '/x', { a: 1 })).resolves.toEqual({ ok: 1 });
+    expect(fetchMock).toHaveBeenCalledWith('http://127.0.0.1:8101/x', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: '{"a":1}',
+    });
+  });
+
+  it('names the method, path and status when WebDriverAgent refuses', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response(JSON.stringify({ value: { error: 'boom' } }), { status: 500 })));
+    await expect(wdaHttp('http://127.0.0.1:8101')('POST', '/x')).rejects.toThrow('WDA POST /x 500: {"error":"boom"}');
+  });
+});
