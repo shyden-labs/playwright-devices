@@ -5,6 +5,7 @@
  * forward or tab (ShyTalk's report on shyden-labs/playwright-devices#7).
  */
 import { execFileSync } from 'node:child_process';
+import { writeFileSync } from 'node:fs';
 import { _android, chromium, test as base, type Page, webkit } from '@playwright/test';
 import { centreOfText, firstByDescription } from './android-native.ts';
 import { wrapPageForWda } from './ios-wda-page.ts';
@@ -258,10 +259,13 @@ export const test = base.extend<DeviceFixtures>({
         try {
           await iosInput.tapNative(label);
         } catch (error) {
-          // Keep what the phone showed, so the cause is read from the screen, not guessed. The run's
-          // output folder is git-ignored: the screen can show personal labels (photo dates).
+          // Keep what the phone showed, so the cause is read from the screen, not guessed. It is
+          // written into the run's git-ignored output folder and attached by path, so the committed
+          // JSON report never carries it: the screen can show personal labels (photo dates).
           const screen = (await (await fetch(`${wdaUrl}/source?format=description`)).json()) as { value: string };
-          await testInfo.attach(`screen when "${label}" was not found`, { body: screen.value, contentType: 'text/plain' });
+          const file = testInfo.outputPath(`screen-when-${label.replaceAll(/\W+/g, '-')}-not-found.txt`);
+          writeFileSync(file, screen.value);
+          await testInfo.attach(`screen when "${label}" was not found`, { path: file, contentType: 'text/plain' });
           throw error;
         }
       });
