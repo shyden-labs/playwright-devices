@@ -5,7 +5,7 @@
  * forward or tab (ShyTalk's report on shyden-labs/playwright-devices#7).
  */
 import { execFileSync } from 'node:child_process';
-import { _android, chromium, test as base, type Page } from '@playwright/test';
+import { _android, chromium, test as base, type Page, webkit } from '@playwright/test';
 
 export const serverPort = 4517;
 const cdpPort = 9222;
@@ -108,6 +108,33 @@ export const test = base.extend<DeviceFixtures>({
       }
       return;
     }
+    if (route === 'ios-webkit') {
+      // Mobile Safari through ios_webkit_debug_proxy (already listening on IWDP_PORT). Playwright
+      // 1.65.1's WebKit-over-proxy browser cannot create a context or a page (coreBundle.js
+      // WVBrowser/WVBrowserContext throw "Not supported"), so the test is given Safari's one open
+      // tab. It must be the only tab: Playwright attaches to every tab the proxy lists and waits
+      // for each, and a background tab never answers (measured 2026-11-17 on the iPhone Air,
+      // evidence/ios-webkit-background-tab-hang.txt). Safari is brought to the front without a
+      // URL, because opening a URL adds a tab.
+      const udid = requiredEnv('IOS_UDID');
+      const iwdpPort = process.env.IWDP_PORT ?? '9222';
+      execFileSync('xcrun', ['devicectl', 'device', 'process', 'launch', '--device', udid, 'com.apple.mobilesafari'], { stdio: 'ignore' });
+      const tabs = (await fetch(`http://127.0.0.1:${iwdpPort}/json`).then((r) => r.json())) as { url: string }[];
+      if (tabs.length !== 1) {
+        throw new Error(
+          `Safari must have exactly one tab open for this route; the proxy lists ${String(tabs.length)}: ${tabs.map((t) => t.url).join(', ')}`,
+        );
+      }
+      const browser = await webkit.connectOverCDP(`http://127.0.0.1:${iwdpPort}`);
+      try {
+        const page = browser.contexts()[0]?.pages()[0];
+        if (page === undefined) throw new Error('the proxy listed no Safari tab Playwright could attach to');
+        await use(page);
+      } finally {
+        await browser.close();
+      }
+      return;
+    }
     throw new Error(`DEVICE_ROUTE ${route} is not a route this measurement knows`);
   },
   // eslint-disable-next-line no-empty-pattern -- Playwright reads fixture dependencies from this pattern.
@@ -121,6 +148,7 @@ export const test = base.extend<DeviceFixtures>({
       });
       return;
     }
-    throw new Error(`DEVICE_ROUTE ${route} has no real finger scroll`);
+    // Fail at the scroll step itself, naming why, so the steps before it are still measured.
+    await use(() => Promise.reject(new Error(`DEVICE_ROUTE ${route} has no real finger scroll yet`)));
   },
 });

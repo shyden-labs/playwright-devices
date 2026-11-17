@@ -1,0 +1,12 @@
+goto absolute: FAILED 340ms Error: page.goto: cancelled; maybe frame was detached?
+heading visible+text: ok 47ms 
+viewport/touch: ok 4ms {"w":420,"h":746,"touch":5,"ua":"Mozilla/5.0 (iPhone; CPU iPhone OS 18_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1"}
+tap: FAILED 1ms Error: locator.tap: The page does not support tap. Use hasTouch context option to enable touch support.
+click: ok 62ms 
+tap-result: FAILED 3006ms Error: expect(locator).toHaveText(expected) failed
+focus field by click: ok 53ms 
+keyboard.type: ok 29ms 
+typed-result: FAILED 3003ms Error: expect(locator).toHaveText(expected) failed
+mouse.wheel: ok 16ms 
+scroll-result: ok 13ms 
+screenshot: ok 53ms 54855
