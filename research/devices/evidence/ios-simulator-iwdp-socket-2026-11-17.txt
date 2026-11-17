@@ -33,3 +33,14 @@ $ curl http://127.0.0.1:9222/json
 #   swap pressure, never seen with swap low. The tab-lag question stays unmeasured: the probe also gave
 #   the proxy a bad -c argument (SIMULATOR:9222 is not a config it accepts: "Unknown file"), so its
 #   empty tab lists say nothing. Simulator shut down, claims released.
+
+# 2026-11-18 00:55-01:06 WIB, same simulator, swap 3.5 GB before boot, 10.2 GB with it booted:
+# - proxy started straight after boot: "Unable to connect to SIMULATOR" although getenv's socket was the
+#   live one (lsof: launchd_sim and webinspectord hold it); started again later it connected
+#   ("Connected :9222 to SIMULATOR"), :9221 listing SIMULATOR on 9222 and the iPhone on 9223.
+# - with Safari showing http://127.0.0.1:8765/index.html (the server logged Safari's GET), :9222/json
+#   listed no page at all; nor with the proxy started before Safari and three openurl page events
+#   after it (one of the three timed out, NSPOSIXErrorDomain 60), nor after `simctl launch`. The
+#   iPhone on 9223 listed its page throughout. On 2026-11-17 23:18 the same command listed 3 pages.
+# - not settled: whether the empty list is the swap pressure (every openurl timeout so far came with
+#   swap above 9 GB) or the simulator's Safari state. Simulator shut down at 01:06.
