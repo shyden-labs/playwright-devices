@@ -20,4 +20,11 @@ android-cdp exit=0
   ✓  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (1.8s)
   1 passed (2.4s)
 android-playwright exit=0
-## not yet proven: the rule loading at boot (boot job exited 1 on first load with -e; switched to -E)
+## the rule loading at boot: proven 2026-11-18 (below; boot job exited 0 with -E)
+## after a Mac restart (kern.boottime 2026-11-18 06:52:09 WIB; boot job log written 06:54), on a different shared Wi-Fi
+## 2026-11-18 06:58 WIB after Mac restart; Mac 10.179.17.81, phone 10.179.17.42/24; boot job: last exit 0, log: Token : 5559633493232041347
+listening: ios_webki *:9222
+port 9222: refused/timeout
+port 4517: CONNECTED
+port 9333: refused/timeout
+local http://127.0.0.1:9222/json: http 200
