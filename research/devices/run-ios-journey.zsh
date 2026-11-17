@@ -6,7 +6,9 @@
 # Before running:
 #   - hold the USB phones claim (~/.claude/locks/usb-devices, global rule usb-devices-one-session-at-a-time)
 #   - the iPhone is unlocked, trusted, with Safari open on exactly ONE tab
-#   - the phone and this Mac are on the same Wi-Fi (the phone loads the page from PAGE_HOST)
+#   - the phone and this Mac are on the same Wi-Fi, VPN off (the phone loads the page from PAGE_HOST)
+#   - the pf rule in mac-setup/ is installed: ios_webkit_debug_proxy listens on every address and
+#     has no option to stop it, so pf keeps ports 9221-9322 to this Mac (shyden-labs/playwright-devices#19)
 #
 # Usage: research/devices/run-ios-journey.zsh [--build]
 #   --build  (re)build WebDriverAgent; needed once per Xcode or WebDriverAgent version

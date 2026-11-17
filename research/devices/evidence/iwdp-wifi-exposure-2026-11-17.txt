@@ -1,0 +1,23 @@
+# Safari's debug proxy reachable from the Wi-Fi? (shyden-labs/playwright-devices#19). Probe: toybox nc from the Android phone 192.168.1.6 to this Mac 192.168.1.14
+## macOS firewall on, ios_webkit_debug_proxy --blockapp (read back blocked), no pf rule
+port 9222: CONNECTED (iwdp listening *:9222)
+port 9333: refused/timeout (closed-port control)
+## pf rule mac-setup/pf.shyden.conf loaded (2026-11-17 21:34 WIB): block drop in quick on ! lo0 proto tcp from any to any port 9221:9322
+port 9222: refused/timeout (iwdp listening *:9222)
+port 4517: CONNECTED (test server control)
+port 9333: refused/timeout
+local http://127.0.0.1:9222/json: http 200
+## every-device run with the rule loaded
+== ios-webkit (run-ios-journey.zsh)
+  ✓  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (5.7s)
+  1 passed (6.3s)
+exit=0
+== android-cdp
+  ✓  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (1.9s)
+  1 passed (2.5s)
+android-cdp exit=0
+== android-playwright
+  ✓  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (1.8s)
+  1 passed (2.4s)
+android-playwright exit=0
+## not yet proven: the rule loading at boot (boot job exited 1 on first load with -e; switched to -E)
