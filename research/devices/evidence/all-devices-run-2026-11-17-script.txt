@@ -1,0 +1,14 @@
+# Every device, one run (shyden-labs/playwright-devices#7): iPhone through research/devices/run-ios-journey.zsh (WDA built by the script), then both Android routes
+# Measured 2026-11-17 20:54 WIB, Mac on en0 (VPN off; with the VPN on the iPhone could not load the page from PAGE_HOST)
+== ios-webkit (run-ios-journey.zsh)
+  ✓  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (5.8s)
+  1 passed (6.4s)
+exit=0
+== android-cdp
+  ✓  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (2.1s)
+  1 passed (2.7s)
+android-cdp exit=0
+== android-playwright
+  ✓  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (1.8s)
+  1 passed (2.4s)
+android-playwright exit=0
