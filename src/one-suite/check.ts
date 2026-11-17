@@ -29,6 +29,8 @@ export interface OneSuiteInput {
   ran: Map<string, TargetTests>;
   /** Each group's targets, e.g. { phones: ['ios-webkit'], desktop: ['chromium', 'firefox'] }. */
   groups: Record<string, string[]>;
+  /** Each target's expect count per test, from the AssertionCounter reporter; checked when given. */
+  assertions?: Record<string, Record<string, number>>;
 }
 
 export interface OneSuiteResult {
@@ -57,7 +59,7 @@ export function testsByTarget(report: JSONReport, unnamedTarget: string): Map<st
 
 const ids = (target: TargetTests | undefined): Set<string> => new Set(target?.tests.map((t) => t.id));
 
-export function checkOneSuite({ listed, ran, groups }: OneSuiteInput): OneSuiteResult {
+export function checkOneSuite({ listed, ran, groups, assertions }: OneSuiteInput): OneSuiteResult {
   const problems: string[] = [];
   const totals: string[] = [];
   const groupOf = new Map(Object.entries(groups).flatMap(([group, targets]) => targets.map((target) => [target, group] as const)));
@@ -95,7 +97,34 @@ export function checkOneSuite({ listed, ran, groups }: OneSuiteInput): OneSuiteR
   }
 
   problems.push(...groupOnlyProblems(listed, groups));
+  if (assertions !== undefined) problems.push(...assertionProblems(listed, groups, assertions));
   return { totals, problems };
+}
+
+/** Each listed test must have counted the same number of assertions on every target in its group. */
+function assertionProblems(
+  listed: Map<string, TargetTests>,
+  groups: Record<string, string[]>,
+  assertions: Record<string, Record<string, number>>,
+): string[] {
+  const problems: string[] = [];
+  for (const [group, targets] of Object.entries(groups)) {
+    const testIds = new Set(targets.flatMap((target) => [...ids(listed.get(target))]));
+    for (const id of testIds) {
+      const counted: [target: string, count: number][] = [];
+      for (const target of targets.filter((t) => ids(listed.get(t)).has(id))) {
+        const count = assertions[target]?.[id];
+        if (count === undefined) problems.push(`${target} counted no assertions for "${id}": pass its --assertions file`);
+        else counted.push([target, count]);
+      }
+      if (new Set(counted.map(([, count]) => count)).size > 1) {
+        problems.push(
+          `assertions in "${id}" differ in the ${group} group: ${counted.map(([target, count]) => `${target} ${String(count)}`).join(', ')}`,
+        );
+      }
+    }
+  }
+  return problems;
 }
 
 /**

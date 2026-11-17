@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
-import type { JSONReport } from '@playwright/test/reporter';
+import type { JSONReport, TestCase, TestResult, TestStep } from '@playwright/test/reporter';
 import { describe, expect, it } from 'vitest';
+import { AssertionCounter } from '../../src/one-suite/assertion-counter.ts';
 import { checkOneSuite, testsByTarget, type TargetTests } from '../../src/one-suite/check.ts';
 
 interface Made {
@@ -208,5 +209,82 @@ describe('group-only tests', () => {
     expect(checkOneSuite({ listed, ran: listed, groups: GROUPS }).problems).toEqual([
       '"journey.spec.ts › pinches" is tagged @phones but is also listed for the desktop group',
     ]);
+  });
+});
+
+describe('assertion counts', () => {
+  const made = [{ title: 'reads' }];
+  const listed = () => both(made).listed;
+  const counts = (n: Record<string, number>) =>
+    Object.fromEntries(Object.entries(n).map(([target, count]) => [target, { 'journey.spec.ts › reads': count }]));
+
+  it('passes when every target in a group counted the same assertions for each test', () => {
+    const result = checkOneSuite({
+      listed: listed(),
+      ran: listed(),
+      groups: GROUPS,
+      assertions: counts({ 'ios-webkit': 9, 'android-cdp': 9, chromium: 7, firefox: 7 }),
+    });
+    expect(result.problems).toEqual([]);
+  });
+
+  it('names a test whose count differs between targets in a group, with every count', () => {
+    const result = checkOneSuite({
+      listed: listed(),
+      ran: listed(),
+      groups: GROUPS,
+      assertions: counts({ 'ios-webkit': 9, 'android-cdp': 6, chromium: 7, firefox: 7 }),
+    });
+    expect(result.problems).toEqual(['assertions in "journey.spec.ts › reads" differ in the phones group: ios-webkit 9, android-cdp 6']);
+  });
+
+  it('names a target that counted no assertions for a test it was listed', () => {
+    const result = checkOneSuite({
+      listed: listed(),
+      ran: listed(),
+      groups: GROUPS,
+      assertions: counts({ 'ios-webkit': 9, chromium: 7, firefox: 7 }),
+    });
+    expect(result.problems).toEqual(['android-cdp counted no assertions for "journey.spec.ts › reads": pass its --assertions file']);
+  });
+});
+
+describe('AssertionCounter', () => {
+  const testCase = (project: string, path: string[]) => ({ titlePath: () => ['', project, ...path] }) as unknown as TestCase;
+  const step = (category: string) => ({ category }) as unknown as TestStep;
+
+  it('counts every expect step per target and test, failed ones included, and writes them on end', () => {
+    const written: { file: string; body: string }[] = [];
+    const counter = new AssertionCounter({ outputFile: 'counts.json', unnamedTarget: 'ios-webkit' }, (file, body) =>
+      written.push({ file, body }),
+    );
+    const reads = testCase('', ['journey.spec.ts', 'reads']);
+    counter.onStepEnd(reads, {} as TestResult, step('expect'));
+    counter.onStepEnd(reads, {} as TestResult, step('expect'));
+    counter.onStepEnd(reads, {} as TestResult, step('pw:api'));
+    counter.onStepEnd(testCase('chromium', ['journey.spec.ts', 'outer', 'reads']), {} as TestResult, step('expect'));
+    counter.onEnd();
+    expect(written).toEqual([
+      {
+        file: 'counts.json',
+        body: `${JSON.stringify({ 'ios-webkit': { 'journey.spec.ts › reads': 2 }, chromium: { 'journey.spec.ts › outer › reads': 1 } }, null, 2)}\n`,
+      },
+    ]);
+  });
+
+  it('counts a test that made no assertion as 0, so it is not mistaken for a missing count', () => {
+    const written: string[] = [];
+    const counter = new AssertionCounter({ outputFile: 'c.json', unnamedTarget: 'x' }, (_file, body) => written.push(body));
+    counter.onTestEnd(testCase('chromium', ['a.spec.ts', 'quiet']));
+    counter.onEnd();
+    expect(JSON.parse(written[0] ?? '{}')).toEqual({ chromium: { 'a.spec.ts › quiet': 0 } });
+  });
+
+  it('says it prints nothing to the terminal, so Playwright keeps a terminal reporter beside it', () => {
+    expect(new AssertionCounter({ outputFile: 'c.json', unnamedTarget: 'x' }, () => undefined).printsToStdio()).toBe(false);
+  });
+
+  it('refuses to start without an output file', () => {
+    expect(() => new AssertionCounter({ unnamedTarget: 'x' } as never)).toThrow('AssertionCounter needs an outputFile option');
   });
 });
