@@ -121,7 +121,7 @@ const splitPins = (uses: Use[]) => {
 describe('the CI supply chain is pinned', () => {
   it('pins each action at one SHA in every workflow, judged over every pinned use', () => {
     const uses = externalUses();
-    expect({ pinned: uses.length, split: splitPins(uses) }).toEqual({ pinned: 10, split: [] });
+    expect({ pinned: uses.length, split: splitPins(uses) }).toEqual({ pinned: 9, split: [] });
   });
 
   it('names an action whose bump reached one workflow and missed another', () => {
@@ -342,7 +342,7 @@ const nodePin = (text: string): { version: string } | { wrong: string } => {
 describe('the template runs one Node and one runner, pinned exactly', () => {
   it(`every job runs on ${RUNNER}, judged over every runs-on read`, () => {
     const runners = workflowFiles().flatMap((f) => runnersIn(f, workflow(f)));
-    expect({ read: runners.length, floating: floating(runners) }).toEqual({ read: 5, floating: [] });
+    expect({ read: runners.length, floating: floating(runners) }).toEqual({ read: 4, floating: [] });
   });
 
   const job = (runsOn: string) => ['jobs:', '  build:', `    runs-on:${runsOn}`, '    steps:', '      - run: true', ''].join('\n');

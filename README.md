@@ -13,7 +13,6 @@ settings already in place, and nothing it doesn't need on day one (shyden-labs/r
 | `scripts/npm-ci.ts` | Every workflow installs through it: `npm ci` that fails on any warning npm prints, naming each line (shyden-labs/repo-template#140). |
 | `.github/workflows/sonarcloud.yml`, `scripts/sonar-verdict.ts`, `docs/sonarcloud.md` | A reusable SonarCloud scan whose quality gate blocks the pull request. |
 | `.github/workflows/check-release-cut.yml`, `scripts/release-cut.ts`, `docs/release-cut.md` | Proves each pull request into `main` lands exactly a release cut CI tested. |
-| `.github/workflows/deploy-dev.yml` | The dev deploy stub: every merge into `develop` deploys to dev; every pull request rehearses it. |
 | `scripts/branch-rules-setup.ts` | Sets the `develop` (squash only) and `main` (merge commit only) rulesets, head-branch deletion, rebase merging off and opens the `dev` environment to every branch (any branch may deploy to dev), and reads each back. |
 | `scripts/board-*.ts`, `scripts/file-story.ts`, `.github/ISSUE_TEMPLATE/story.yml`, `docs/project-board.md` | The project board: filing stories, Estimate and Priority fields, the next ticket, progress, and orphaned In Progress tickets. |
 | `tests/unit/supply-chain.test.ts` | Actions pinned to SHAs, Dependabot covering every ecosystem and targeting `develop`, Node read from the Dockerfile. |
@@ -39,5 +38,5 @@ settings already in place, and nothing it doesn't need on day one (shyden-labs/r
 4. Add the ecosystems your repo uses to `.github/dependabot.yml`, and enable Dependabot alerts and security updates.
 5. `npm ci && npm run test:unit`.
 6. Set up the project board as `docs/project-board.md` describes.
-7. Fill in `.github/workflows/deploy-dev.yml` with your own dev deploy, or delete it and `tests/unit/deploy-dev.test.ts` if the repo hosts nothing.
+7. The template's dev-deploy stub was removed: this package hosts nothing, so there is no dev environment to deploy to (shyden-labs/playwright-devices#9).
 8. Turn on SonarCloud as `docs/sonarcloud.md` describes.
