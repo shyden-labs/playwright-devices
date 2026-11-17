@@ -1,7 +1,13 @@
-# Shyden Labs repo template
+# Playwright Devices
 
-A starter kit: a new Shyden Labs repository starts with CI and repository
-settings already in place, and nothing it doesn't need on day one (shyden-labs/repo-template#149).
+Research into running one unchanged Playwright test on real phones, their simulators and
+emulators, and desktop browsers, with real input.
+
+**Progress:** [Playwright Devices progress page](https://claude.ai/artifact/A7uCrNS5QTmstQ3SCGU2ES),
+updated at the end of every work session.
+
+This repository started from the Shyden Labs repo template: CI and repository settings were
+in place from day one (shyden-labs/repo-template#149).
 
 ## What is here
 
