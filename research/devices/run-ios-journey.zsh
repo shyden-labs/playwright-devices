@@ -10,8 +10,9 @@
 #   - the pf rule in mac-setup/ is installed: ios_webkit_debug_proxy listens on every address and
 #     has no option to stop it, so pf keeps ports 9221-9322 to this Mac (shyden-labs/playwright-devices#19)
 #
-# Usage: research/devices/run-ios-journey.zsh [--build]
+# Usage: research/devices/run-ios-journey.zsh [--build] [playwright test arguments...]
 #   --build  (re)build WebDriverAgent; needed once per Xcode or WebDriverAgent version
+#   anything else is passed to `playwright test` (e.g. --repeat-each=20, as on the Android routes)
 #
 # Settings (environment, with defaults):
 #   IOS_UDID   the phone's UDID (default: the only one idevice_id lists)
@@ -28,7 +29,7 @@ set -euo pipefail
 
 repo=${0:A:h:h:h}
 build=false
-[[ ${1:-} == --build ]] && build=true
+[[ ${1:-} == --build ]] && { build=true; shift; }
 
 udid=${IOS_UDID:-$(idevice_id -l | head -1)}
 [[ -n $udid ]] || { echo "no iPhone found by idevice_id -l: plug it in and trust this Mac" >&2; exit 1; }
@@ -112,4 +113,4 @@ curl -fsS "http://127.0.0.1:$wda_port/status" >/dev/null || { echo "WebDriverAge
 cd "$repo/research/devices"
 DEVICE_ROUTE=ios-webkit IOS_UDID=$udid IWDP_PORT=$iwdp_port PAGE_HOST=$page_host \
   WDA_URL="http://127.0.0.1:$wda_port" \
-  npx playwright test -c playwright.devices.config.ts
+  npx playwright test -c playwright.devices.config.ts "$@"
