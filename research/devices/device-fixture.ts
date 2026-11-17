@@ -123,7 +123,12 @@ export const test = base.extend<DeviceFixtures>({
       // URL, because opening a URL adds a tab.
       const udid = requiredEnv('IOS_UDID');
       const iwdpPort = process.env.IWDP_PORT ?? '9222';
-      execFileSync('xcrun', ['devicectl', 'device', 'process', 'launch', '--device', udid, 'com.apple.mobilesafari'], { stdio: 'ignore' });
+      // IOS_SIMULATOR=1: the UDID is a booted iOS Simulator, which devicectl does not list.
+      const launch =
+        process.env.IOS_SIMULATOR === '1'
+          ? ['simctl', 'launch', udid, 'com.apple.mobilesafari']
+          : ['devicectl', 'device', 'process', 'launch', '--device', udid, 'com.apple.mobilesafari'];
+      execFileSync('xcrun', launch, { stdio: 'ignore' });
       const tabs = (await fetch(`http://127.0.0.1:${iwdpPort}/json`).then((r) => r.json())) as { url: string }[];
       if (tabs.length !== 1) {
         throw new Error(`Safari must have exactly one tab open for this route; the proxy lists ${String(tabs.length)}`);
