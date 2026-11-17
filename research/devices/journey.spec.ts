@@ -7,7 +7,7 @@
 import { expect } from '@playwright/test';
 import { test } from './device-fixture.ts';
 
-test('a page is read, tapped, typed into and scrolled by real input', async ({ page, fingerScroll, nativeChoose }) => {
+test('a page is read, tapped, typed into and scrolled by real input', async ({ page, fingerScroll, nativeChoose, nativeChooseFile }) => {
   await page.goto('/journey.html');
   await expect.soft(page.getByRole('heading', { level: 1 })).toBeVisible();
   await expect.soft(page.getByRole('heading', { level: 1 })).toHaveText('Device journey');
@@ -23,6 +23,11 @@ test('a page is read, tapped, typed into and scrolled by real input', async ({ p
   await page.getByLabel('Colour').tap();
   await nativeChoose('Green');
   await expect.soft(page.getByTestId('select-result')).toHaveText('Green');
+
+  // AC 4: the file input opens the phone's own file picker; the file is found and touched there.
+  await page.getByLabel('File').tap();
+  await nativeChooseFile('device-journey.txt');
+  await expect.soft(page.getByTestId('file-result')).toHaveText('device-journey.txt');
 
   await fingerScroll();
   await expect.soft(page.getByTestId('scroll-result')).toHaveText('Scrolled');

@@ -21,7 +21,17 @@ interface DeviceFixtures {
   fingerScroll: () => Promise<void>;
   /** A real touch on the item labelled `label` in a native list the page opened (a <select>'s options, a file menu). */
   nativeChoose: (label: string) => Promise<void>;
+  /**
+   * With the phone's own file picker open, finds `name` (a file from research/devices/fixtures,
+   * placed on the phone by this fixture) and touches it, all by real touches.
+   */
+  nativeChooseFile: (name: string) => Promise<void>;
 }
+
+const fixtureFiles = new URL('fixtures/', import.meta.url);
+/** WebDriverAgent's runner app; run-ios-journey.zsh shares its Documents with the Files picker. */
+const wdaRunnerBundle = 'uk.co.shyden.WebDriverAgentRunner.xctrunner';
+const wdaRunnerFolder = 'WebDriverAgentRunner-Runner';
 
 function adb(serial: string, ...args: string[]): string {
   return execFileSync('adb', ['-s', serial, ...args], { encoding: 'utf8' });
@@ -216,5 +226,66 @@ export const test = base.extend<DeviceFixtures>({
       return;
     }
     await use(() => Promise.reject(new Error(`DEVICE_ROUTE ${route} has no way to touch a native list yet`)));
+  },
+  nativeChooseFile: async ({ nativeChoose }, use, testInfo) => {
+    const route = requiredEnv('DEVICE_ROUTE');
+    const placed: string[] = [];
+    const source = (name: string) => new URL(name, fixtureFiles).pathname;
+    if (route === 'ios-webkit') {
+      const udid = requiredEnv('IOS_UDID');
+      // Measured 2026-11-18 (iOS 27.2): Safari's file input offers a menu; Choose File opens the
+      // Files picker, which reopens wherever it was last, so Browse and On My iPhone lead to the
+      // runner's folder from any start. The file shows without its extension.
+      await use(async (name) => {
+        execFileSync(
+          'xcrun',
+          [
+            'devicectl',
+            'device',
+            'copy',
+            'to',
+            '--device',
+            udid,
+            '--domain-type',
+            'appDataContainer',
+            '--domain-identifier',
+            wdaRunnerBundle,
+            '--source',
+            source(name),
+            '--destination',
+            `Documents/${name}`,
+          ],
+          { stdio: 'ignore' },
+        );
+        for (const label of ['Choose File', 'Browse', 'On My iPhone', wdaRunnerFolder, name.replace(/\.[^.]+$/, '')])
+          await nativeChoose(label);
+      });
+      // A picker left open by a failed step would swallow the next run's first tap (measured 2026-11-18).
+      if (testInfo.status !== testInfo.expectedStatus) await nativeChoose('Cancel').catch(() => undefined);
+      return;
+    }
+    if (route.startsWith('android-')) {
+      const serial = requiredEnv('ANDROID_SERIAL');
+      try {
+        // Measured 2026-11-18 (Android 16): the chooser offers Files, which opens on Recent; a file
+        // pushed by adb is listed there once the media scanner has indexed it.
+        await use(async (name) => {
+          const onPhone = `/sdcard/Download/${name}`;
+          adb(serial, 'push', source(name), onPhone);
+          placed.push(onPhone);
+          adb(serial, 'shell', 'am', 'broadcast', '-a', 'android.intent.action.MEDIA_SCANNER_SCAN_FILE', '-d', `file://${onPhone}`);
+          for (const label of ['Files', name]) await nativeChoose(label);
+        });
+      } finally {
+        for (const onPhone of placed) {
+          adb(serial, 'shell', 'rm', '-f', onPhone);
+          adb(serial, 'shell', 'am', 'broadcast', '-a', 'android.intent.action.MEDIA_SCANNER_SCAN_FILE', '-d', `file://${onPhone}`);
+        }
+        // Close a picker a failed step left open, so Chrome is in front for the next run.
+        if (testInfo.status !== testInfo.expectedStatus) adb(serial, 'shell', 'input', 'keyevent', 'BACK');
+      }
+      return;
+    }
+    await use(() => Promise.reject(new Error(`DEVICE_ROUTE ${route} has no way to reach the native file picker yet`)));
   },
 });

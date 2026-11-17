@@ -79,6 +79,26 @@ if $build || [[ ! -d $derived/Build/Products ]]; then
     -scheme WebDriverAgentRunner -destination "id=$udid" -derivedDataPath "$derived"
 fi
 
+# The journey's file step (shyden-labs/playwright-devices#7 AC 4) places its file in the runner's
+# Documents and picks it in Safari's Files picker, which lists an app's Documents only when the app
+# declares file sharing. Xcode generates the runner's Info.plist, so the two keys are added to the
+# built app and it is signed again with the certificate and entitlements it already had (measured
+# 2026-11-18: Files then lists "WebDriverAgentRunner-Runner" under On My iPhone).
+runner=("$derived"/Build/Products/*-iphoneos/WebDriverAgentRunner-Runner.app(N))
+[[ -n ${runner[1]:-} ]] || { echo "no built WebDriverAgentRunner-Runner.app under $derived; run with --build" >&2; exit 1; }
+runner=${runner[1]}
+if ! /usr/libexec/PlistBuddy -c 'Print :UIFileSharingEnabled' "$runner/Info.plist" >/dev/null 2>&1; then
+  authority=$(codesign -dvv "$runner" 2>&1 | sed -n 's/^Authority=//p' | head -1)
+  identity=$(security find-identity -v -p codesigning | grep -F "\"$authority\"" | awk '{print $2; exit}')
+  [[ -n $identity ]] || { echo "no signing identity for '$authority' in the keychain" >&2; exit 1; }
+  entitlements=$(mktemp)
+  codesign -d --entitlements - --xml "$runner" >"$entitlements" 2>/dev/null
+  /usr/libexec/PlistBuddy -c 'Add :UIFileSharingEnabled bool true' -c 'Add :LSSupportsOpeningDocumentsInPlace bool true' "$runner/Info.plist"
+  codesign -f -s "$identity" --entitlements "$entitlements" --preserve-metadata=identifier,flags "$runner"
+  rm -f "$entitlements"
+  codesign -v --strict "$runner"
+fi
+
 pids=()
 stop_all() {
   for pid in $pids; do kill "$pid" 2>/dev/null || true; done

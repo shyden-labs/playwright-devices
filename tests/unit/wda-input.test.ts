@@ -113,21 +113,35 @@ describe('openWdaInput', () => {
 });
 
 describe('tapNative', () => {
-  const PREDICATE = { using: 'predicate string', value: 'type == "XCUIElementTypeButton" AND label == "Green"' };
+  const CELLS = {
+    using: 'predicate string',
+    value: 'type == "XCUIElementTypeCell" AND visible == 1 AND (label == "Green" OR label BEGINSWITH "Green, ")',
+  };
+  const PREDICATE = {
+    using: 'predicate string',
+    value: 'label == "Green" AND visible == 1 AND (type == "XCUIElementTypeButton" OR type == "XCUIElementTypeStaticText")',
+  };
+  const ELEMENT = (id: string) => ({ 'element-6066-11e4-a52e-4f735466cecf': id });
 
-  /** WebDriverAgent finding the native button only from the `appearsOn`-th lookup. */
-  function nativeWda(appearsOn = 1) {
+  /**
+   * WebDriverAgent listing `matches` buttons or texts (and `cells` cells), but only from the
+   * `appearsOn`-th lookup of buttons and texts.
+   */
+  function nativeWda(appearsOn = 1, matches = 1, cells = 0) {
     const sent: Sent[] = [];
     let lookups = 0;
     const call: WdaCall = (method, path, body) => {
       sent.push({ method, path, body });
       if (path === '/session') return Promise.resolve({ sessionId: 'S' });
-      if (path === '/session/S/element') {
-        lookups += 1;
-        if (lookups < appearsOn) return Promise.reject(new Error('WDA POST /session/S/element 404: no such element'));
-        return Promise.resolve({ 'element-6066-11e4-a52e-4f735466cecf': 'N' });
+      if (path === '/session/S/elements' && (body as { value: string }).value.startsWith('type == "XCUIElementTypeCell"')) {
+        return Promise.resolve(Array.from({ length: cells }, (_, i) => ELEMENT(`C${String(i)}`)));
       }
-      if (path === '/session/S/element/N/rect') return Promise.resolve({ x: 8, y: 347.7, width: 250, height: 35.7 });
+      if (path === '/session/S/elements') {
+        lookups += 1;
+        return Promise.resolve(lookups < appearsOn ? [] : Array.from({ length: matches }, (_, i) => ELEMENT(`N${String(i)}`)));
+      }
+      if (path === '/session/S/element/N0/rect') return Promise.resolve({ x: 8, y: 347.7, width: 250, height: 35.7 });
+      if (path === '/session/S/element/C0/rect') return Promise.resolve({ x: 282, y: 200, width: 128, height: 175.3 });
       return Promise.resolve(null);
     };
     return { call, sent, lookups: () => lookups };
@@ -137,11 +151,12 @@ describe('tapNative', () => {
     vi.useRealTimers();
   });
 
-  it('finds the native button by type and label and taps the centre of its screen rect', async () => {
+  it('finds the one visible native button or text with the label and taps the centre of its screen rect', async () => {
     const { call, sent } = nativeWda();
     const input = await openWdaInput(call, fakePage());
     await input.tapNative('Green');
-    expect(sent.find((s) => s.path === '/session/S/element')?.body).toEqual(PREDICATE);
+    const lookups = sent.filter((s) => s.path === '/session/S/elements').map((s) => s.body);
+    expect(lookups).toEqual([CELLS, PREDICATE]);
     expect(sent.at(-1)).toEqual({
       method: 'POST',
       path: '/session/S/actions',
@@ -151,6 +166,28 @@ describe('tapNative', () => {
         { type: 'pointerUp', button: 0 },
       ),
     });
+  });
+
+  it('prefers a Files cell named by the label, or by the label and a comma, and taps its icon (upper third)', async () => {
+    const { call, sent } = nativeWda(1, 1, 1);
+    const input = await openWdaInput(call, fakePage());
+    await input.tapNative('Green');
+    expect(sent.filter((s) => s.path === '/session/S/elements')).toHaveLength(1);
+    expect(sent.at(-1)).toEqual({
+      method: 'POST',
+      path: '/session/S/actions',
+      body: touch(
+        { type: 'pointerMove', duration: 0, x: 346, y: 258 },
+        { type: 'pointerDown', button: 0 },
+        { type: 'pointerUp', button: 0 },
+      ),
+    });
+  });
+
+  it('refuses a label two visible cells carry', async () => {
+    const { call } = nativeWda(1, 1, 2);
+    const input = await openWdaInput(call, fakePage());
+    await expect(input.tapNative('Green')).rejects.toThrow('2 visible native elements are labelled "Green"; a tap needs exactly one');
   });
 
   it('waits for a native list that is still opening, then taps', async () => {
@@ -164,15 +201,22 @@ describe('tapNative', () => {
     expect(sent.at(-1)?.path).toBe('/session/S/actions');
   });
 
-  it('fails at its 3 s ceiling naming the label and the last refusal, without tapping', async () => {
+  it('fails at its 3 s ceiling naming the label, without tapping', async () => {
     vi.useFakeTimers();
     const { call, sent } = nativeWda(Number.POSITIVE_INFINITY);
     const input = await openWdaInput(call, fakePage());
     const tapped = expect(input.tapNative('Green')).rejects.toThrow(
-      'no native button labelled "Green" appeared within 3000ms (last: WDA POST /session/S/element 404: no such element)',
+      'no visible native button or text labelled "Green" appeared within 3000ms',
     );
     await vi.advanceTimersByTimeAsync(3200);
     await tapped;
+    expect(sent.some((s) => s.path === '/session/S/actions')).toBe(false);
+  });
+
+  it('refuses a label two visible elements carry, naming how many, so a tap never lands on a guess', async () => {
+    const { call, sent } = nativeWda(1, 2);
+    const input = await openWdaInput(call, fakePage());
+    await expect(input.tapNative('Green')).rejects.toThrow('2 visible native elements are labelled "Green"; a tap needs exactly one');
     expect(sent.some((s) => s.path === '/session/S/actions')).toBe(false);
   });
 
@@ -180,10 +224,7 @@ describe('tapNative', () => {
     const { call, sent } = nativeWda();
     const input = await openWdaInput(call, fakePage());
     await input.tapNative('Say "hi"');
-    expect(sent.find((s) => s.path === '/session/S/element')?.body).toEqual({
-      using: 'predicate string',
-      value: 'type == "XCUIElementTypeButton" AND label == "Say \\"hi\\""',
-    });
+    expect((sent.find((s) => s.path === '/session/S/elements')?.body as { value: string }).value).toContain('label == "Say \\"hi\\""');
   });
 });
 

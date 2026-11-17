@@ -1,0 +1,51 @@
+# shyden-labs/playwright-devices#7 AC 4, the native file picker: journey.spec.ts taps 'File', then nativeChooseFile('device-journey.txt')
+# iPhone (iOS 27.2): devicectl copies the file into WebDriverAgent runner's Documents; run-ios-journey.zsh adds UIFileSharingEnabled and
+#   LSSupportsOpeningDocumentsInPlace to the built runner and re-signs it with its own certificate and entitlements; then real touches:
+#   Choose File > Browse > On My iPhone > WebDriverAgentRunner-Runner > device-journey. Files cells open only on a tap on the icon
+#   (the cell's upper third), not on the name text (measured: a tap on the name left the folder closed after 3 s).
+# Android (OnePlus CPH2653, Android 16): adb pushes the file to /sdcard/Download and asks the media scanner to index it; then real
+#   touches: Files > device-journey.txt (Recent lists it once indexed). Removed again after the test.
+# Run with research/devices/run-all-devices.zsh, 2026-11-18 ~02:40-02:55 WIB
+
+## red: before the fixture existed
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.Z721s3xz9j/ios-webkit.log)
+ios-webkit exit=1
+== android-cdp (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.Z721s3xz9j/android-cdp.log)
+android-cdp exit=1
+== android-playwright (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.Z721s3xz9j/android-playwright.log)
+android-playwright exit=1
+failed on: ios-webkit android-cdp android-playwright
+
+## first run: Android passed; the iPhone started with a Files picker left open by an exploration run, so every touch went to it.
+## The fixture's failure teardown (Cancel) closed it.
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.RQSeOsQdKm/ios-webkit.log)
+  ✘  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (23.3s)
+    Error: expect(locator).toHaveText(expected) failed
+    Error: expect(locator).toHaveText(expected) failed
+    Error: no visible native button or text labelled "Green" appeared within 3000ms
+  1 failed
+ios-webkit exit=1
+== android-cdp (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.RQSeOsQdKm/android-cdp.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (15.3s)
+  1 passed (17.5s)
+android-cdp exit=0
+== android-playwright (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.RQSeOsQdKm/android-playwright.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (12.0s)
+  1 passed (16.0s)
+android-playwright exit=0
+failed on: ios-webkit
+
+## green, the next run
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.0j1ZwIqHXB/ios-webkit.log)
+  ✓  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (23.9s)
+  1 passed (31.4s)
+ios-webkit exit=0
+== android-cdp (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.0j1ZwIqHXB/android-cdp.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (10.9s)
+  1 passed (13.6s)
+android-cdp exit=0
+== android-playwright (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.0j1ZwIqHXB/android-playwright.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (10.0s)
+  1 passed (13.2s)
+android-playwright exit=0
+every device passed

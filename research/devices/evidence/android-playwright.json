@@ -117,12 +117,16 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 4206,
+                  "duration": 9983,
                   "errors": [],
                   "stdout": [],
-                  "stderr": [],
+                  "stderr": [
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.1 MB/s (91 bytes in 0.001s)\n"
+                    }
+                  ],
                   "retry": 0,
-                  "startTime": "2026-11-17T19:24:30.215Z",
+                  "startTime": "2026-11-17T19:48:31.304Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -146,8 +150,8 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-17T19:24:29.551Z",
-    "duration": 4912.276,
+    "startTime": "2026-11-17T19:48:28.288Z",
+    "duration": 13163.210000000001,
     "expected": 1,
     "skipped": 0,
     "unexpected": 0,

@@ -13,7 +13,7 @@ export type WdaCall = (method: string, path: string, body?: unknown) => Promise<
 export interface WdaInput extends IosInput {
   /** A real finger dragged up the middle of the screen, from 45% to 15% of its height. */
   swipeUp: () => Promise<void>;
-  /** A real finger tap on the native button labelled `label` (a picker or menu Safari opened). */
+  /** A real finger tap on the one visible native button or text labelled `label` (a menu or picker Safari opened). */
   tapNative: (label: string) => Promise<void>;
   close: () => Promise<void>;
 }
@@ -101,30 +101,45 @@ export async function openWdaInput(call: WdaCall, page: Page): Promise<WdaInput>
       );
     },
     tapNative: async (label) => {
-      const predicate = `type == "XCUIElementTypeButton" AND label == "${label.replaceAll('"', '\\"')}"`;
+      const quoted = `"${label.replaceAll('"', '\\"')}"`;
+      // The Files picker's places and files are cells labelled "<name>" or "<name>, <detail>"; a tap
+      // on the name text does not open them, a tap on the icon (the cell's upper third) does
+      // (measured 2026-11-18, iOS 27.2). Safari's menus are buttons, other native labels static texts.
+      const lookups = [
+        {
+          value: `type == "XCUIElementTypeCell" AND visible == 1 AND (label == ${quoted} OR label BEGINSWITH "${label.replaceAll('"', '\\"')}, ")`,
+          at: 1 / 3,
+        },
+        {
+          value: `label == ${quoted} AND visible == 1 AND (type == "XCUIElementTypeButton" OR type == "XCUIElementTypeStaticText")`,
+          at: 1 / 2,
+        },
+      ];
       const deadline = Date.now() + nativeCeilingMs;
-      let found: Record<string, string> | undefined;
       // A wait for the list to open, at a stated ceiling; the lookup is the condition, not a retried action.
-      while (found === undefined) {
-        try {
-          found = (await call('POST', `${session}/element`, { using: 'predicate string', value: predicate })) as Record<string, string>;
-        } catch (error) {
-          if (Date.now() >= deadline) {
-            const last = error instanceof Error ? error.message : String(error);
-            throw new Error(`no native button labelled "${label}" appeared within ${String(nativeCeilingMs)}ms (last: ${last})`, {
-              cause: error,
-            });
-          }
-          await new Promise((resolve) => setTimeout(resolve, nativePollMs));
+      for (;;) {
+        for (const lookup of lookups) {
+          const found = (await call('POST', `${session}/elements`, { using: 'predicate string', value: lookup.value })) as Record<
+            string,
+            string
+          >[];
+          const [first] = found;
+          if (first === undefined) continue;
+          if (found.length > 1)
+            throw new Error(`${String(found.length)} visible native elements are labelled "${label}"; a tap needs exactly one`);
+          const rect = (await call('GET', `${session}/element/${String(Object.values(first)[0])}/rect`)) as {
+            x: number;
+            y: number;
+            width: number;
+            height: number;
+          };
+          await finger([{ x: Math.round(rect.x + rect.width / 2), y: Math.round(rect.y + rect.height * lookup.at) }], 0);
+          return;
         }
+        if (Date.now() >= deadline)
+          throw new Error(`no visible native button or text labelled "${label}" appeared within ${String(nativeCeilingMs)}ms`);
+        await new Promise((resolve) => setTimeout(resolve, nativePollMs));
       }
-      const rect = (await call('GET', `${session}/element/${String(Object.values(found)[0])}/rect`)) as {
-        x: number;
-        y: number;
-        width: number;
-        height: number;
-      };
-      await finger([{ x: Math.round(rect.x + rect.width / 2), y: Math.round(rect.y + rect.height / 2) }], 0);
     },
     close: async () => {
       await call('DELETE', session);
