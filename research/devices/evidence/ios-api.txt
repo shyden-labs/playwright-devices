@@ -1,0 +1,3 @@
+webkit.connectOverCDP: refused: TypeError: browserType.connectOverCDP: fetch failed
+expect(stand-in).toHaveText: refused: Error: toHaveText can be only used with Locator object, was called with Object { textContent: [Function: textContent] }
+expect(stand-in).toBeVisible: refused: Error: toBeVisible can be only used with Locator object, was called with Object { textContent: [Function: textContent] }
