@@ -2,7 +2,7 @@
 
 Findings for shyden-labs/playwright-devices#7: can one unchanged Playwright test (`page.goto`, `toBeVisible()` and `toHaveText()`, a real tap, real typing, a real finger scroll) run on Safari on iPhone and the iOS Simulator, and on Chrome on Android and its emulator? Every result below links the evidence kept in `research/devices/evidence/`.
 
-**Status: draft.** The iOS Simulator, the Android emulators and the native pickers are not measured yet; their rows say so.
+**Status: draft.** The iOS Simulator and the Android emulators are not measured yet; their rows say so.
 
 ## Summary
 
@@ -12,7 +12,7 @@ Findings for shyden-labs/playwright-devices#7: can one unchanged Playwright test
 | Real Android phone, Chrome | **Works** (20 of 20 on each route) | `android-cdp` (`chromium.connectOverCDP` over an adb forward) and `android-playwright` (`_android`) | [all-devices-repeat20-2026-11-17.txt](../../research/devices/evidence/all-devices-repeat20-2026-11-17.txt) |
 | iOS Simulator (iPhone, iPad), Safari | Not yet measured | `ios-webkit` with `IOS_SIMULATOR=1`; the proxy reaches the simulator, but the journey has not run (below) | [ios-simulator-iwdp-socket-2026-11-17.txt](../../research/devices/evidence/ios-simulator-iwdp-socket-2026-11-17.txt) |
 | Android emulator (phone, tablet or foldable), Chrome | Not yet measured | the two Android routes | |
-| Native pickers (file, photo, `<select>`) | Not yet measured | | |
+| Native pickers (`<select>`, file, photo) | **Works** on Android (10 of 10 on each route); **partly** on the iPhone (all three reached; the `<select>` step fails 6 of 10 after a passing run, shyden-labs/playwright-devices#25) | the fixture's `nativeChoose`, `nativeChooseFile`, `nativeChoosePhoto`: real touches on the phone's own lists (uiautomator + `adb input` on Android, WebDriverAgent on iOS) | [native-select-2026-11-18.txt](../../research/devices/evidence/native-select-2026-11-18.txt), [native-file-picker-2026-11-18.txt](../../research/devices/evidence/native-file-picker-2026-11-18.txt), [native-photo-picker-2026-11-18.txt](../../research/devices/evidence/native-photo-picker-2026-11-18.txt), [ios-select-flake-2026-11-18.txt](../../research/devices/evidence/ios-select-flake-2026-11-18.txt) |
 
 Measured with Playwright 1.65.1, macOS 27.2.1 and Xcode 27.2. iPhone: iPhone18,4, iOS 27.2, WebDriverAgent built from appium-webdriveragent 14.1.1 (to reconcile: its `/status` on the iPhone reported version 17.0.11), ios_webkit_debug_proxy 1.9.3. Android: OnePlus CPH2653, Android 16, Chrome 157.0.8103.50.
 
@@ -26,6 +26,15 @@ Measured with Playwright 1.65.1, macOS 27.2.1 and Xcode 27.2. iPhone: iPhone18,4
 ## Android
 
 Both routes pass the unchanged journey with real input, sent through Android's own input service (`adb shell input`). Chrome opens its DevTools socket only once it runs in the foreground, so the `android-cdp` route starts Chrome cold and waits for the socket. One swipe in an early run did not scroll; it was not reproduced in 80 further runs (shyden-labs/playwright-devices#18).
+
+## Native pickers
+
+The journey taps the page's `<select>`, file input and image input, then touches the phone's own native UI, never the page's script:
+
+- **`<select>`:** Android's Chrome opens a native list (found in `uiautomator dump`, touched with `adb shell input tap`); iOS Safari opens a native menu of buttons (found and touched through WebDriverAgent).
+- **File:** on Android, the chooser's *Files*, then the file, which the fixture pushed to Downloads and had indexed. On the iPhone, *Choose File* > *Browse* > *On My iPhone* > the WebDriverAgent runner's folder > the file, which the fixture copied there with `devicectl`. The runner lists in Files because the run script adds `UIFileSharingEnabled` and `LSSupportsOpeningDocumentsInPlace` to the built runner and signs it again with its own certificate. Files cells open only on a tap on the icon, not on the name.
+- **Photo:** Google's photo picker on Android (a fixture image pushed first, so it is the newest) and *Photo Library* on the iPhone (the library's own first photo); both select on tap and return on *Done*. The page shows only the file's kind, because a photo's name and date are personal.
+- A failed native step attaches the phone's screen by path into the git-ignored run folder, and teardown closes a picker left open, so it cannot swallow the next run's first touch.
 
 ## iOS Simulator (in progress)
 
