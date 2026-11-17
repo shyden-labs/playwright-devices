@@ -6,7 +6,7 @@
       "test",
       "-c",
       "/Users/shyden/Developer/Repos/playwright-devices/research/devices/playwright.devices.config.ts",
-      "--repeat-each=3"
+      "--repeat-each=10"
     ],
     "configFile": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/playwright.devices.config.ts",
     "rootDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
@@ -26,7 +26,7 @@
     "projects": [
       {
         "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output",
-        "repeatEach": 3,
+        "repeatEach": 10,
         "retries": 0,
         "metadata": {
           "actualWorkers": 1
@@ -46,7 +46,7 @@
         "grep": {},
         "grepInvert": null,
         "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output",
-        "repeatEach": 3,
+        "repeatEach": 10,
         "retries": 0,
         "metadata": {
           "actualWorkers": 1
@@ -118,19 +118,19 @@
                   "workerIndex": 0,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 14292,
+                  "duration": 14199,
                   "errors": [],
                   "stdout": [],
                   "stderr": [
                     {
-                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.8 MB/s (179 bytes in 0.000s)\n"
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.3 MB/s (179 bytes in 0.001s)\n"
                     },
                     {
-                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.2 MB/s (91 bytes in 0.000s)\n"
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.1 MB/s (91 bytes in 0.001s)\n"
                     }
                   ],
                   "retry": 0,
-                  "startTime": "2026-11-17T20:27:57.056Z",
+                  "startTime": "2026-11-17T20:39:18.668Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -154,19 +154,19 @@
                   "workerIndex": 1,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 13977,
+                  "duration": 14105,
                   "errors": [],
                   "stdout": [],
                   "stderr": [
                     {
-                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.4 MB/s (179 bytes in 0.000s)\n"
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.1 MB/s (179 bytes in 0.002s)\n"
                     },
                     {
-                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.2 MB/s (91 bytes in 0.000s)\n"
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.1 MB/s (91 bytes in 0.002s)\n"
                     }
                   ],
                   "retry": 0,
-                  "startTime": "2026-11-17T20:28:11.625Z",
+                  "startTime": "2026-11-17T20:39:33.088Z",
                   "annotations": [],
                   "attachments": [
                     {
@@ -190,7 +190,115 @@
                   "workerIndex": 2,
                   "parallelIndex": 0,
                   "status": "passed",
-                  "duration": 13988,
+                  "duration": 14031,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.1 MB/s (179 bytes in 0.001s)\n"
+                    },
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.1 MB/s (91 bytes in 0.001s)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-17T20:39:47.403Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-repeat2/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14049,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.1 MB/s (179 bytes in 0.001s)\n"
+                    },
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.1 MB/s (91 bytes in 0.002s)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-17T20:40:01.650Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-repeat3/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14127,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.1 MB/s (179 bytes in 0.001s)\n"
+                    },
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.2 MB/s (91 bytes in 0.000s)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-17T20:40:15.921Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-repeat4/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 5,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13993,
                   "errors": [],
                   "stdout": [],
                   "stderr": [
@@ -198,17 +306,161 @@
                       "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.4 MB/s (179 bytes in 0.000s)\n"
                     },
                     {
-                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.2 MB/s (91 bytes in 0.000s)\n"
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.1 MB/s (91 bytes in 0.001s)\n"
                     }
                   ],
                   "retry": 0,
-                  "startTime": "2026-11-17T20:28:25.839Z",
+                  "startTime": "2026-11-17T20:40:30.280Z",
                   "annotations": [],
                   "attachments": [
                     {
                       "name": "trace",
                       "contentType": "application/zip",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-repeat2/trace.zip"
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-repeat5/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 6,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13987,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.6 MB/s (179 bytes in 0.000s)\n"
+                    },
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.0 MB/s (91 bytes in 0.002s)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-17T20:40:44.496Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-repeat6/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 7,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13964,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.3 MB/s (179 bytes in 0.001s)\n"
+                    },
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.1 MB/s (91 bytes in 0.001s)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-17T20:40:58.695Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-repeat7/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 8,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14165,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.1 MB/s (179 bytes in 0.001s)\n"
+                    },
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.1 MB/s (91 bytes in 0.001s)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-17T20:41:12.872Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-repeat8/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            },
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 9,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13934,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.1 MB/s (179 bytes in 0.002s)\n"
+                    },
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.2 MB/s (91 bytes in 0.000s)\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-11-17T20:41:27.446Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-repeat9/trace.zip"
                     }
                   ]
                 }
@@ -226,9 +478,9 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-17T20:27:56.439Z",
-    "duration": 43457.511000000006,
-    "expected": 3,
+    "startTime": "2026-11-17T20:39:18.069Z",
+    "duration": 143354.34100000001,
+    "expected": 10,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0
