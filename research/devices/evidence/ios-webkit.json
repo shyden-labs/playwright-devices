@@ -103,7 +103,7 @@
       "specs": [
         {
           "title": "a page is read, tapped, typed into and scrolled by real input",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -116,36 +116,15 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "timedOut",
-                  "duration": 30034,
-                  "error": {
-                    "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m",
-                    "stack": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                  },
-                  "errors": [
-                    {
-                      "message": "\u001b[31mTest timeout of 30000ms exceeded.\u001b[39m"
-                    },
-                    {
-                      "location": {
-                        "file": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts",
-                        "column": 14,
-                        "line": 10
-                      },
-                      "message": "Error: page.goto: Target page, context or browser has been closed\nCall log:\n\u001b[2m  - navigating to \"/journey.html\", waiting until \"load\"\u001b[22m\n\n\n   8 |\n   9 | test('a page is read, tapped, typed into and scrolled by real input', async ({ page, fingerScroll }) => {\n> 10 |   await page.goto('/journey.html');\n     |              ^\n  11 |   await expect.soft(page.getByRole('heading', { level: 1 })).toBeVisible();\n  12 |   await expect.soft(page.getByRole('heading', { level: 1 })).toHaveText('Device journey');\n  13 |\n    at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:10:14"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 5697,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T07:52:05.623Z",
+                  "startTime": "2026-11-17T08:16:26.987Z",
                   "annotations": [],
                   "attachments": [
-                    {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md"
-                    },
                     {
                       "name": "trace",
                       "contentType": "application/zip",
@@ -154,7 +133,7 @@
                   ]
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
@@ -167,11 +146,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-17T07:52:05.045Z",
-    "duration": 30714.100000000002,
-    "expected": 0,
+    "startTime": "2026-11-17T08:16:26.431Z",
+    "duration": 6338.976000000001,
+    "expected": 1,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }

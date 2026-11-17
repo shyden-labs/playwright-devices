@@ -6,8 +6,13 @@
  */
 import { execFileSync } from 'node:child_process';
 import { _android, chromium, test as base, type Page, webkit } from '@playwright/test';
+import { wrapPageForWda } from './ios-wda-page.ts';
+import { openWdaInput, wdaHttp, type WdaInput } from './wda-input.ts';
 
 export const serverPort = 4517;
+
+/** The WebDriverAgent input behind each wrapped iOS page, so the finger scroll uses the same session. */
+const iosInputs = new WeakMap<Page, WdaInput>();
 const cdpPort = 9222;
 
 interface DeviceFixtures {
@@ -123,11 +128,23 @@ export const test = base.extend<DeviceFixtures>({
       if (tabs.length !== 1) {
         throw new Error(`Safari must have exactly one tab open for this route; the proxy lists ${String(tabs.length)}`);
       }
+      // Playwright's input on this route is page JavaScript faking events
+      // (evidence/ios-webkit-input-is-synthetic.txt), so taps, typing and the finger scroll go to
+      // WebDriverAgent (WDA_URL) as real touches and keys; Playwright reads and asserts. The phone
+      // reaches the test server at PAGE_HOST, because this route ignores Playwright's baseURL.
+      const pageHost = requiredEnv('PAGE_HOST');
       const browser = await webkit.connectOverCDP(`http://127.0.0.1:${iwdpPort}`);
       try {
         const page = browser.contexts()[0]?.pages()[0];
         if (page === undefined) throw new Error('the proxy listed no Safari tab Playwright could attach to');
-        await use(page);
+        const input = await openWdaInput(wdaHttp(process.env.WDA_URL ?? 'http://127.0.0.1:8100'), page);
+        try {
+          const wrapped = wrapPageForWda(page, input, `http://${pageHost}:${String(serverPort)}`);
+          iosInputs.set(wrapped, input);
+          await use(wrapped);
+        } finally {
+          await input.close();
+        }
       } finally {
         await browser.close();
       }
@@ -135,9 +152,13 @@ export const test = base.extend<DeviceFixtures>({
     }
     throw new Error(`DEVICE_ROUTE ${route} is not a route this measurement knows`);
   },
-  // eslint-disable-next-line no-empty-pattern -- Playwright reads fixture dependencies from this pattern.
-  fingerScroll: async ({}, use) => {
+  fingerScroll: async ({ page }, use) => {
     const route = requiredEnv('DEVICE_ROUTE');
+    const iosInput = iosInputs.get(page);
+    if (route === 'ios-webkit' && iosInput !== undefined) {
+      await use(() => iosInput.swipeUp());
+      return;
+    }
     if (route.startsWith('android-')) {
       const serial = requiredEnv('ANDROID_SERIAL');
       await use(() => {
