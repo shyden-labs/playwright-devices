@@ -4,7 +4,7 @@
 #   The library's own first photo is used: no tool adds a photo to iOS Photos from the Mac.
 # Android (Android 16): the fixture pushes fixtures/device-journey.png to /sdcard/Pictures and indexes it, so it is the newest;
 #   Google's photo picker > the first item described 'Photo taken on …' > Done. Removed again after the test.
-# Found on the way (each measured, 2026-11-18 ~03:00-03:30 WIB):
+# Found on the way (each measured, 2026-11-18 ~02:55-03:20 WIB):
 #  - WebDriverAgent predicates call the identifier 'name' ('identifier' is refused: 500 unknown attribute).
 #  - Both pickers select on tap and return on Done; without Done the picker stayed open and swallowed the next run's touches.
 #  - The photo picker, once a photo is selected, offers Done but no Cancel, so the failure teardown tries Cancel, then Done.

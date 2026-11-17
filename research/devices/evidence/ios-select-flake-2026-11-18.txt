@@ -1,4 +1,4 @@
-# The iPhone's native <select> step fails intermittently (iPhone18,4, iOS 27.2), measured 2026-11-18 ~03:30-04:30 WIB
+# The iPhone's native <select> step fails intermittently (iPhone18,4, iOS 27.2), measured 2026-11-18 ~03:10-03:55 WIB
 # Every device, --repeat-each=10 (after the viewport fix): iPhone 4 passed, 6 failed, each at nativeChoose('Green'); Android 10/10 on each route.
 == ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.Q3goa4UG2p/ios-webkit.log)
   ✓   1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (56.1s)
