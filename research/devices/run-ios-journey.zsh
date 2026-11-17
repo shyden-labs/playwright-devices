@@ -44,6 +44,9 @@ bundle=uk.co.shyden.WebDriverAgentRunner
 derived=$wda_dir/derived
 
 [[ -d ~/.claude/locks/usb-devices ]] || { echo "claim the USB phones first (~/.claude/locks/usb-devices)" >&2; exit 1; }
+# A phone with no developer disk image (after an iOS update) or locked makes devicectl and
+# xcodebuild hang: stop here naming its state (shyden-labs/playwright-devices#27).
+node "$repo/research/devices/iphone-state.ts" "$udid" || exit 1
 for port in $wda_port $iwdp_port; do
   # lsof exits 1 when nothing listens, which is the state wanted here.
   holder=$( (lsof -nP -iTCP:$port -sTCP:LISTEN 2>/dev/null || true) | tail -n +2 | head -1)

@@ -4,7 +4,7 @@ $ ios_webkit_debug_proxy -s unix:/private/var/tmp/com.apple.launchd.kZOUiNBJLx/c
 $ curl http://127.0.0.1:9221/json (device names only)
    "deviceName": "SIMULATOR",
    "url": "127.0.0.1:9222"
-   "deviceName": "Sean’s iPhone",
+   "deviceName": "<iPhone name>",
    "url": "127.0.0.1:9223"
 $ curl http://127.0.0.1:9222/json
    "title": "Example Domain",

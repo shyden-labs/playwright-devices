@@ -8,6 +8,7 @@ import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { _android, chromium, test as base, type Page, webkit } from '@playwright/test';
 import { centreOfText, firstByDescription } from './android-native.ts';
+import { assertIphoneReady, devicectl } from './iphone-state.ts';
 import { wrapPageForWda } from './ios-wda-page.ts';
 import { openWdaInput, wdaHttp, type WdaInput } from './wda-input.ts';
 
@@ -199,11 +200,12 @@ export const test = base.extend<DeviceFixtures>({
       const udid = requiredEnv('IOS_UDID');
       const iwdpPort = process.env.IWDP_PORT ?? '9222';
       // IOS_SIMULATOR=1: the UDID is a booted iOS Simulator, which devicectl does not list.
-      const launch =
-        process.env.IOS_SIMULATOR === '1'
-          ? ['simctl', 'launch', udid, 'com.apple.mobilesafari']
-          : ['devicectl', 'device', 'process', 'launch', '--device', udid, 'com.apple.mobilesafari'];
-      execFileSync('xcrun', launch, { stdio: 'ignore' });
+      if (process.env.IOS_SIMULATOR === '1') {
+        execFileSync('xcrun', ['simctl', 'launch', udid, 'com.apple.mobilesafari'], { stdio: 'ignore' });
+      } else {
+        assertIphoneReady(udid);
+        devicectl(['device', 'process', 'launch', '--device', udid, 'com.apple.mobilesafari']);
+      }
       const tabs = (await fetch(`http://127.0.0.1:${iwdpPort}/json`).then((r) => r.json())) as { url: string }[];
       if (tabs.length !== 1) {
         throw new Error(`Safari must have exactly one tab open for this route; the proxy lists ${String(tabs.length)}`);
@@ -288,26 +290,21 @@ export const test = base.extend<DeviceFixtures>({
       // Files picker, which reopens wherever it was last, so Browse and On My iPhone lead to the
       // runner's folder from any start. The file shows without its extension.
       await use(async (name) => {
-        execFileSync(
-          'xcrun',
-          [
-            'devicectl',
-            'device',
-            'copy',
-            'to',
-            '--device',
-            udid,
-            '--domain-type',
-            'appDataContainer',
-            '--domain-identifier',
-            wdaRunnerBundle,
-            '--source',
-            source(name),
-            '--destination',
-            `Documents/${name}`,
-          ],
-          { stdio: 'ignore' },
-        );
+        devicectl([
+          'device',
+          'copy',
+          'to',
+          '--device',
+          udid,
+          '--domain-type',
+          'appDataContainer',
+          '--domain-identifier',
+          wdaRunnerBundle,
+          '--source',
+          source(name),
+          '--destination',
+          `Documents/${name}`,
+        ]);
         for (const label of ['Choose File', 'Browse', 'On My iPhone', wdaRunnerFolder, name.replace(/\.[^.]+$/, '')])
           await nativeChoose(label);
       });

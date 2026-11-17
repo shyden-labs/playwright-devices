@@ -1,0 +1,4 @@
+# 2026-11-18 06:23 WIB: xcrun devicectl list devices (iPhone row only; its name replaced), after the phone updated itself overnight from iOS 27.2 to 27.2.1
+<iPhone name>  00008150-000954D90A20401C (UDID)              connected (no DDI)   iPhone Air (iPhone18,4)            physical 
+# devicectl list devices --json-output, same phone, 06:24 WIB: connectionProperties.pairingState paired, tunnelState connected; deviceProperties.ddiServicesAvailable false, bootState booted, bootedFromSnapshot true (an os.update snapshot), developerModeStatus enabled
+# 06:18 WIB: devicectl device info processes gave no output for 3 min 5 s (stopped by hand); 06:20 devicectl device info details silent at a 30 s timeout; 06:21 devicectl device info ddiServices hung at 'Checking developer disk image content on device' (stopped by hand).
