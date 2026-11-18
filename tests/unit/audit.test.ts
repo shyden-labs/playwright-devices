@@ -1,6 +1,6 @@
 import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { auditProblems, EXCEPTIONS, main, type AuditException } from '../../scripts/audit.ts';
+import { auditProblems, check, EXCEPTIONS, main, type AuditException } from '../../scripts/audit.ts';
 
 vi.mock('node:child_process', () => ({ spawnSync: vi.fn() }));
 const spawn = vi.mocked(spawnSync);
@@ -69,15 +69,8 @@ describe('auditProblems', () => {
     expect(auditProblems(odd, [], '2026-11-18')).toEqual(['odd: an advisory with no GHSA id in its URL (https://example.com/advisory)']);
   });
 
-  it('carries exactly the one picomatch exception Shyden ruled, expiring 2026-12-01', () => {
-    expect(EXCEPTIONS).toEqual([
-      {
-        advisory: 'GHSA-fc5q-39xc-vjpf',
-        expires: '2026-12-01',
-        ticket: 'shyden-labs/playwright-devices#22',
-        reason: 'picomatch ReDoS with no patched release; temporary exception (Shyden, 2026-11-18)',
-      },
-    ]);
+  it('carries no exception: GitHub withdrew the picomatch advisory on 2026-11-18 (shyden-labs/playwright-devices#22)', () => {
+    expect(EXCEPTIONS).toEqual([]);
   });
 });
 
@@ -90,29 +83,39 @@ describe('main', () => {
   const npmGives = (body: unknown) =>
     spawn.mockReturnValue({ status: 1, stdout: JSON.stringify(body), stderr: '' } as SpawnSyncReturns<string>);
 
-  it('runs npm audit as JSON and passes when only the excepted advisory is reported', () => {
-    vi.useFakeTimers({ now: new Date('2026-11-18T10:00:00Z') });
-    npmGives(report(picomatch));
+  it('runs npm audit as JSON and passes, printing nothing, when npm reports no advisory', () => {
+    npmGives({ auditReportVersion: 2, vulnerabilities: {} });
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     expect(main()).toBe(0);
     expect(spawn).toHaveBeenCalledExactlyOnceWith('npm', ['audit', '--json'], { encoding: 'utf8' });
-    expect(log).toHaveBeenCalledWith(
-      'audit: GHSA-fc5q-39xc-vjpf excepted until 2026-12-01 (shyden-labs/playwright-devices#22): picomatch ReDoS with no patched release; temporary exception (Shyden, 2026-11-18)',
-    );
+    expect(log).not.toHaveBeenCalled();
+    expect(error).not.toHaveBeenCalled();
     log.mockRestore();
+    error.mockRestore();
   });
 
-  it('fails, printing every problem, once the exception has expired', () => {
-    vi.useFakeTimers({ now: new Date('2026-12-01T00:00:00Z') });
+  it('fails, printing every problem, when npm reports advisories with no exception', () => {
     npmGives(report(picomatch, glob));
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     expect(main()).toBe(1);
     expect(error.mock.calls.map(([line]) => line as string)).toEqual([
+      'audit: GHSA-fc5q-39xc-vjpf (picomatch vulnerable to ReDoS) in picomatch has no exception: fix it',
       'audit: GHSA-3g3m-2fjr-6pw4 (Glob: AbortSignal cancellation bypass) in glob has no exception: fix it',
-      'audit: the exception for GHSA-fc5q-39xc-vjpf expired on 2026-12-01 (shyden-labs/playwright-devices#22): fix it or ask Shyden',
     ]);
     error.mockRestore();
+    log.mockRestore();
+  });
+
+  it('passes an advisory with an exception it is given, printing the exception', () => {
+    vi.useFakeTimers({ now: new Date('2026-11-18T10:00:00Z') });
+    npmGives(report(picomatch));
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    expect(check([exception])).toBe(0);
+    expect(log).toHaveBeenCalledExactlyOnceWith(
+      'audit: GHSA-fc5q-39xc-vjpf excepted until 2026-12-01 (shyden-labs/playwright-devices#22): no patched picomatch release',
+    );
     log.mockRestore();
   });
 

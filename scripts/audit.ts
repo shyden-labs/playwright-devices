@@ -23,14 +23,9 @@ export interface AuditException {
   reason: string;
 }
 
-export const EXCEPTIONS: AuditException[] = [
-  {
-    advisory: 'GHSA-fc5q-39xc-vjpf',
-    expires: '2026-12-01',
-    ticket: 'shyden-labs/playwright-devices#22',
-    reason: 'picomatch ReDoS with no patched release; temporary exception (Shyden, 2026-11-18)',
-  },
-];
+// Empty: GitHub withdrew the picomatch advisory GHSA-fc5q-39xc-vjpf on 2026-11-18 at 15:38 UTC, and
+// npm audit stopped reporting it (shyden-labs/playwright-devices#22).
+export const EXCEPTIONS: AuditException[] = [];
 
 // npm writes every field read here on each advisory (npm 11, `npm audit --json`).
 interface Via {
@@ -87,7 +82,8 @@ export function auditProblems(report: unknown, exceptions: AuditException[], tod
   return problems;
 }
 
-export function main(): number {
+/** Runs `npm audit` and checks its report against `exceptions`; 0 passes, 1 fails. */
+export function check(exceptions: AuditException[]): number {
   // `npm audit` exits 1 whenever it finds anything, excepted or not, so its JSON is the verdict.
   const run = spawnSync('npm', ['audit', '--json'], { encoding: 'utf8' }); // NOSONAR: npm is found on PATH by design, its folder differs on the Mac and on CI (shyden-labs/playwright-devices#12)
   let report: unknown;
@@ -98,10 +94,15 @@ export function main(): number {
     return 1;
   }
   const today = new Date().toISOString().slice(0, 10);
-  const problems = auditProblems(report, EXCEPTIONS, today);
-  for (const e of EXCEPTIONS) console.log(`audit: ${e.advisory} excepted until ${e.expires} (${e.ticket}): ${e.reason}`);
+  const problems = auditProblems(report, exceptions, today);
+  for (const e of exceptions) console.log(`audit: ${e.advisory} excepted until ${e.expires} (${e.ticket}): ${e.reason}`);
   for (const problem of problems) console.error(`audit: ${problem}`);
   return problems.length > 0 ? 1 : 0;
+}
+
+/** The command: the check against the ruled exceptions above. */
+export function main(): number {
+  return check(EXCEPTIONS);
 }
 
 await runIfEntry(import.meta.url, main);
