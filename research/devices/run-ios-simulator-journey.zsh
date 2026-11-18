@@ -71,6 +71,14 @@ stop_all() {
 trap stop_all EXIT INT TERM
 
 mkdir -p "$logs"
+# The proxy starts first. Its connection launches the simulator's webinspectord on demand, which
+# then warms up while WebDriverAgent starts. The proxy reports "Connected" and lists pages only
+# once Safari has registered with that daemon (measured 2026-11-19, evidence
+# ios-simulator-inspector-cold-start-2026-11-19.txt): 10 s after openurl with the daemon warm,
+# 51 s with the daemon and Safari both starting cold at 4-5 GB swap. Run 4 (2026-11-18, 8 GB swap)
+# started both cold and ran out of its 60 s ceiling.
+ios_webkit_debug_proxy -s "unix:$socket" >"$logs/iwdp.log" 2>&1 &
+pids+=($!)
 # WebDriverAgent first, alone: launched while Safari opens, SpringBoard refuses the runner as
 # Busy ("Application failed preflight checks"); alone it answers /status after about 100 s
 # (measured 2026-11-18).
@@ -87,11 +95,9 @@ for ((s = 0; s < ceiling; s += 1)); do
 done
 curl -fsS "http://127.0.0.1:$wda_port/status" >/dev/null || { echo "WebDriverAgent did not answer on port $wda_port within ${ceiling}s; see $logs/wda.log" >&2; exit 1; }
 
-ios_webkit_debug_proxy -s "unix:$socket" >"$logs/iwdp.log" 2>&1 &
-pids+=($!)
-
 # Wait, at a stated ceiling, for the proxy's SIMULATOR entry and then for exactly one Safari tab.
-ceiling=60
+# 180 s: over three times the slowest measured cold chain (51 s, see above).
+ceiling=180
 iwdp_port=
 tabs=0
 for ((s = 0; s < ceiling; s += 1)); do
