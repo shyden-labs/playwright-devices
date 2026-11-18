@@ -29,11 +29,11 @@ in place from day one (shyden-labs/repo-template#149).
 
 ## Desktop browsers
 
-`src/desktop/browsers.ts` gives every project the same desktop browsers as Playwright projects (shyden-labs/playwright-devices#17): `chromium`, `chrome` (Google Chrome, the `chrome` channel), `firefox`, `webkit` and `msedge` (Microsoft Edge, the `msedge` channel). Each is a real desktop browser: no phone emulation, no touch. A project imports it into its `playwright.config.ts`:
+`src/desktop/browsers.ts` (`@shyden-labs/playwright-devices/desktop` once installed, below) gives every project the same desktop browsers as Playwright projects (shyden-labs/playwright-devices#17): `chromium`, `chrome` (Google Chrome, the `chrome` channel), `firefox`, `webkit` and `msedge` (Microsoft Edge, the `msedge` channel). Each is a real desktop browser: no phone emulation, no touch. A project imports it into its `playwright.config.ts`:
 
 ```ts
 import { defineConfig } from '@playwright/test';
-import { desktopProjects } from './src/desktop/browsers.ts';
+import { desktopProjects } from '@shyden-labs/playwright-devices/desktop';
 
 export default defineConfig({
   forbidOnly: true,
@@ -43,7 +43,22 @@ export default defineConfig({
 });
 ```
 
-`playwright.desktop.config.ts` is this sample, run by CI's `desktop-e2e` job on all five browsers. The same names form the desktop group of the one-suite checks: `desktopGroup()` (or `desktopGroup(['chromium', 'chrome', 'msedge'])` for a declared few) is the `groups` value `checkOneSuite` takes, and on the CLI it is `--group desktop=chromium,chrome,firefox,webkit,msedge`. An unknown or repeated browser name is refused, naming it. A browser that cannot start fails the run, naming it and why (Playwright's launch error), and is never dropped from the group: the checks report it as having run no tests. Install the browsers with `npx playwright install --with-deps chromium chrome firefox webkit msedge`. How other projects install this package is still to be decided (shyden-labs/playwright-devices#16); until then the import path is this repository's.
+`playwright.desktop.config.ts` is this sample, run by CI's `desktop-e2e` job on all five browsers. The same names form the desktop group of the one-suite checks: `desktopGroup()` (or `desktopGroup(['chromium', 'chrome', 'msedge'])` for a declared few) is the `groups` value `checkOneSuite` takes, and on the CLI it is `--group desktop=chromium,chrome,firefox,webkit,msedge`. An unknown or repeated browser name is refused, naming it. A browser that cannot start fails the run, naming it and why (Playwright's launch error), and is never dropped from the group: the checks report it as having run no tests. Install the browsers with `npx playwright install --with-deps chromium chrome firefox webkit msedge`.
+
+## Installing it in a project
+
+The one-suite checks (shyden-labs/playwright-devices#16) and the desktop browsers install as a git dependency; `prepare` compiles them to JavaScript on install, so no registry is involved.
+
+1. In the project's `package.json`, add the dependency and approve its install script. npm matches a git dependency's approval by its git source, not its package name (measured in `research/package/install-as-git-dependency-2026-11-18.txt`):
+
+   ```json
+   "devDependencies": { "@shyden-labs/playwright-devices": "github:shyden-labs/playwright-devices#<tag or commit>" },
+   "allowScripts": { "github:shyden-labs/playwright-devices": true }
+   ```
+
+2. Count each test's assertions per target with the reporter, next to the JSON reporter: `reporter: [['json'], ['@shyden-labs/playwright-devices/assertion-counter', { outputFile: '<target>-assertions.json', unnamedTarget: '<target>' }]]` (`unnamedTarget` names a run whose project has no name, such as a device run).
+3. Check the runs: `npx one-suite --group phones=<targets> --group desktop=<targets> --list <list.json>[=<target>] --report <report.json>[=<target>] --assertions <assertions.json>`. It prints one total per target and every problem, and exits 1 on any problem.
+4. In code: `import { checkOneSuite, testsByTarget } from '@shyden-labs/playwright-devices'`, and `desktopProjects` and `desktopGroup` from `@shyden-labs/playwright-devices/desktop`.
 
 ## The rules
 

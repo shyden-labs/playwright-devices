@@ -1,4 +1,7 @@
 import { describe, it, expect } from 'vitest';
+import { mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { runIfEntry } from '../../scripts/cli.ts';
 
@@ -36,6 +39,25 @@ describe('runIfEntry', () => {
     const h = harness(['node', SCRIPT]);
     await runIfEntry(URL_OF_SCRIPT, () => Promise.resolve(4), h.proc);
     expect(h.exits).toEqual([4]);
+  });
+
+  it('runs main when the program is a symlink to the script, as an installed bin is', async () => {
+    // npm starts a package's bin through node_modules/.bin/<name>, a symlink: node gives the link
+    // as argv[1] and the real file as import.meta.url (measured 2026-11-18).
+    // import.meta.url is always the real path; macOS's tmpdir is itself behind a link (/var).
+    const dir = realpathSync(mkdtempSync(join(tmpdir(), 'run-if-entry-')));
+    try {
+      const script = join(dir, 'cli.js');
+      const link = join(dir, 'one-suite');
+      writeFileSync(script, '');
+      symlinkSync(script, link);
+      const h = harness(['node', link, 'x']);
+      await runIfEntry(pathToFileURL(script).href, h.main, h.proc);
+      expect(h.ran).toEqual([['x']]);
+      expect(h.exits).toEqual([3]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 
   it('does nothing when another file is the program (the script was imported)', async () => {

@@ -1,7 +1,27 @@
 {
-  "name": "repo-template",
+  "name": "@shyden-labs/playwright-devices",
   "private": true,
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/src/one-suite/check.d.ts",
+      "default": "./dist/src/one-suite/check.js"
+    },
+    "./assertion-counter": {
+      "types": "./dist/src/one-suite/assertion-counter.d.ts",
+      "default": "./dist/src/one-suite/assertion-counter.js"
+    },
+    "./desktop": {
+      "types": "./dist/src/desktop/browsers.d.ts",
+      "default": "./dist/src/desktop/browsers.js"
+    }
+  },
+  "bin": {
+    "one-suite": "./dist/src/one-suite/cli.js"
+  },
+  "files": [
+    "dist/"
+  ],
   "engines": {
     "node": "^24.16.0 || >=26.3.0"
   },
@@ -12,7 +32,11 @@
     "lint": "eslint --max-warnings 0 .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "git config core.hooksPath .githooks"
+    "prepare": "npm run build && git config core.hooksPath .githooks",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.65.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

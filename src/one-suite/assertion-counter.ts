@@ -3,7 +3,7 @@
  * included (shyden-labs/playwright-devices#16 AC 5). Playwright's JSON report does not record
  * expect steps, so a test that checks less on one target than another would otherwise pass unseen.
  *
- *   reporter: [['@shyden-labs/playwright-devices/one-suite/assertion-counter', { outputFile: 'assertions.json', unnamedTarget: 'ios-webkit' }]]
+ *   reporter: [['@shyden-labs/playwright-devices/assertion-counter', { outputFile: 'assertions.json', unnamedTarget: 'ios-webkit' }]]
  *
  * The file maps each target to each test's count: { "<target>": { "<file> › <title path>": n } }.
  * `unnamedTarget` names a run whose project has no name (a device run).

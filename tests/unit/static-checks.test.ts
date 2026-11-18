@@ -29,7 +29,8 @@ describe('package.json', () => {
     ['lint', 'eslint --max-warnings 0 .'],
     ['format:check', 'prettier --check .'],
     ['format', 'prettier --write .'],
-    ['prepare', 'git config core.hooksPath .githooks'],
+    ['build', 'tsc -p tsconfig.build.json'],
+    ['prepare', 'npm run build && git config core.hooksPath .githooks'],
   ])('runs %s as %s', (name, command) => {
     expect(scripts[name]).toBe(command);
   });

@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * The one-suite checks from the command line (shyden-labs/playwright-devices#16 AC 7):
  *
