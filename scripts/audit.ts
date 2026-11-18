@@ -23,14 +23,9 @@ export interface AuditException {
   reason: string;
 }
 
-export const EXCEPTIONS: AuditException[] = [
-  {
-    advisory: 'GHSA-fc5q-39xc-vjpf',
-    expires: '2026-12-01',
-    ticket: 'shyden-labs/playwright-devices#22',
-    reason: 'picomatch ReDoS with no patched release; temporary exception (Shyden, 2026-11-18)',
-  },
-];
+// Empty: GitHub withdrew the picomatch advisory GHSA-fc5q-39xc-vjpf on 2026-11-18 at 15:38 UTC, and
+// npm audit stopped reporting it (shyden-labs/playwright-devices#22).
+export const EXCEPTIONS: AuditException[] = [];
 
 // npm writes every field read here on each advisory (npm 11, `npm audit --json`).
 interface Via {
