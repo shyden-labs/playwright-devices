@@ -27,6 +27,24 @@ in place from day one (shyden-labs/repo-template#149).
 | `package.json` `overrides` | `minimatch` held at 11.0.3, past its ReDoS advisory GHSA-g3hv-75wg-m249, until eslint and typescript-eslint accept minimatch 11 themselves; then remove it (shyden-labs/repo-template#154). |
 | `LICENSE`, `NOTICE` | Apache-2.0, the ASF's text verbatim in `LICENSE`; the copyright line in `NOTICE`, as the ASF advises (shyden-labs/repo-template#147). |
 
+## Desktop browsers
+
+`src/desktop/browsers.ts` gives every project the same desktop browsers as Playwright projects (shyden-labs/playwright-devices#17): `chromium`, `chrome` (Google Chrome, the `chrome` channel), `firefox`, `webkit` and `msedge` (Microsoft Edge, the `msedge` channel). Each is a real desktop browser: no phone emulation, no touch. A project imports it into its `playwright.config.ts`:
+
+```ts
+import { defineConfig } from '@playwright/test';
+import { desktopProjects } from './src/desktop/browsers.ts';
+
+export default defineConfig({
+  forbidOnly: true,
+  retries: 0,
+  reporter: [['list'], ['json', { outputFile: 'test-results/desktop-report.json' }]],
+  projects: desktopProjects(), // or a declared few, e.g. desktopProjects(['chromium', 'chrome', 'msedge'])
+});
+```
+
+`playwright.desktop.config.ts` is this sample, run by CI's `desktop-e2e` job on all five browsers. The same names form the desktop group of the one-suite checks: `desktopGroup()` (or `desktopGroup(['chromium', 'chrome', 'msedge'])` for a declared few) is the `groups` value `checkOneSuite` takes, and on the CLI it is `--group desktop=chromium,chrome,firefox,webkit,msedge`. An unknown or repeated browser name is refused, naming it. A browser that cannot start fails the run, naming it and why (Playwright's launch error), and is never dropped from the group: the checks report it as having run no tests. Install the browsers with `npx playwright install --with-deps chromium chrome firefox webkit msedge`. How other projects install this package is still to be decided (shyden-labs/playwright-devices#16); until then the import path is this repository's.
+
 ## The rules
 
 1. **Pin actions to full commit SHAs**, with a trailing `# vX.Y.Z` comment so a Dependabot bump is reviewable.
