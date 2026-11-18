@@ -32,7 +32,7 @@
     "lint": "eslint --max-warnings 0 .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "npm run build && git config core.hooksPath .githooks",
+    "prepare": "npm run build && if [ -e .git ]; then git config core.hooksPath .githooks; fi",
     "build": "tsc -p tsconfig.build.json"
   },
   "peerDependencies": {

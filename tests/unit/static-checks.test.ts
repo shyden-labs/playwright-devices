@@ -30,7 +30,8 @@ describe('package.json', () => {
     ['format:check', 'prettier --check .'],
     ['format', 'prettier --write .'],
     ['build', 'tsc -p tsconfig.build.json'],
-    ['prepare', 'npm run build && git config core.hooksPath .githooks'],
+    // npm fetches a github: dependency as a tarball with no .git, where git config fails (measured 2026-11-18).
+    ['prepare', 'npm run build && if [ -e .git ]; then git config core.hooksPath .githooks; fi'],
   ])('runs %s as %s', (name, command) => {
     expect(scripts[name]).toBe(command);
   });
