@@ -1,0 +1,43 @@
+# shyden-labs/playwright-devices#27, AC3 second half: the iPhone run passes once the disk image is mounted
+# iPhone Air 00008150-000954D90A20401C, iOS 27.2.1; branch 27-iphone-state at 93b4dd2d4c1dc898725cbe25a17a45097f9f0f27
+# devicectl device info details: Pairing State paired, Developer Mode Enabled, Boot State booted;
+# devicectl device info ddiServices: isUsable true (list devices shows the label "connected", no "(no DDI)")
+
+# 1. the state check alone, 2026-11-18 21:50:27 WIB
+$ node research/devices/iphone-state.ts 00008150-000954D90A20401C
+(no output) exit 0, 0.43 s total
+
+# 2. the full device run (research/devices/run-all-devices.zsh, ANDROID_SERIALS=3b402284), whose iPhone
+#    target runs that check first (run-ios-journey.zsh line 49), log ended 2026-11-19 01:05:48 WIB
+== ios-webkit 
+  ✓  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (32.9s)
+  1 passed (33.5s)
+ios-webkit exit=0
+== android-cdp@3b402284 
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (15.0s)
+  1 passed (15.7s)
+android-cdp@3b402284 exit=0
+== android-playwright@3b402284 
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.4s)
+  1 passed (15.0s)
+android-playwright@3b402284 exit=0
+every device passed
+
+# Earlier run the same night (log ended 2026-11-19 00:36:50 WIB), before Safari was in front:
+# the state check passed (the run reached the proxy), then two targets failed in setup
+== ios-webkit 
+  ✘  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (497ms)
+    Error: Safari must have exactly one tab open for this route; the proxy lists 0
+  1 failed
+ios-webkit exit=1
+== android-cdp@3b402284 
+  ✘  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (333ms)
+    Error: browserType.connectOverCDP: socket hang up (ECONNRESET)
+      166 |         // the phone's default one (measured 2026-11-17: a relative goto failed there).
+  1 failed
+android-cdp@3b402284 exit=1
+== android-playwright@3b402284 
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  1 passed (14.6s)
+android-playwright@3b402284 exit=0
+failed on: ios-webkit android-cdp@3b402284
