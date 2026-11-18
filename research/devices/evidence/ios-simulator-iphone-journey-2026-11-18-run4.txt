@@ -1,0 +1,20 @@
+# #7 AC 2 run 4, iPhone 18 Pro simulator (IOS_UDID=1955585D-532E-4881-9E5F-593D91EE1062), 2026-11-18 12:2x WIB; simulator shut down before the run, booted by the script; swap 2.5 GB at start
+## script output
+the proxy lists 0 Safari tabs on port 9222 after 60s; the route needs one
+## ios_webkit_debug_proxy log (logs-sim/iwdp.log)
+00008150-000954D90A20401C already on :9223
+Listing devices on :9221
+Connected :9223 to Sean’s iPhone (00008150-000954D90A20401C)
+Unable to connect to SIMULATOR (SIMULATOR)
+  Please verify that Settings > Safari > Advanced > Web Inspector = ON
+Disconnected :9223 from Sean’s iPhone (00008150-000954D90A20401C)
+## follow-up, same boot, minutes later: proxy started alone, then simctl openurl http://127.0.0.1:9/
+00008150-000954D90A20401C already on :9223
+Listing devices on :9221
+Connected :9223 to Sean’s iPhone (00008150-000954D90A20401C)
+Connected :9222 to SIMULATOR (SIMULATOR)
+Disconnected :9222 from SIMULATOR (SIMULATOR)
+Disconnected :9223 from Sean’s iPhone (00008150-000954D90A20401C)
+9222/json then listed 1 page: title "Can’t Open Page", webSocketDebuggerUrl ws://127.0.0.1:9222/devtools/page/1, appId PID:4256 (MobileSafari)
+## pattern: runs 1 and 4 (fresh boot) -> 'Unable to connect to SIMULATOR'; run 2 (already booted, webinspectord running) -> proxy connected. Cause not yet proven.
+## stopped: swap reached total = 9216.00M  used = 8275.50M  free = 940.50M  (encrypte
