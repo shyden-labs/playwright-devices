@@ -73,7 +73,7 @@ jobs:
       - name: A browser that cannot start fails the run, naming it
         run: |
           set +e
-          PLAYWRIGHT_BROWSERS_PATH="$RUNNER_TEMP/no-browsers" npx playwright test -c playwright.desktop.config.ts --project=firefox --reporter=list > "$RUNNER_TEMP/no-firefox.txt" 2>&1
+          PLAYWRIGHT_BROWSERS_PATH="$RUNNER_TEMP/no-browsers" node_modules/.bin/playwright test -c playwright.desktop.config.ts --project=firefox --reporter=list > "$RUNNER_TEMP/no-firefox.txt" 2>&1
           status=$?
           set -e
           cat "$RUNNER_TEMP/no-firefox.txt"
@@ -81,11 +81,11 @@ jobs:
           grep -q "Executable doesn't exist at $RUNNER_TEMP/no-browsers/firefox" "$RUNNER_TEMP/no-firefox.txt"
           grep -q '\[firefox\]' "$RUNNER_TEMP/no-firefox.txt"
       - name: Install the desktop browsers
-        run: npx playwright install --with-deps chromium chrome firefox webkit msedge
+        run: node_modules/.bin/playwright install --with-deps chromium chrome firefox webkit msedge
       - name: Run the sample config on every desktop browser
-        run: npx playwright test -c playwright.desktop.config.ts
+        run: node_modules/.bin/playwright test -c playwright.desktop.config.ts
       - name: List the tests each desktop browser should run
-        run: npx playwright test -c playwright.desktop.config.ts --list --reporter=json > test-results/desktop-list.json
+        run: node_modules/.bin/playwright test -c playwright.desktop.config.ts --list --reporter=json > test-results/desktop-list.json
       - name: One-suite checks over the desktop group
         run: >-
           node src/one-suite/cli.ts --group desktop=chromium,chrome,firefox,webkit,msedge
