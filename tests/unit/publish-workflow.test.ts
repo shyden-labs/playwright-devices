@@ -10,37 +10,53 @@ import { withoutYamlComments, withoutYamlQuotes, yamlBlock } from './source-text
  */
 const source = readFileSync('.github/workflows/publish.yml', 'utf8');
 const workflow = withoutYamlQuotes(withoutYamlComments(source));
-const job = yamlBlock(workflow, 'publish', '  ');
-const runs = job
-  .split(/\n(?= {6}- )/)
-  .slice(1)
-  .map((step) => /^ {6}(?:- | {2})run: (.*)/m.exec(step)?.[1] ?? '');
+const jobs = yamlBlock(workflow, 'jobs');
+const build = yamlBlock(jobs, 'build', '  ');
+const publish = yamlBlock(jobs, 'publish', '  ');
+const runs = (job: string) =>
+  job
+    .split(/\n(?= {6}- )/)
+    .slice(1)
+    .map((step) => /^ {6}(?:- | {2})run: (.*)/m.exec(step)?.[1] ?? '')
+    .filter((run) => run !== '' && run !== '|');
 
 describe('publish.yml', () => {
   it('runs when a release is published, and on nothing else', () => {
     expect(yamlBlock(workflow, 'on')).toBe('on:\n  release:\n    types: [published]');
   });
 
-  it('asks for an OIDC token and only reads the repository', () => {
-    expect(yamlBlock(job, 'permissions', '    ')).toBe('    permissions:\n      contents: read\n      id-token: write');
+  it('has two jobs: build, then publish', () => {
+    expect(jobs.split('\n').filter((line) => /^ {2}\S/.test(line))).toEqual(['  build:', '  publish:']);
+    expect(publish).toMatch(/^ {4}needs: build$/m);
   });
 
-  it('waits for the npm environment, where Shyden approves each publish', () => {
-    expect(job).toMatch(/^ {4}environment: npm$/m);
+  it('builds with no OIDC token and no environment, so no dependency code runs where the publish token can be asked for', () => {
+    expect(yamlBlock(build, 'permissions', '    ')).toBe('    permissions:\n      contents: read');
+    expect(build).not.toMatch(/environment:/);
   });
 
-  it('checks the tag, installs, builds, drops prepare from the manifest, then publishes, in that order', () => {
-    expect(runs.filter((run) => run !== '' && run !== '|')).toEqual([
+  it('checks the tag, installs, builds, drops prepare from the manifest and packs, in that order', () => {
+    expect(build).toContain('name: The release tag is v followed by the package version');
+    expect(runs(build)).toEqual([
       'node scripts/npm-ci.ts',
       'npm run build',
       'npm pkg delete scripts.prepare',
-      'npm publish --access public',
+      'npm pack --pack-destination package',
     ]);
-    expect(job).toContain('name: The release tag is v followed by the package version');
+    expect(build).toMatch(/uses: actions\/upload-artifact@/);
+  });
+
+  it('publishes the packed tarball alone, in the npm environment where Shyden approves it: only the Node pin is checked out, nothing installed', () => {
+    expect(yamlBlock(publish, 'permissions', '    ')).toBe('    permissions:\n      contents: read\n      id-token: write');
+    expect(publish).toMatch(/^ {4}environment: npm$/m);
+    expect(publish).toMatch(/^ {10}sparse-checkout: docker\/node\/Dockerfile\n {10}sparse-checkout-cone-mode: false$/m);
+    expect(publish).not.toMatch(/npm ci|npm-ci|npm install|npm run/);
+    expect(publish).toMatch(/uses: actions\/download-artifact@/);
+    expect(runs(publish)).toEqual(['npm publish package/*.tgz --access public']);
   });
 
   it('points setup-node at the npm registry, which trusted publishing signs in to', () => {
-    expect(job).toMatch(/^ {10}registry-url: https:\/\/registry\.npmjs\.org$/m);
+    expect(publish).toMatch(/^ {10}registry-url: https:\/\/registry\.npmjs\.org$/m);
   });
 
   it('uses no stored token: trusted publishing signs in through OIDC', () => {
