@@ -33,8 +33,9 @@ describe('package.json', () => {
     expect(pkg['bin']).toEqual({ 'one-suite': './dist/src/one-suite/cli.js' });
   });
 
-  it('ships only dist, which the build writes from the one-suite and desktop sources', () => {
-    expect(pkg['files']).toEqual(['dist/']);
+  it('ships dist, which the build writes from the one-suite and desktop sources, and NOTICE, which Apache-2.0 requires', () => {
+    // npm adds LICENSE, README.md and package.json itself, but not NOTICE (measured with npm pack, 2026-11-18).
+    expect(pkg['files']).toEqual(['dist/', 'NOTICE']);
     expect(build.compilerOptions.outDir).toBe('dist');
     expect(build.include).toEqual(['src/one-suite/*.ts', 'src/desktop/*.ts']);
   });
