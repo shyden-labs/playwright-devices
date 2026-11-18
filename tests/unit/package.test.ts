@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 
 /**
- * Other projects install this repo as a git dependency (`github:shyden-labs/playwright-devices#<tag>`,
- * Shyden 2026-11-18 on shyden-labs/playwright-devices#16), and `prepare` compiles the one-suite
- * checks to dist/ on install. These pin what they import and run; the install itself was measured
- * once (research/package/install-as-git-dependency-2026-11-18.txt).
+ * Other projects install the package from npm (Shyden 2026-11-18 on shyden-labs/playwright-devices#16:
+ * the registry, with trusted publishing); .github/workflows/publish.yml builds dist/ and publishes it.
+ * These pin what projects import and run; installing a pack built that way was measured
+ * (research/package/install-2026-11-18.txt, section 10).
  */
 const pkg = JSON.parse(readFileSync('package.json', 'utf8')) as Record<string, unknown>;
 const build = JSON.parse(readFileSync('tsconfig.build.json', 'utf8')) as {

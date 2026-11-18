@@ -1,6 +1,15 @@
 {
   "name": "@shyden-labs/playwright-devices",
-  "private": true,
+  "version": "0.1.0",
+  "description": "Shared Playwright checks that one test suite ran unchanged on every phone, tablet and desktop browser, and the shared desktop browser projects.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shyden-labs/playwright-devices.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "exports": {
     ".": {
@@ -33,7 +42,7 @@
     "lint": "eslint --max-warnings 0 .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "npm run build && if [ -e .git ]; then git config core.hooksPath .githooks; fi",
+    "prepare": "git config core.hooksPath .githooks",
     "build": "tsc -p tsconfig.build.json"
   },
   "peerDependencies": {

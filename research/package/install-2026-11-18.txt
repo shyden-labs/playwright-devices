@@ -138,3 +138,31 @@ $ npm pack --dry-run
 npm notice 11.4kB LICENSE
 npm notice 105B NOTICE
 npm notice total files: 14
+
+# D. Shyden's choice after A-C (2026-11-18): publish to npmjs.com with trusted publishing. A pack built as .github/workflows/publish.yml builds it:
+# 10. a pack made as the publish workflow would: npm run build, npm pkg delete scripts.prepare, version 0.0.0-probe (2026-11-18 13:36 WIB, tree of commit ac279cfc979ccd9fc18bde8892d74d49ebd2dc68)
+npm notice filename: shyden-labs-playwright-devices-0.0.0-probe.tgz
+npm notice total files: 14
+shyden-labs-playwright-devices-0.0.0-probe.tgz
+# in a fresh consumer (allowScripts {fsevents:false}, .npmrc engine-strict=true)
+$ npm install --no-audit --no-fund @playwright/test@1.65.1 <the .tgz>
+
+added 4 packages in 854ms
+exit=0
+$ npm ci --no-audit --no-fund
+
+added 4 packages in 273ms
+exit=0
+$ npx one-suite
+one-suite: usage: one-suite --group <name>=<target>,... --list <file>[=<target>] --report <file>[=<target>] [--assertions <file>]
+exit=1
+
+# 11. publish.yml's tag check, run locally with bash (2026-11-18 13:39 WIB)
+TAG=v0.1.0:
+exit=0
+TAG=v0.2.0:
+::error::The release tag is 'v0.2.0' but the package version is '0.1.0'; tag the release v0.1.0.
+exit=1
+TAG=0.1.0:
+::error::The release tag is '0.1.0' but the package version is '0.1.0'; tag the release v0.1.0.
+exit=1

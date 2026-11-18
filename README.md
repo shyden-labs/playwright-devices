@@ -18,6 +18,7 @@ in place from day one (shyden-labs/repo-template#149).
 | `docker/node/Dockerfile` | CI's one exact Node version (`FROM node:<major>.<minor>.<patch>`, then `USER node` so it never runs as root), bumped by Dependabot as a pull request of its own (shyden-labs/repo-template#143). |
 | `scripts/npm-ci.ts` | Every workflow installs through it: `npm ci` that fails on any warning npm prints, naming each line (shyden-labs/repo-template#140). |
 | `.github/workflows/sonarcloud.yml`, `scripts/sonar-verdict.ts`, `docs/sonarcloud.md` | A reusable SonarCloud scan whose quality gate blocks the pull request. |
+| `.github/workflows/publish.yml` | Publishes the package to npm when a release is published, through npm trusted publishing (no stored token), after Shyden approves the `npm` environment (shyden-labs/playwright-devices#16). |
 | `.github/workflows/check-release-cut.yml`, `scripts/release-cut.ts`, `docs/release-cut.md` | Proves each pull request into `main` lands exactly a release cut CI tested. |
 | `scripts/branch-rules-setup.ts` | Sets the `develop` (squash only) and `main` (merge commit only) rulesets, head-branch deletion, rebase merging off and opens the `dev` environment to every branch (any branch may deploy to dev), and reads each back. |
 | `scripts/board-*.ts`, `scripts/file-story.ts`, `.github/ISSUE_TEMPLATE/story.yml`, `docs/project-board.md` | The project board: filing stories, Estimate and Priority fields, the next ticket, progress, and orphaned In Progress tickets. |
@@ -47,18 +48,17 @@ export default defineConfig({
 
 ## Installing it in a project
 
-The one-suite checks (shyden-labs/playwright-devices#16) and the desktop browsers install as a git dependency; `prepare` compiles them to JavaScript on install, so no registry is involved.
+The one-suite checks (shyden-labs/playwright-devices#16) and the desktop browsers are published to npm as `@shyden-labs/playwright-devices`, compiled to JavaScript with their types.
 
-1. In the project's `package.json`, add the dependency and approve its install script. npm matches a git dependency's approval by its git source, not its package name (measured in `research/package/install-as-git-dependency-2026-11-18.txt`):
-
-   ```json
-   "devDependencies": { "@shyden-labs/playwright-devices": "github:shyden-labs/playwright-devices#<tag or commit>" },
-   "allowScripts": { "github:shyden-labs/playwright-devices": true }
-   ```
-
+1. `npm install --save-dev --save-exact @shyden-labs/playwright-devices`. It needs `@playwright/test` 1.65.1 or later in the project, and runs no install script.
 2. Count each test's assertions per target with the reporter, next to the JSON reporter: `reporter: [['json'], ['@shyden-labs/playwright-devices/assertion-counter', { outputFile: '<target>-assertions.json', unnamedTarget: '<target>' }]]` (`unnamedTarget` names a run whose project has no name, such as a device run).
 3. Check the runs: `npx one-suite --group phones=<targets> --group desktop=<targets> --list <list.json>[=<target>] --report <report.json>[=<target>] --assertions <assertions.json>`. It prints one total per target and every problem, and exits 1 on any problem.
 4. In code: `import { checkOneSuite, testsByTarget } from '@shyden-labs/playwright-devices'`, and `desktopProjects` and `desktopGroup` from `@shyden-labs/playwright-devices/desktop`.
+
+### Publishing a version
+
+1. Raise `version` in `package.json` on a branch, and merge it through `develop` and a release cut into `main`.
+2. Publish a GitHub release on `main` tagged `v<version>`. `.github/workflows/publish.yml` checks the tag matches, builds, and publishes to npm once Shyden approves the `npm` environment. It uses npm trusted publishing, so no npm token is stored, and npm attaches provenance.
 
 ## The rules
 
