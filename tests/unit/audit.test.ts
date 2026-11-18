@@ -1,6 +1,6 @@
 import { spawnSync, type SpawnSyncReturns } from 'node:child_process';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { auditProblems, EXCEPTIONS, main, type AuditException } from '../../scripts/audit.ts';
+import { auditProblems, check, EXCEPTIONS, main, type AuditException } from '../../scripts/audit.ts';
 
 vi.mock('node:child_process', () => ({ spawnSync: vi.fn() }));
 const spawn = vi.mocked(spawnSync);
@@ -105,6 +105,17 @@ describe('main', () => {
       'audit: GHSA-3g3m-2fjr-6pw4 (Glob: AbortSignal cancellation bypass) in glob has no exception: fix it',
     ]);
     error.mockRestore();
+    log.mockRestore();
+  });
+
+  it('passes an advisory with an exception it is given, printing the exception', () => {
+    vi.useFakeTimers({ now: new Date('2026-11-18T10:00:00Z') });
+    npmGives(report(picomatch));
+    const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
+    expect(check([exception])).toBe(0);
+    expect(log).toHaveBeenCalledExactlyOnceWith(
+      'audit: GHSA-fc5q-39xc-vjpf excepted until 2026-12-01 (shyden-labs/playwright-devices#22): no patched picomatch release',
+    );
     log.mockRestore();
   });
 
