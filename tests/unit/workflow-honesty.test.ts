@@ -73,7 +73,7 @@ describe('sonarcloud.yml', () => {
   // Issue shyden-labs/repo-template#164: without these, the scanner judged tests/ and the config files as
   // uncovered source, failing the coverage gate of a fully covered pull request. This project runs SonarCloud's
   // new analysis scope, which ignores sonar.tests with a warning, so tests stay out by exclusion alone
-  // (shyden-labs/playwright-devices#13).
+  // (shyden-labs/playwright-devices#13). The e2e specs are tests too (shyden-labs/playwright-devices#17).
   it('keeps tests out of the scan and judges coverage only on what the unit suite measures', () => {
     const text = read('sonarcloud.yml');
     expect({
@@ -81,7 +81,7 @@ describe('sonarcloud.yml', () => {
       block: text.includes(
         [
           '            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info',
-          '            -Dsonar.exclusions=tests/**',
+          '            -Dsonar.exclusions=tests/**,e2e/**',
           '            -Dsonar.coverage.exclusions=eslint.config.js,vitest.unit.config.ts',
         ].join('\n'),
       ),
