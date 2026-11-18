@@ -2,13 +2,13 @@
   "config": {
     "argv": [
       "/Users/shyden/.local/share/node/v26.13.0/bin/node",
-      "/Users/shyden/Developer/Repos/playwright-devices/node_modules/.bin/playwright",
+      "/Users/shyden/Developer/Repos/playwright-devices-27/node_modules/.bin/playwright",
       "test",
       "-c",
       "playwright.devices.config.ts"
     ],
-    "configFile": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/playwright.devices.config.ts",
-    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
     "failOnFlakyTests": false,
     "forbidOnly": false,
     "fullyParallel": false,
@@ -24,7 +24,7 @@
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output",
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/evidence/ios-webkit-output",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -32,7 +32,7 @@
         },
         "id": "",
         "name": "",
-        "testDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
         "testIgnore": [],
         "testMatch": [
           "journey.spec.ts"
@@ -44,15 +44,15 @@
       {
         "grep": {},
         "grepInvert": null,
-        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output",
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/evidence/ios-webkit-output",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
           "actualWorkers": 1
         },
         "name": "",
-        "testDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
-        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
         "testIgnore": [],
         "testMatch": "journey.spec.ts",
         "timeout": 60000,
@@ -103,7 +103,7 @@
       "specs": [
         {
           "title": "a page is read, tapped, typed into and scrolled by real input",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -116,57 +116,24 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "timedOut",
-                  "duration": 76336,
-                  "error": {
-                    "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
-                    "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
-                  },
-                  "errors": [
-                    {
-                      "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
-                    }
-                  ],
+                  "status": "passed",
+                  "duration": 32877,
+                  "errors": [],
                   "stdout": [],
                   "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T21:04:34.356Z",
+                  "startTime": "2026-11-18T18:04:43.289Z",
                   "annotations": [],
                   "attachments": [
                     {
-                      "name": "screen when \"Cancel\" was not found",
-                      "contentType": "text/plain",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Cancel-was-not-found-46fc351ecdc4863223f106255e5dd9629073c340.txt"
-                    },
-                    {
-                      "name": "screen when \"Done\" was not found",
-                      "contentType": "text/plain",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Done-was-not-found-579a389059c8607312a43d0800f264ed75cf70fa.txt"
-                    },
-                    {
-                      "name": "screen when \"Cancel\" was not found",
-                      "contentType": "text/plain",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Cancel-was-not-found-46fc351ecdc4863223f106255e5dd9629073c340.txt"
-                    },
-                    {
-                      "name": "screen when \"Done\" was not found",
-                      "contentType": "text/plain",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Done-was-not-found-579a389059c8607312a43d0800f264ed75cf70fa.txt"
-                    },
-                    {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md"
-                    },
-                    {
                       "name": "trace",
                       "contentType": "application/zip",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip"
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip"
                     }
                   ]
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
@@ -179,11 +146,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-17T21:04:31.043Z",
-    "duration": 80290.917,
-    "expected": 0,
+    "startTime": "2026-11-18T18:04:42.726Z",
+    "duration": 33486.317,
+    "expected": 1,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }

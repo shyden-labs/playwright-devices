@@ -2,13 +2,13 @@
   "config": {
     "argv": [
       "/Users/shyden/.local/share/node/v26.13.0/bin/node",
-      "/Users/shyden/Developer/Repos/playwright-devices/node_modules/.bin/playwright",
+      "/Users/shyden/Developer/Repos/playwright-devices-27/node_modules/.bin/playwright",
       "test",
       "-c",
-      "/Users/shyden/Developer/Repos/playwright-devices/research/devices/playwright.devices.config.ts"
+      "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/playwright.devices.config.ts"
     ],
-    "configFile": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/playwright.devices.config.ts",
-    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
     "failOnFlakyTests": false,
     "forbidOnly": false,
     "fullyParallel": false,
@@ -24,7 +24,7 @@
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-cdp-output",
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/evidence/android-cdp-output",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -32,7 +32,7 @@
         },
         "id": "",
         "name": "",
-        "testDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
         "testIgnore": [],
         "testMatch": [
           "journey.spec.ts"
@@ -44,15 +44,15 @@
       {
         "grep": {},
         "grepInvert": null,
-        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-cdp-output",
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/evidence/android-cdp-output",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
           "actualWorkers": 1
         },
         "name": "",
-        "testDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
-        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
         "testIgnore": [],
         "testMatch": "journey.spec.ts",
         "timeout": 60000,
@@ -103,7 +103,7 @@
       "specs": [
         {
           "title": "a page is read, tapped, typed into and scrolled by real input",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -116,53 +116,31 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "failed",
-                  "duration": 24410,
-                  "error": {
-                    "message": "Error: @chrome_devtools_remote did not open within 5000ms of a cold Chrome start",
-                    "stack": "Error: @chrome_devtools_remote did not open within 5000ms of a cold Chrome start\n    at launchChromeCold (/Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:143:13)\n    at Object.page (/Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:159:9)",
-                    "location": {
-                      "file": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts",
-                      "column": 13,
-                      "line": 143
-                    },
-                    "snippet": "\u001b[90m   at \u001b[39mdevice-fixture.ts:143\n\n \u001b[90m 141 |\u001b[39m   \u001b[36mwhile\u001b[39m (\u001b[33m!\u001b[39mdevToolsSocketOpen(serial)) {\n \u001b[90m 142 |\u001b[39m     \u001b[36mif\u001b[39m (\u001b[33mDate\u001b[39m\u001b[33m.\u001b[39mnow() \u001b[33m>\u001b[39m deadline) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 143 |\u001b[39m       \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\u001b[32m`${chromeSocket} did not open within ${String(socketCeilingMs)}ms of a cold Chrome start`\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m     |\u001b[39m             \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 144 |\u001b[39m     }\n \u001b[90m 145 |\u001b[39m     \u001b[36mawait\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mPromise\u001b[39m((resolve) \u001b[33m=>\u001b[39m setTimeout(resolve\u001b[33m,\u001b[39m \u001b[35m100\u001b[39m))\u001b[33m;\u001b[39m\n \u001b[90m 146 |\u001b[39m   }"
-                  },
-                  "errors": [
+                  "status": "passed",
+                  "duration": 15043,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
                     {
-                      "location": {
-                        "file": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts",
-                        "column": 13,
-                        "line": 143
-                      },
-                      "message": "Error: @chrome_devtools_remote did not open within 5000ms of a cold Chrome start\n\n   at device-fixture.ts:143\n\n  141 |   while (!devToolsSocketOpen(serial)) {\n  142 |     if (Date.now() > deadline) {\n> 143 |       throw new Error(`${chromeSocket} did not open within ${String(socketCeilingMs)}ms of a cold Chrome start`);\n      |             ^\n  144 |     }\n  145 |     await new Promise((resolve) => setTimeout(resolve, 100));\n  146 |   }\n    at launchChromeCold (/Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:143:13)\n    at Object.page (/Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:159:9)"
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.2 MB/s (179 bytes in 0.001s)\n"
+                    },
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.2 MB/s (91 bytes in 0.000s)\n"
                     }
                   ],
-                  "stdout": [],
-                  "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T21:06:46.782Z",
+                  "startTime": "2026-11-18T18:05:17.447Z",
                   "annotations": [],
                   "attachments": [
                     {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-cdp-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md"
-                    },
-                    {
                       "name": "trace",
                       "contentType": "application/zip",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-cdp-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip"
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/evidence/android-cdp-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip"
                     }
-                  ],
-                  "errorLocation": {
-                    "file": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts",
-                    "column": 13,
-                    "line": 143
-                  }
+                  ]
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
@@ -175,11 +153,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-17T21:06:45.388Z",
-    "duration": 26370.18,
-    "expected": 0,
+    "startTime": "2026-11-18T18:05:16.845Z",
+    "duration": 15697.076,
+    "expected": 1,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }

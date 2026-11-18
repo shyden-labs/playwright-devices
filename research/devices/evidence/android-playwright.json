@@ -2,13 +2,13 @@
   "config": {
     "argv": [
       "/Users/shyden/.local/share/node/v26.13.0/bin/node",
-      "/Users/shyden/Developer/Repos/playwright-devices/node_modules/.bin/playwright",
+      "/Users/shyden/Developer/Repos/playwright-devices-27/node_modules/.bin/playwright",
       "test",
       "-c",
-      "/Users/shyden/Developer/Repos/playwright-devices/research/devices/playwright.devices.config.ts"
+      "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/playwright.devices.config.ts"
     ],
-    "configFile": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/playwright.devices.config.ts",
-    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
     "failOnFlakyTests": false,
     "forbidOnly": false,
     "fullyParallel": false,
@@ -24,7 +24,7 @@
     "preserveOutput": "always",
     "projects": [
       {
-        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output",
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/evidence/android-playwright-output",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
@@ -32,7 +32,7 @@
         },
         "id": "",
         "name": "",
-        "testDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
         "testIgnore": [],
         "testMatch": [
           "journey.spec.ts"
@@ -44,15 +44,15 @@
       {
         "grep": {},
         "grepInvert": null,
-        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output",
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/evidence/android-playwright-output",
         "repeatEach": 1,
         "retries": 0,
         "metadata": {
           "actualWorkers": 1
         },
         "name": "",
-        "testDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
-        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices",
         "testIgnore": [],
         "testMatch": "journey.spec.ts",
         "timeout": 60000,
@@ -103,7 +103,7 @@
       "specs": [
         {
           "title": "a page is read, tapped, typed into and scrolled by real input",
-          "ok": false,
+          "ok": true,
           "tags": [],
           "tests": [
             {
@@ -116,37 +116,31 @@
                 {
                   "workerIndex": 0,
                   "parallelIndex": 0,
-                  "status": "timedOut",
-                  "duration": 60079,
-                  "error": {
-                    "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"page\".\u001b[39m",
-                    "stack": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"page\".\u001b[39m"
-                  },
-                  "errors": [
+                  "status": "passed",
+                  "duration": 14362,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
                     {
-                      "message": "\u001b[31mTest timeout of 60000ms exceeded while setting up \"page\".\u001b[39m"
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/fixtures/device-journey.png: 1 file pushed, 0 skipped. 0.1 MB/s (179 bytes in 0.001s)\n"
+                    },
+                    {
+                      "text": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/fixtures/device-journey.txt: 1 file pushed, 0 skipped. 0.1 MB/s (91 bytes in 0.001s)\n"
                     }
                   ],
-                  "stdout": [],
-                  "stderr": [],
                   "retry": 0,
-                  "startTime": "2026-11-17T21:07:16.332Z",
+                  "startTime": "2026-11-18T18:05:33.785Z",
                   "annotations": [],
                   "attachments": [
                     {
-                      "name": "error-context",
-                      "contentType": "text/markdown",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md"
-                    },
-                    {
                       "name": "trace",
                       "contentType": "application/zip",
-                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip"
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices-27/research/devices/evidence/android-playwright-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip"
                     }
                   ]
                 }
               ],
-              "status": "unexpected"
+              "status": "expected"
             }
           ],
           "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
@@ -159,11 +153,11 @@
   ],
   "errors": [],
   "stats": {
-    "startTime": "2026-11-17T21:07:14.691Z",
-    "duration": 62477.722,
-    "expected": 0,
+    "startTime": "2026-11-18T18:05:33.203Z",
+    "duration": 14980.911,
+    "expected": 1,
     "skipped": 0,
-    "unexpected": 1,
+    "unexpected": 0,
     "flaky": 0
   }
 }
