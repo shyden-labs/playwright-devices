@@ -1,4 +1,4 @@
-# 2026-11-18 06:26:27 WIB branch 27-iphone-state, 885e03e + uncommitted fixture/script change; command: zsh research/devices/run-ios-journey.zsh
-<iPhone name>  00008150-000954D90A20401C (UDID)              connected (no DDI)   iPhone Air (iPhone18,4)            physical 
+# zsh research/devices/run-ios-journey.zsh, iPhone Air 00008150-000954D90A20401C, devicectl list: connected (no DDI)
+# started 2026-11-18 07:42:02 WIB
 the iPhone 00008150-000954D90A20401C has no developer disk image mounted (devicectl: ddiServicesAvailable false), so devicectl calls hang: unlock the phone and open Xcode's Devices and Simulators window until it shows the phone ready, then run again
-exit=1 after 0 s
+# exit 1 after 1 s, ended 07:42:03 WIB
