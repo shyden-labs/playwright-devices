@@ -37,9 +37,10 @@ jobs:
           node-version: ${{ steps.node.outputs.version }}
           cache: 'npm'
       - run: node scripts/npm-ci.ts
-      # Any known vulnerability, of any severity and dev dependencies included, fails the build (shyden-labs/repo-template#156).
+      # Any known vulnerability, of any severity and dev dependencies included, fails the build (shyden-labs/repo-template#156),
+      # except an advisory with a dated exception in scripts/audit.ts (shyden-labs/playwright-devices#22).
       - name: Audit
-        run: npm audit --audit-level=low
+        run: node scripts/audit.ts
       # The static checks (issue shyden-labs/repo-template#61); .githooks/pre-push runs the same three before every push.
       - name: Typecheck
         run: npm run typecheck
@@ -48,6 +49,48 @@ jobs:
       - name: Format
         run: npm run format:check
       - run: npm run test:unit
+
+  # The shared desktop-browser setup run as a project would import it (shyden-labs/playwright-devices#17):
+  # the README's sample config on every desktop browser, then the one-suite checks over the run
+  # (shyden-labs/playwright-devices#16), equal totals printed per browser.
+  desktop-e2e:
+    runs-on: ubuntu-26.04
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # The exact Node, from the one file Dependabot bumps (shyden-labs/repo-template#143).
+      - id: node
+        run: |
+          version=$(sed -nE 's/^FROM node:([0-9]+\.[0-9]+\.[0-9]+)$/\1/p' docker/node/Dockerfile)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+          cache: 'npm'
+      - run: node scripts/npm-ci.ts
+      # AC 5: a browser that cannot start fails the run, naming it and why. Firefox is pointed at an
+      # empty browser folder, so its launch fails; the run must fail and say which browser and why.
+      - name: A browser that cannot start fails the run, naming it
+        run: |
+          set +e
+          PLAYWRIGHT_BROWSERS_PATH="$RUNNER_TEMP/no-browsers" node_modules/.bin/playwright test -c playwright.desktop.config.ts --project=firefox --reporter=list > "$RUNNER_TEMP/no-firefox.txt" 2>&1
+          status=$?
+          set -e
+          cat "$RUNNER_TEMP/no-firefox.txt"
+          test "$status" -ne 0
+          grep -q "Executable doesn't exist at $RUNNER_TEMP/no-browsers/firefox" "$RUNNER_TEMP/no-firefox.txt"
+          grep -q '\[firefox\]' "$RUNNER_TEMP/no-firefox.txt"
+      - name: Install the desktop browsers
+        run: node_modules/.bin/playwright install --with-deps chromium chrome firefox webkit msedge
+      - name: Run the sample config on every desktop browser
+        run: node_modules/.bin/playwright test -c playwright.desktop.config.ts
+      - name: List the tests each desktop browser should run
+        run: node_modules/.bin/playwright test -c playwright.desktop.config.ts --list --reporter=json > test-results/desktop-list.json
+      - name: One-suite checks over the desktop group
+        run: >-
+          node src/one-suite/cli.ts --group desktop=chromium,chrome,firefox,webkit,msedge
+          --list test-results/desktop-list.json --report test-results/desktop-report.json
+          --assertions test-results/desktop-assertions.json
 
   # Coverage runs apart from the 1 s unit step: one overall threshold over the
   # TypeScript under scripts/ (vitest.unit.config.ts, shyden-labs/repo-template#149).

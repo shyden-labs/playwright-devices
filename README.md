@@ -1,13 +1,19 @@
-# Shyden Labs repo template
+# Playwright Devices
 
-A starter kit: a new Shyden Labs repository starts with CI and repository
-settings already in place, and nothing it doesn't need on day one (shyden-labs/repo-template#149).
+Research into running one unchanged Playwright test on real phones, their simulators and
+emulators, and desktop browsers, with real input.
+
+**Progress:** [Playwright Devices progress page](https://claude.ai/artifact/A7uCrNS5QTmstQ3SCGU2ES),
+updated at the end of every work session.
+
+This repository started from the Shyden Labs repo template: CI and repository settings were
+in place from day one (shyden-labs/repo-template#149).
 
 ## What is here
 
 | File | What it does |
 | --- | --- |
-| `.github/workflows/ci.yml` | On every pull request and every push to `develop`: install, `npm audit` (any known vulnerability fails), typecheck, lint, format check and unit tests (`build-and-test`), then coverage as one overall threshold over the TypeScript under `scripts/` (`coverage`). Its first step fails unless the default branch is `develop`. |
+| `.github/workflows/ci.yml` | On every pull request and every push to `develop`: install, `node scripts/audit.ts` (`npm audit`: any known vulnerability fails, except one with a dated exception in that script), typecheck, lint, format check and unit tests (`build-and-test`), then coverage as one overall threshold over the TypeScript under `scripts/` (`coverage`). Its first step fails unless the default branch is `develop`. |
 | `.github/dependabot.yml` | Version updates for npm, GitHub Actions and the Node pin, each targeting `develop`. |
 | `docker/node/Dockerfile` | CI's one exact Node version (`FROM node:<major>.<minor>.<patch>`, then `USER node` so it never runs as root), bumped by Dependabot as a pull request of its own (shyden-labs/repo-template#143). |
 | `scripts/npm-ci.ts` | Every workflow installs through it: `npm ci` that fails on any warning npm prints, naming each line (shyden-labs/repo-template#140). |
@@ -20,6 +26,24 @@ settings already in place, and nothing it doesn't need on day one (shyden-labs/r
 | `tsconfig.json`, `eslint.config.js`, `.prettierrc.json`, `.githooks/pre-push`, `docs/static-checks.md` | Strict typecheck, lint and format, in CI and before every push. |
 | `package.json` `overrides` | `minimatch` held at 11.0.3, past its ReDoS advisory GHSA-g3hv-75wg-m249, until eslint and typescript-eslint accept minimatch 11 themselves; then remove it (shyden-labs/repo-template#154). |
 | `LICENSE`, `NOTICE` | Apache-2.0, the ASF's text verbatim in `LICENSE`; the copyright line in `NOTICE`, as the ASF advises (shyden-labs/repo-template#147). |
+
+## Desktop browsers
+
+`src/desktop/browsers.ts` gives every project the same desktop browsers as Playwright projects (shyden-labs/playwright-devices#17): `chromium`, `chrome` (Google Chrome, the `chrome` channel), `firefox`, `webkit` and `msedge` (Microsoft Edge, the `msedge` channel). Each is a real desktop browser: no phone emulation, no touch. A project imports it into its `playwright.config.ts`:
+
+```ts
+import { defineConfig } from '@playwright/test';
+import { desktopProjects } from './src/desktop/browsers.ts';
+
+export default defineConfig({
+  forbidOnly: true,
+  retries: 0,
+  reporter: [['list'], ['json', { outputFile: 'test-results/desktop-report.json' }]],
+  projects: desktopProjects(), // or a declared few, e.g. desktopProjects(['chromium', 'chrome', 'msedge'])
+});
+```
+
+`playwright.desktop.config.ts` is this sample, run by CI's `desktop-e2e` job on all five browsers. The same names form the desktop group of the one-suite checks: `desktopGroup()` (or `desktopGroup(['chromium', 'chrome', 'msedge'])` for a declared few) is the `groups` value `checkOneSuite` takes, and on the CLI it is `--group desktop=chromium,chrome,firefox,webkit,msedge`. An unknown or repeated browser name is refused, naming it. A browser that cannot start fails the run, naming it and why (Playwright's launch error), and is never dropped from the group: the checks report it as having run no tests. Install the browsers with `npx playwright install --with-deps chromium chrome firefox webkit msedge`. How other projects install this package is still to be decided (shyden-labs/playwright-devices#16); until then the import path is this repository's.
 
 ## The rules
 
