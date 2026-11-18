@@ -1,0 +1,25 @@
+# shyden-labs/playwright-devices#31: npm publish --dry-run on a clean build of branch 31-bin-path
+# 2026-11-19 00:36:41 WIB, npm 11.20.0, node v26.13.0, HEAD 78ef6243f07d5aa08505cff922bc3fa5216eee1a
+# bin in package.json: {"one-suite":"dist/src/one-suite/cli.js"}
+> tsc -p tsconfig.build.json
+
+
+> @shyden-labs/playwright-devices@0.1.0 prepare
+> git config core.hooksPath .githooks
+
+npm notice
+npm notice 📦  @shyden-labs/playwright-devices@0.1.0
+npm notice Tarball Contents
+npm notice Tarball Details
+npm notice name: @shyden-labs/playwright-devices
+npm notice version: 0.1.0
+npm notice filename: shyden-labs-playwright-devices-0.1.0.tgz
+npm notice package size: 14.2 kB
+npm notice unpacked size: 42.1 kB
+npm notice shasum: 82b488590f3ee53c352a9b4b0a4f9ac5f63079d5
+npm notice integrity: sha512-4Fi8BW97kA5gY[...]RoPEULR6O1BIA==
+npm notice total files: 14
+npm notice
+npm notice Publishing to https://registry.npmjs.org/ with tag latest and public access (dry-run)
++ @shyden-labs/playwright-devices@0.1.0
+# lines matching 'invalid and removed': 0
