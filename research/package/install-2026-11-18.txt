@@ -1,0 +1,168 @@
+# A. Before the fix: from GitHub on commit bcf2ef3deefc11162d41554942fa78507187097c, prepare ran 'git config' in npm's unpacked tarball, which has no .git
+
+# 6. from GitHub, as a project will: allowScripts {"github:shyden-labs/playwright-devices": true}, the README's key (2026-11-18 12:46 WIB)
+$ npm install --no-audit --no-fund @playwright/test@1.65.1 github:shyden-labs/playwright-devices#bcf2ef3deefc11162d41554942fa78507187097c
+npm error code 128
+npm error git dep preparation failed
+npm error command /Users/shyden/.local/share/node/v26.13.0/bin/node /Users/shyden/.local/share/node/v26.13.0/lib/node_modules/npm/bin/npm-cli.js install --force --cache=/Users/shyden/.npm --prefer-offline=false --prefer-online=false --offline=false --no-progress --no-save --no-audit --include=dev --include=peer --include=optional --no-package-lock-only --no-dry-run
+npm error > prepare
+npm error > npm run build && git config core.hooksPath .githooks
+npm error
+npm error
+npm error > build
+npm error > tsc -p tsconfig.build.json
+npm error npm warn using --force Recommended protections disabled.
+npm error npm warn using --force Recommended protections disabled.
+npm error fatal: not in a git directory
+npm error npm error code 128
+npm error npm error path /Users/shyden/.npm/_cacache/tmp/git-cloneWdJMFh
+npm error npm error command failed
+npm error npm error command sh -c npm run build && git config core.hooksPath .githooks
+npm error npm error A complete log of this run can be found in: /Users/shyden/.npm/_logs/2026-11-18T05_46_49_805Z-debug-0.log
+npm error A complete log of this run can be found in: /Users/shyden/.npm/_logs/2026-11-18T05_46_47_241Z-debug-0.log
+install exit=128
+package.json dependency: 
+bfs: error: node_modules/@shyden-labs/playwright-devices/dist: No such file or directory.
+dist .js files: 0
+$ npx one-suite
+npm error code E404
+npm error 404 Not Found - GET https://registry.npmjs.org/one-suite - Not found
+npm error 404
+npm error 404  The requested resource 'one-suite@*' could not be found or you do not have permission to access it.
+npm error 404
+npm error 404 Note that you can also install from a
+npm error 404 tarball, folder, http url, or git url.
+npm error A complete log of this run can be found in: /Users/shyden/.npm/_logs/2026-11-18T05_46_53_758Z-debug-0.log
+exit=1
+
+# B. After the fix (prepare sets the hooks path only where .git exists)
+# shyden-labs/playwright-devices#16: this repo installed as a git dependency, measured 2026-11-18 12:48 WIB on commit 54696dd5e52ed094e4c8ab4a3513adee648ca068 (npm 11.20.0, node v26.13.0). Installed from GitHub (github:shyden-labs/playwright-devices#<commit>, as a project will); each consumer was a fresh git repo set up as Shyden's projects are (.npmrc engine-strict=true, allowScripts).
+
+# 1. allowScripts keyed by package name: npm still warns (it matches a git dependency by its git source: @npmcli/arborist lib/script-allowed.js matchGit)
+$ npm install --no-audit --no-fund @playwright/test@1.65.1 @types/node@26.6.6 github:shyden-labs/playwright-devices#54696dd5e52ed094e4c8ab4a3513adee648ca068
+npm warn skipping integrity check for git dependency ssh://git@github.com/shyden-labs/playwright-devices.git
+
+added 6 packages in 16s
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   @shyden-labs/playwright-devices (prepare: npm run build && if [ -e .git ]; then git config core.hooksPath .githooks; fi)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+install exit=0
+dist .js files: node_modules/@shyden-labs/playwright-devices/dist/scripts/cli.js node_modules/@shyden-labs/playwright-devices/dist/src/desktop/browsers.js node_modules/@shyden-labs/playwright-devices/dist/src/one-suite/assertion-counter.js node_modules/@shyden-labs/playwright-devices/dist/src/one-suite/check.js node_modules/@shyden-labs/playwright-devices/dist/src/one-suite/cli.js 
+consumer core.hooksPath after install: ''
+
+# 2. allowScripts keyed by the git source, github:shyden-labs/playwright-devices (the README form): no warning
+$ npm install --no-audit --no-fund @playwright/test@1.65.1 @types/node@26.6.6 github:shyden-labs/playwright-devices#54696dd5e52ed094e4c8ab4a3513adee648ca068
+npm warn skipping integrity check for git dependency ssh://git@github.com/shyden-labs/playwright-devices.git
+
+added 6 packages in 15s
+install exit=0
+dist .js files: node_modules/@shyden-labs/playwright-devices/dist/scripts/cli.js node_modules/@shyden-labs/playwright-devices/dist/src/desktop/browsers.js node_modules/@shyden-labs/playwright-devices/dist/src/one-suite/assertion-counter.js node_modules/@shyden-labs/playwright-devices/dist/src/one-suite/check.js node_modules/@shyden-labs/playwright-devices/dist/src/one-suite/cli.js 
+consumer core.hooksPath after install: ''
+
+# 3. in consumer 2: the installed bin, node_modules/.bin/one-suite -> ../@shyden-labs/playwright-devices/dist/src/one-suite/cli.js
+$ npx one-suite
+one-suite: usage: one-suite --group <name>=<target>,... --list <file>[=<target>] --report <file>[=<target>] [--assertions <file>]
+exit=1
+$ npx one-suite --group phones=android-cdp --list <fixture>=android-cdp --report <fixture>=android-cdp   (fixture: tests/fixtures/one-suite/android-playwright-report.json, a device run with one failed test)
+one-suite: android-cdp: 1 tests
+one-suite: android-cdp failed "journey.spec.ts › a page is read, tapped, typed into and scrolled by real input"
+exit=1
+
+# 4. in consumer 2: each export imported by node
+.: checkOneSuite,testsByTarget
+./assertion-counter default: AssertionCounter
+./desktop: DESKTOP_BROWSERS,desktopGroup,desktopProjects | desktopGroup(): {"desktop":["chromium","chrome","firefox","webkit","msedge"]} | desktopProjects() names: chromium,chrome,firefox,webkit,msedge
+exit=0
+
+# 5. in consumer 2: tsc --noEmit on use.ts, importing every export; one deliberate error expected (line 6)
+import { checkOneSuite, type OneSuiteResult } from '@shyden-labs/playwright-devices';
+import AssertionCounter from '@shyden-labs/playwright-devices/assertion-counter';
+import { desktopGroup, desktopProjects } from '@shyden-labs/playwright-devices/desktop';
+const r: OneSuiteResult = checkOneSuite({ listed: new Map(), ran: new Map(), groups: desktopGroup(), assertions: {} });
+export const projects = desktopProjects(['chromium']);
+const bad: number = r;
+export { AssertionCounter, bad };
+use.ts(6,7): error TS2322: Type 'OneSuiteResult' is not assignable to type 'number'.
+exit=2
+
+# Not measured here: Playwright loading the reporter by its package path (the laptop runs no playwright test; hooks/local-suites-unit-only). Node resolves the same path (4).
+
+# 6. in consumer 2: npm ci from the lockfile, as CI installs (2026-11-18 12:48 WIB)
+lockfile entry: {"resolved":"git+ssh://git@github.com/shyden-labs/playwright-devices.git#54696dd5e52ed094e4c8ab4a3513adee648ca068","integrity":"sha512-B39Dbj17CKnvlSXnademY37AbAMcGdrN58VOSqk3egHJlKSXgtspSFHKEWQS+pTUkUqdtLKAe35JkINSqzJ7Ig=="}
+$ npm ci --no-audit --no-fund
+npm warn skipping integrity check for git dependency ssh://git@github.com/shyden-labs/playwright-devices.git
+
+added 6 packages in 6s
+exit=0
+dist .js files: 5
+
+# C. The alternative, for comparison: a prebuilt npm pack tarball
+# 7. a prebuilt tarball instead (2026-11-18 12:49 WIB, commit 54696dd5e52ed094e4c8ab4a3513adee648ca068, version set to 0.0.0-probe for the pack only)
+$ npm pack --pack-destination <dir>
+npm notice Tarball Contents
+npm notice 11.4kB LICENSE
+npm notice 8.2kB README.md
+npm notice 211B dist/scripts/cli.d.ts
+npm notice 1.3kB dist/scripts/cli.js
+npm notice 1.1kB dist/src/desktop/browsers.d.ts
+npm notice 2.0kB dist/src/desktop/browsers.js
+npm notice 1.6kB package.json
+npm notice filename: shyden-labs-playwright-devices-0.0.0-probe.tgz
+npm notice total files: 13
+shyden-labs-playwright-devices-0.0.0-probe.tgz
+
+$ npm ci --no-audit --no-fund
+
+exit=1
+# 8. installing that tarball in a fresh consumer (allowScripts {fsevents:false}, .npmrc engine-strict=true)
+$ npm install --no-audit --no-fund @playwright/test@1.65.1 <the .tgz>
+
+added 4 packages in 556ms
+npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+npm warn install-scripts   @shyden-labs/playwright-devices@0.0.0-probe (prepare: npm run build && if [ -e .git ]; then git config core.hooksPath .githooks; fi)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+exit=0
+$ npm ci --no-audit --no-fund
+
+added 4 packages in 249ms
+exit=0
+lockfile entry: {"resolved":"file:../pack-WMDrPA/shyden-labs-playwright-devices-0.0.0-probe.tgz","integrity":true}
+$ npx one-suite
+one-suite: usage: one-suite --group <name>=<target>,... --list <file>[=<target>] --report <file>[=<target>] [--assertions <file>]
+exit=1
+
+# 9. NOTICE in the shipped files, commit 0850eb3de2a6e3da8c9226f310191a0101b2d73d (2026-11-18 12:50 WIB, version 0.0.0-probe for the pack only)
+$ npm pack --dry-run
+npm notice 11.4kB LICENSE
+npm notice 105B NOTICE
+npm notice total files: 14
+
+# D. Shyden's choice after A-C (2026-11-18): publish to npmjs.com with trusted publishing. A pack built as .github/workflows/publish.yml builds it:
+# 10. a pack made as the publish workflow would: npm run build, npm pkg delete scripts.prepare, version 0.0.0-probe (2026-11-18 13:36 WIB, tree of commit ac279cfc979ccd9fc18bde8892d74d49ebd2dc68)
+npm notice filename: shyden-labs-playwright-devices-0.0.0-probe.tgz
+npm notice total files: 14
+shyden-labs-playwright-devices-0.0.0-probe.tgz
+# in a fresh consumer (allowScripts {fsevents:false}, .npmrc engine-strict=true)
+$ npm install --no-audit --no-fund @playwright/test@1.65.1 <the .tgz>
+
+added 4 packages in 854ms
+exit=0
+$ npm ci --no-audit --no-fund
+
+added 4 packages in 273ms
+exit=0
+$ npx one-suite
+one-suite: usage: one-suite --group <name>=<target>,... --list <file>[=<target>] --report <file>[=<target>] [--assertions <file>]
+exit=1
+
+# 11. publish.yml's tag check, run locally with bash (2026-11-18 13:39 WIB)
+TAG=v0.1.0:
+exit=0
+TAG=v0.2.0:
+::error::The release tag is 'v0.2.0' but the package version is '0.1.0'; tag the release v0.1.0.
+exit=1
+TAG=0.1.0:
+::error::The release tag is '0.1.0' but the package version is '0.1.0'; tag the release v0.1.0.
+exit=1

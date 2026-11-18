@@ -71,6 +71,7 @@ describe('eslint.config.js', () => {
   it('leaves out only generated folders', () => {
     expect(config.flatMap((c) => (Object.keys(c).length === 1 ? (c.ignores ?? []) : []))).toEqual([
       'coverage/',
+      'dist/',
       'node_modules/',
       'test-results/',
     ]);

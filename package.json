@@ -1,7 +1,37 @@
 {
-  "name": "repo-template",
-  "private": true,
+  "name": "@shyden-labs/playwright-devices",
+  "version": "0.1.0",
+  "description": "Shared Playwright checks that one test suite ran unchanged on every phone, tablet and desktop browser, and the shared desktop browser projects.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shyden-labs/playwright-devices.git"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/src/one-suite/check.d.ts",
+      "default": "./dist/src/one-suite/check.js"
+    },
+    "./assertion-counter": {
+      "types": "./dist/src/one-suite/assertion-counter.d.ts",
+      "default": "./dist/src/one-suite/assertion-counter.js"
+    },
+    "./desktop": {
+      "types": "./dist/src/desktop/browsers.d.ts",
+      "default": "./dist/src/desktop/browsers.js"
+    }
+  },
+  "bin": {
+    "one-suite": "./dist/src/one-suite/cli.js"
+  },
+  "files": [
+    "dist/",
+    "NOTICE"
+  ],
   "engines": {
     "node": "^24.16.0 || >=26.3.0"
   },
@@ -12,7 +42,11 @@
     "lint": "eslint --max-warnings 0 .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "git config core.hooksPath .githooks"
+    "prepare": "git config core.hooksPath .githooks",
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.65.1"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

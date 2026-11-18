@@ -1,0 +1,15 @@
+{
+  "//": "Compiles the one-suite checks and the desktop browsers to JavaScript for projects that install this repo as a git dependency; `prepare` runs it on install (shyden-labs/playwright-devices#16). Everything else runs as TypeScript and is checked by tsconfig.json.",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "allowJs": false,
+    "checkJs": false,
+    "rewriteRelativeImportExtensions": true,
+    "declaration": true,
+    "rootDir": ".",
+    "outDir": "dist"
+  },
+  "include": ["src/one-suite/*.ts", "src/desktop/*.ts"],
+  "exclude": []
+}

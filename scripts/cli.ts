@@ -9,6 +9,7 @@
  * The call is awaited at the top of the module, so an error thrown by `main`
  * rejects the module and node prints it and exits 1.
  */
+import { existsSync, realpathSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 export interface Proc {
@@ -22,7 +23,11 @@ export async function runIfEntry(
   proc: Proc = process,
 ): Promise<void> {
   const program = proc.argv[1];
-  if (program === undefined || moduleUrl !== pathToFileURL(program).href) return;
+  if (program === undefined) return;
+  // An installed bin starts through a symlink (node_modules/.bin/<name>): node gives the link as
+  // argv[1] but the real file as import.meta.url, so the link is resolved before comparing.
+  const started = existsSync(program) ? realpathSync(program) : program;
+  if (moduleUrl !== pathToFileURL(started).href) return;
   // An async main (one that reads over HTTP) is waited for; its rejection is left to node, which prints it and exits 1.
   proc.exit(await main(proc.argv.slice(2)));
 }
