@@ -1,0 +1,22 @@
+# 2026-11-19 03:09:15 WIB, OnePlus CPH2653 3b402284, Chrome versionName=157.0.8103.50
+run 1: socket 645 ms, first request at socket: answered, first answer 674 ms
+run 2: socket 440 ms, first request at socket: answered, first answer 461 ms
+run 3: socket 597 ms, first request at socket: answered, first answer 618 ms
+run 4: socket 430 ms, first request at socket: answered, first answer 456 ms
+run 5: socket 420 ms, first request at socket: answered, first answer 453 ms
+run 6: socket 452 ms, first request at socket: answered, first answer 473 ms
+run 7: socket 421 ms, first request at socket: answered, first answer 453 ms
+run 8: socket 435 ms, first request at socket: answered, first answer 456 ms
+run 9: socket 441 ms, first request at socket: answered, first answer 470 ms
+run 10: socket 544 ms, first request at socket: answered, first answer 623 ms
+run 11: socket 517 ms, first request at socket: answered, first answer 557 ms
+run 12: socket 386 ms, first request at socket: answered, first answer 443 ms
+run 13: socket 522 ms, first request at socket: answered, first answer 591 ms
+run 14: socket 472 ms, first request at socket: answered, first answer 516 ms
+run 15: socket 439 ms, first request at socket: answered, first answer 483 ms
+run 16: socket 478 ms, first request at socket: answered, first answer 580 ms
+run 17: socket 494 ms, first request at socket: answered, first answer 537 ms
+run 18: socket 496 ms, first request at socket: answered, first answer 541 ms
+run 19: socket 491 ms, first request at socket: answered, first answer 543 ms
+run 20: socket 524 ms, first request at socket: answered, first answer 573 ms
+summary: 20 runs, first request at socket refused in 0
