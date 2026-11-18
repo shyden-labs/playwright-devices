@@ -5,7 +5,7 @@
  * forward or tab (ShyTalk's report on shyden-labs/playwright-devices#7).
  */
 import { execFileSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { _android, chromium, test as base, type Page, webkit } from '@playwright/test';
 import { centreOfText, firstByDescription } from './android-native.ts';
 import { wrapPageForWda } from './ios-wda-page.ts';
@@ -317,26 +317,36 @@ export const test = base.extend<DeviceFixtures>({
       // Files picker, which reopens wherever it was last, so Browse and On My iPhone lead to the
       // runner's folder from any start. The file shows without its extension.
       await use(async (name) => {
-        execFileSync(
-          'xcrun',
-          [
-            'devicectl',
-            'device',
-            'copy',
-            'to',
-            '--device',
-            udid,
-            '--domain-type',
-            'appDataContainer',
-            '--domain-identifier',
-            wdaRunnerBundle,
-            '--source',
-            source(name),
-            '--destination',
-            `Documents/${name}`,
-          ],
-          { stdio: 'ignore' },
-        );
+        if (process.env.IOS_SIMULATOR === '1') {
+          // devicectl copies only to physical devices ("Command failed: xcrun devicectl device copy
+          // to", measured 2026-11-18 on the iPhone 18 Pro simulator), so the file goes straight into
+          // the runner's data container on the Mac's disk.
+          const container = execFileSync('xcrun', ['simctl', 'get_app_container', udid, wdaRunnerBundle, 'data'], {
+            encoding: 'utf8',
+          }).trim();
+          mkdirSync(`${container}/Documents`, { recursive: true });
+          copyFileSync(source(name), `${container}/Documents/${name}`);
+        } else
+          execFileSync(
+            'xcrun',
+            [
+              'devicectl',
+              'device',
+              'copy',
+              'to',
+              '--device',
+              udid,
+              '--domain-type',
+              'appDataContainer',
+              '--domain-identifier',
+              wdaRunnerBundle,
+              '--source',
+              source(name),
+              '--destination',
+              `Documents/${name}`,
+            ],
+            { stdio: 'ignore' },
+          );
         for (const label of ['Choose File', 'Browse', 'On My iPhone', wdaRunnerFolder, name.replace(/\.[^.]+$/, '')])
           await nativeChoose(label);
       });
