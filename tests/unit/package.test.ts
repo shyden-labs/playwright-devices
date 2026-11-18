@@ -29,8 +29,13 @@ describe('package.json', () => {
     });
   });
 
-  it('installs the one-suite command from dist', () => {
-    expect(pkg['bin']).toEqual({ 'one-suite': './dist/src/one-suite/cli.js' });
+  it('installs the one-suite command from dist, with a path npm publish keeps', () => {
+    // npm 11.20 publish drops a bin path starting with ./ as "invalid and removed"; npm pack keeps it
+    // (measured 2026-11-18, shyden-labs/playwright-devices#31).
+    expect(pkg['bin']).toEqual({ 'one-suite': 'dist/src/one-suite/cli.js' });
+    for (const path of Object.values(pkg['bin'] as Record<string, string>)) {
+      expect(path.startsWith('./'), path).toBe(false);
+    }
   });
 
   it('ships dist, which the build writes from the one-suite and desktop sources, and NOTICE, which Apache-2.0 requires', () => {
