@@ -55,13 +55,40 @@ function requiredEnv(name: string): string {
  * It stays in the top half because the on-screen keyboard can cover the lower part after typing
  * (measured 2026-11-17 on the OnePlus: a 70%-to-30% swipe landed on the keyboard and did not scroll).
  */
-function androidSwipeUp(serial: string): void {
+function androidSwipeUp(serial: string): string {
   const size = /(\d+)x(\d+)/.exec(adb(serial, 'shell', 'wm', 'size'));
   if (size?.[1] === undefined || size[2] === undefined) throw new Error('adb wm size gave no screen size');
   const x = String(Math.round(Number(size[1]) / 2));
   const fromY = String(Math.round(Number(size[2]) * 0.45));
   const toY = String(Math.round(Number(size[2]) * 0.15));
   adb(serial, 'shell', 'input', 'swipe', x, fromY, x, toY, '400');
+  return `screen ${size[1]}x${size[2]}, swipe ${x},${fromY} -> ${x},${toY} in 400 ms`;
+}
+
+/** What the page shows around a finger scroll: scroll position, sizes, focus and the keyboard's room. */
+function scrollState(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const focused = document.activeElement;
+    const focusName = focused === null || focused === document.body ? 'body' : `${focused.tagName.toLowerCase()}#${focused.id}`;
+    const visual = window.visualViewport;
+    return `scrollY ${String(Math.round(window.scrollY))} of ${String(document.documentElement.scrollHeight)}, innerHeight ${String(window.innerHeight)}, visualViewport ${visual === null ? 'none' : String(Math.round(visual.height))}, focus ${focusName}, visibility ${document.visibilityState}`;
+  });
+}
+
+/**
+ * Runs one finger scroll and records the page around it as a `finger-scroll` annotation and a
+ * line of output, so a scroll that does not happen is caught with its details in any device run
+ * (shyden-labs/playwright-devices#18: one android-cdp miss on 2026-11-17 did not reproduce in 80).
+ */
+async function measuredScroll(page: Page, route: string, swipe: () => Promise<string>): Promise<void> {
+  const before = await scrollState(page);
+  const started = Date.now();
+  const how = await swipe();
+  const tookMs = Date.now() - started;
+  const after = await scrollState(page);
+  const line = `finger-scroll ${route}: ${how}; took ${String(tookMs)} ms; before: ${before}; after: ${after}`;
+  base.info().annotations.push({ type: 'finger-scroll', description: line });
+  console.log(line);
 }
 
 /** How long a native list may take to open after the tap that opens it (shared with WebDriverAgent's). */
@@ -236,15 +263,17 @@ export const test = base.extend<DeviceFixtures>({
     const route = requiredEnv('DEVICE_ROUTE');
     const iosInput = iosInputs.get(page);
     if (route === 'ios-webkit' && iosInput !== undefined) {
-      await use(() => iosInput.swipeUp());
+      await use(() =>
+        measuredScroll(page, route, async () => {
+          await iosInput.swipeUp();
+          return 'WebDriverAgent swipe up';
+        }),
+      );
       return;
     }
     if (route.startsWith('android-')) {
       const serial = requiredEnv('ANDROID_SERIAL');
-      await use(() => {
-        androidSwipeUp(serial);
-        return Promise.resolve();
-      });
+      await use(() => measuredScroll(page, route, () => Promise.resolve(androidSwipeUp(serial))));
       return;
     }
     // Fail at the scroll step itself, naming why, so the steps before it are still measured.
