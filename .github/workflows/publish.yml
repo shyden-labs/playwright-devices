@@ -44,6 +44,8 @@ jobs:
       # until it is approved; prepare only sets this repo's git hooks, so the published manifest
       # leaves it out (measured 2026-11-18, research/package/install-2026-11-18.txt).
       - run: npm pkg delete scripts.prepare
+      # npm pack does not create its destination folder (the v0.1.1 run failed with ENOENT, 2026-11-19).
+      - run: mkdir -p package
       - run: npm pack --pack-destination package
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
