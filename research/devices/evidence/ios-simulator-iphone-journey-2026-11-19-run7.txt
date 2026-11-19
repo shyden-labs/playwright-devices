@@ -1,4 +1,4 @@
-# Simulator run 7, 2026-11-19 ~10:15-10:35 WIB (shyden-labs/playwright-devices#7)
+# Simulator run 7, 2026-11-19 ~10:14-10:24 WIB (6.6 min test) (shyden-labs/playwright-devices#7)
 # Change under test: run-ios-simulator-journey.zsh adds UIFileSharingEnabled + LSSupportsOpeningDocumentsInPlace to the built runner and ad-hoc signs it again.
 # Before (measured 10:12 WIB): built runner Info.plist had neither key ('Entry ... Does Not Exist'); run 6 showed 'On My iPhone is Empty'.
 # After: every nativeChoose label was found and tapped: Choose File, Browse, On My iPhone, WebDriverAgentRunner-Runner folder, device-journey (no error thrown by nativeChooseFile).
