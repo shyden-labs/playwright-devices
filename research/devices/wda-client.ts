@@ -95,6 +95,11 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
   }
 
   return {
+    /** Deletes this client's WebDriverAgent session; call it in the test's `finally`. */
+    async close(): Promise<void> {
+      await call('DELETE', base);
+    },
+
     /** Types `text` once the on-screen keyboard is listed: keys sent before it shows are lost. */
     async typeText(text: string): Promise<void> {
       await waitFor(

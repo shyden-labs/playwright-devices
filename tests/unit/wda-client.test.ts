@@ -203,3 +203,14 @@ describe('tapFirstShown', () => {
     expect(wda.calls.some((c) => c.path.endsWith('/click'))).toBe(false);
   });
 });
+
+describe('close', () => {
+  it('deletes the session it created, and nothing else', async () => {
+    const wda = fakeWda({ ...session, 'DELETE /session/s1': () => null });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await client.close();
+
+    expect(wda.calls.map((c) => `${c.method} ${c.path}`)).toEqual(['POST /session', 'DELETE /session/s1']);
+  });
+});
