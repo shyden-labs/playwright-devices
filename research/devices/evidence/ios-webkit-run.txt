@@ -1,0 +1,36 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (30.0s)
+
+
+  1) journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input ───────────
+
+    Test timeout of 30000ms exceeded.
+
+    Error: page.goto: Target page, context or browser has been closed
+    Call log:
+      - navigating to "/journey.html", waiting until "load"
+
+
+       8 |
+       9 | test('a page is read, tapped, typed into and scrolled by real input', async ({ page, fingerScroll }) => {
+    > 10 |   await page.goto('/journey.html');
+         |              ^
+      11 |   await expect.soft(page.getByRole('heading', { level: 1 })).toBeVisible();
+      12 |   await expect.soft(page.getByRole('heading', { level: 1 })).toHaveText('Device journey');
+      13 |
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:10:14
+
+    Error Context: evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip
+    Usage:
+
+        npx playwright show-trace evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input ────────────

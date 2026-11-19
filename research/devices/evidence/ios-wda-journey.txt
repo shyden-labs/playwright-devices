@@ -1,0 +1,13 @@
+# Unchanged journey.spec.ts on real iPhone Safari, DEVICE_ROUTE=ios-webkit, input through WebDriverAgent (shyden-labs/playwright-devices#7)
+# Measured 2026-11-17 15:16 WIB: iPhone iPhone18,4 iOS 27.2, Xcode 27.2, macOS 27.2.1, Playwright 1.65.1, WebDriverAgent appium-webdriveragent 17.0.11 on device port 8101, ios_webkit_debug_proxy 1.9.3
+# Code: research/devices/device-fixture.ts, ios-wda-page.ts, wda-input.ts at the commit adding this file
+      "version" : "17.0.11",
+      "sdkVersion" : "27.2",
+      "version" : "27.2"
+
+Running 1 test using 1 worker
+
+  ✓  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (5.7s)
+
+  1 passed (6.3s)
+journey exit=0

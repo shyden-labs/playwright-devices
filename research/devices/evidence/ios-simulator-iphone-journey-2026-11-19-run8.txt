@@ -1,0 +1,13 @@
+Simulator run 8, 2026-11-19 ~13:27 WIB, iPhone 18 Pro simulator 1955585D-532E-4881-9E5F-593D91EE1062 (iOS 27.2), swap at start 7.9 of 9.2 GB used.
+Command: IOS_UDID=1955585D-532E-4881-9E5F-593D91EE1062 research/devices/run-ios-simulator-journey.zsh
+
+Probe before it (13:22-13:25 WIB, throwaway spec): the file tap selected the file; the page showed device-journey.txt ~14 s after the tap, while WDA and the page each answered slowly (page reads timing out at 2 s). The Photo input's menu showed 'Photo Library' within 2 s once the file picker had closed. Run 7's empty file-result was the 5 s soft-assertion window on a slow simulator; that its Photo tap landed during the picker's close is inferred, not measured.
+
+--- output ---
+
+Running 1 test using 1 worker
+
+finger-scroll ios-webkit: WebDriverAgent swipe up; took 2825 ms; before: scrollY 18 of 2976, innerHeight 714, visualViewport 714, focus body, visibility visible; after: scrollY 510 of 2976, innerHeight 754, visualViewport 754, focus body, visibility visible
+  ✓  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (54.8s)
+
+  1 passed (56.2s)

@@ -1,0 +1,53 @@
+# The iPhone's native <select> step fails intermittently (iPhone18,4, iOS 27.2), measured 2026-11-18 ~03:10-03:55 WIB
+# Every device, --repeat-each=10 (after the viewport fix): iPhone 4 passed, 6 failed, each at nativeChoose('Green'); Android 10/10 on each route.
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.Q3goa4UG2p/ios-webkit.log)
+  ✓   1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (56.1s)
+  ✘   2 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (29.9s)
+  ✘   3 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (29.9s)
+  ✘   4 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (29.7s)
+  ✘   5 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (29.6s)
+  ✓   6 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (55.6s)
+  ✓   7 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (55.7s)
+  ✘   8 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (29.9s)
+  ✓   9 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (55.8s)
+  ✘  10 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (30.3s)
+  6 failed
+  4 passed (6.8m)
+ios-webkit exit=1
+== android-cdp (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.Q3goa4UG2p/android-cdp.log)
+  ✓   1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.8s)
+  ✓   2 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.1s)
+  ✓   3 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.3s)
+  ✓   4 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.1s)
+  ✓   5 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  ✓   6 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.2s)
+  ✓   7 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.1s)
+  ✓   8 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.3s)
+  ✓   9 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.1s)
+  ✓  10 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.1s)
+  10 passed (2.4m)
+android-cdp exit=0
+== android-playwright (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.Q3goa4UG2p/android-playwright.log)
+  ✓   1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.2s)
+  ✓   2 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.1s)
+  ✓   3 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  ✓   4 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  ✓   5 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.1s)
+  ✓   6 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  ✓   7 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  ✓   8 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.0s)
+  ✓   9 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (14.2s)
+  ✓  10 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (13.9s)
+  10 passed (2.4m)
+android-playwright exit=0
+failed on: ios-webkit
+
+# What was measured:
+# - The Colour tap lands inside the select: logged touch (118,375) in passing and failing runs alike; the select's screen rect in the
+#   failure screen is x 73-162, y 362-395. In the failure screen the Name field still has focus and the keyboard is up: the tap did nothing.
+# - Failures follow passing runs (8 runs: pass, FAIL, pass, FAIL, pass, pass, FAIL, pass). A passing run ends with the page scrolled
+#   (Tap me at y=-336) and Safari's toolbar compact at the bottom; a failing run's teardown taps Done first.
+# - Not the cause, each tried and measured: an 80 ms press instead of 0 ms (3 of 8 failed); two finger swipes down at teardown to
+#   restore the page and toolbar (2 of 6 failed). Both reverted.
+# - Also open: a passing iPhone run now takes 56-60 s (24 s earlier in the night), close to the 60 s timeout.
+# Filed as its own ticket; no retry is used.

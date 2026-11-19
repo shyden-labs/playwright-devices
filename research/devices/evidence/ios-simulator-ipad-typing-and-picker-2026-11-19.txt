@@ -1,0 +1,44 @@
+iPad simulator, 2026-11-19 14:07-14:43 WIB, iPad Pro 13-inch (M5) spike C02FB4F0-63BC-410E-9D37-AC60C69EC1F7 (iOS 27.2), swap 7.9 of 9.2 GB used. shyden-labs/playwright-devices#7.
+
+== Run 1 of the unchanged journey (research/devices/run-ios-simulator-journey.zsh): 1 failed, 5.2 min. Its JSON report was overwritten by the probes run after it (same reporter path), so the run log is the record:
+Expected: "Ayu"
+Received: "A"
+Error: no visible native button or text labelled "Browse" appeared within 60000ms
+> 154 |           throw new Error(`no visible native button or text labelled "${label}" appeared within ${String(nativeCeilingMs)}ms`);
+
+== Probe A (typing one key per call with 2 s pauses, then the Files picker after Choose File):
+2026-11-19T07:23:44.317Z after name tap: keyboard=true value=
+2026-11-19T07:23:52.382Z after A: value=A active=INPUT#name keyboard=true
+2026-11-19T07:24:05.852Z after y: value=Ay active=INPUT#name keyboard=true
+2026-11-19T07:24:12.555Z after u: value=Ayu active=INPUT#name keyboard=true
+2026-11-19T07:24:31.893Z picker 5s: Button:Show Sidebar | Button:Back | Button:Address | Button:Page Menu | Button:Reload Page | Button:Share | Button:New tab | Button:Tabs | Button:Tap me | Button:Colour | Button:File | Button:Photo
+2026-11-19T07:24:55.073Z picker 15s: Button:Show Sidebar | Button:Back | Button:Address | Button:Page Menu | Button:Reload Page | Button:Share | Button:New tab | Button:Tabs | Button:Tap me | Button:Colour | Button:File | Button:Photo | Cell:Recents | Cell:Shared | Cell:Locations | Cell:iCloud Drive | Cell:On My iPad | Cell:Tags | Cell:Red | Cell:Orange | Cell:Yellow | Cell:Green | Cell:Blue | Cell:Purple | Cell:Grey | Cell:Work | Button:Cancel | Button:More | Button:Back | Button:Forwards | Button:Icons | Button:Search
+2026-11-19T07:25:12.138Z picker 30s: Button:Show Sidebar | Button:Back | Button:Address | Button:Page Menu | Button:Reload Page | Button:Share | Button:New tab | Button:Tabs | Button:Tap me | Button:Colour | Button:File | Button:Photo | Cell:Recents | Cell:Shared | Cell:Locations | Cell:iCloud Drive | Cell:On My iPad | Cell:Tags | Cell:Red | Cell:Orange | Cell:Yellow | Cell:Green | Cell:Blue | Cell:Purple | Cell:Grey | Cell:Work | Button:Cancel | Button:More | Button:Back | Button:Forwards | Button:Icons | Button:Search
+
+== Probe B (six ways of sending 'Ayu', each 1.5 s after the tap that focused the field): every way typed every key.
+2026-11-19T07:31:28.812Z session D306ECCC-5B75-44F0-8C8C-C53F17C05692
+2026-11-19T07:31:36.290Z one call: value=Ayu sendMs=326
+2026-11-19T07:31:43.083Z one call again: value=Ayu sendMs=321
+2026-11-19T07:31:49.881Z per key, no pause: value=Ayu sendMs=981
+2026-11-19T07:31:56.398Z per key, no pause again: value=Ayu sendMs=958
+2026-11-19T07:32:02.331Z one call frequency 10: value=Ayu sendMs=532
+2026-11-19T07:32:08.130Z lowercase one call: value=ayu sendMs=329
+
+== Probe C (tap the field, then type at once; field blurred 3 s between tries): keys lost in 2 of 5.
+2026-11-19T07:39:11.136Z try 1 (fresh focus, no pause): value=Ay tapMs=2439
+2026-11-19T07:39:19.970Z try 2 (fresh focus, no pause): value=Ayu tapMs=2110
+2026-11-19T07:39:27.886Z try 3 (fresh focus, no pause): value=Ayu tapMs=1114
+2026-11-19T07:39:38.055Z try 4 (fresh focus, no pause): value=yu tapMs=3663
+2026-11-19T07:39:46.297Z try 5 (fresh focus, no pause): value=Ayu tapMs=1776
+
+== Probe D (tap, wait until WebDriverAgent lists an XCUIElementTypeKeyboard, then type; tries 5-8 also wait for its rect to repeat): 8 of 8 typed 'Ayu'. The keyboard showed 309-1281 ms after the tap, at its final rect when first seen.
+2026-11-19T07:42:04.058Z try 1 keyboard present: value=Ayu rects=387:{"y":1028,"x":0,"width":1032,"height":345}
+2026-11-19T07:42:12.017Z try 2 keyboard present: value=Ayu rects=455:{"y":1028,"x":0,"width":1032,"height":345}
+2026-11-19T07:42:19.891Z try 3 keyboard present: value=Ayu rects=330:{"y":1028,"x":0,"width":1032,"height":345}
+2026-11-19T07:42:31.804Z try 4 keyboard present: value=Ayu rects=1281:{"y":1028,"x":0,"width":1032,"height":345}
+2026-11-19T07:42:39.990Z try 5 keyboard settled: value=Ayu rects=309:{"y":1028,"x":0,"width":1032,"height":345} 685:{"y":1028,"x":0,"width":1032,"height":345}
+2026-11-19T07:42:48.344Z try 6 keyboard settled: value=Ayu rects=498:{"y":1028,"x":0,"width":1032,"height":345} 919:{"y":1028,"x":0,"width":1032,"height":345}
+2026-11-19T07:42:56.838Z try 7 keyboard settled: value=Ayu rects=500:{"y":1028,"x":0,"width":1032,"height":345} 1007:{"y":1028,"x":0,"width":1032,"height":345}
+2026-11-19T07:43:05.791Z try 8 keyboard settled: value=Ayu rects=447:{"y":1028,"x":0,"width":1032,"height":345} 1095:{"y":1028,"x":0,"width":1032,"height":345}
+
+Conclusions: (1) keys sent before the on-screen keyboard is shown are lost, at either end of the word; the same 'A' was seen on the iPhone 18 Pro simulator in run 6, so the wait applies to every device. (2) On the iPad the Files picker opens as a popover with a sidebar (Recents, Shared, iCloud Drive, On My iPad); there is no Browse tab, and the device's place is 'On My iPad', not 'On My iPhone'.

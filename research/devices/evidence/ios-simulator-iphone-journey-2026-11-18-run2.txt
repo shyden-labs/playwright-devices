@@ -1,0 +1,54 @@
+# #7 AC 2 run 2, iPhone 18 Pro simulator, 2026-11-18 10:36 WIB; simulator already booted and webinspectord already running; Xcode 27.2, Playwright 1.65.1
+
+Running 1 test using 1 worker
+
+  ✘  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (1.4m)
+
+
+  1) journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input ──────────
+
+    Test timeout of 60000ms exceeded.
+
+    Error: Command failed: xcrun devicectl device copy to --device 1955585D-532E-4881-9E5F-593D91EE1062 --domain-type appDataContainer --domain-identifier uk.co.shyden.WebDriverAgentRunner.xctrunner --source /Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt --destination Documents/device-journey.txt
+
+       at device-fixture.ts:320
+
+      318 |       // runner's folder from any start. The file shows without its extension.
+      319 |       await use(async (name) => {
+    > 320 |         execFileSync(
+          |         ^
+      321 |           'xcrun',
+      322 |           [
+      323 |             'devicectl',
+        at nativeChooseFile (/Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:320:9)
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:35:9
+
+    attachment #1: screen when "Cancel" was not found (text/plain) ─────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Cancel-was-not-found-46fc351ecdc4863223f106255e5dd9629073c340.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screen when "Done" was not found (text/plain) ───────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Done-was-not-found-579a389059c8607312a43d0800f264ed75cf70fa.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screen when "Cancel" was not found (text/plain) ─────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Cancel-was-not-found-46fc351ecdc4863223f106255e5dd9629073c340.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screen when "Done" was not found (text/plain) ───────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Done-was-not-found-579a389059c8607312a43d0800f264ed75cf70fa.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+    attachment #6: trace (application/zip) ─────────────────────────────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip
+    Usage:
+
+        npx playwright show-trace evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input ───────────
+exit=1

@@ -1,0 +1,3 @@
+# #7 AC 2 run 3, iPhone 18 Pro simulator, 2026-11-18 10:41 WIB; file placed via simctl get_app_container; Xcode 27.2, Playwright 1.65.1
+WebDriverAgent's xcodebuild exited; see /Users/shyden/Library/Caches/playwright-devices/wda/logs-sim/wda.log
+exit=1

@@ -1,0 +1,197 @@
+{
+  "config": {
+    "argv": [
+      "/Users/shyden/.local/share/node/v26.13.0/bin/node",
+      "/Users/shyden/Developer/Repos/playwright-devices/node_modules/.bin/playwright",
+      "test",
+      "-c",
+      "playwright.devices.config.ts"
+    ],
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 60000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "testIgnore": [],
+        "testMatch": "journey.spec.ts",
+        "timeout": 60000,
+        "use": {
+          "baseURL": "http://localhost:4517",
+          "trace": "on"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "evidence/ios-webkit.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": {
+      "command": "node serve.ts",
+      "port": 4517,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a page is read, tapped, typed into and scrolled by real input",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 60000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 84061,
+                  "error": {
+                    "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTest timeout of 60000ms exceeded.\u001b[39m"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts",
+                        "column": 9,
+                        "line": 320
+                      },
+                      "message": "Error: Command failed: xcrun devicectl device copy to --device 1955585D-532E-4881-9E5F-593D91EE1062 --domain-type appDataContainer --domain-identifier uk.co.shyden.WebDriverAgentRunner.xctrunner --source /Users/shyden/Developer/Repos/playwright-devices/research/devices/fixtures/device-journey.txt --destination Documents/device-journey.txt\n\n   at device-fixture.ts:320\n\n  318 |       // runner's folder from any start. The file shows without its extension.\n  319 |       await use(async (name) => {\n> 320 |         execFileSync(\n      |         ^\n  321 |           'xcrun',\n  322 |           [\n  323 |             'devicectl',\n    at nativeChooseFile (/Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:320:9)\n    at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:35:9"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-18T03:38:20.109Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screen when \"Cancel\" was not found",
+                      "contentType": "text/plain",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Cancel-was-not-found-46fc351ecdc4863223f106255e5dd9629073c340.txt"
+                    },
+                    {
+                      "name": "screen when \"Done\" was not found",
+                      "contentType": "text/plain",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Done-was-not-found-579a389059c8607312a43d0800f264ed75cf70fa.txt"
+                    },
+                    {
+                      "name": "screen when \"Cancel\" was not found",
+                      "contentType": "text/plain",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Cancel-was-not-found-46fc351ecdc4863223f106255e5dd9629073c340.txt"
+                    },
+                    {
+                      "name": "screen when \"Done\" was not found",
+                      "contentType": "text/plain",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Done-was-not-found-579a389059c8607312a43d0800f264ed75cf70fa.txt"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
+          "file": "journey.spec.ts",
+          "line": 10,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-18T03:38:19.230Z",
+    "duration": 85491.522,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,7 @@
+# #7 AC 2, iPhone 18 Pro simulator (IOS_UDID=1955585D-532E-4881-9E5F-593D91EE1062), 2026-11-18 10:20 WIB; Xcode 27.2, Playwright Version 1.65.1
+warning: The value for NSLocationAlwaysAndWhenInUseUsageDescription must be a non-empty string. (in target 'WebDriverAgentRunner' from project 'WebDriverAgent')
+warning: The value for NSLocationAlwaysUsageDescription must be a non-empty string. (in target 'WebDriverAgentRunner' from project 'WebDriverAgent')
+warning: The value for NSLocationWhenInUseUsageDescription must be a non-empty string. (in target 'WebDriverAgentRunner' from project 'WebDriverAgent')
+note: Using codesigning identity override: -
+the proxy lists 0 Safari tabs on port 9222 after 60s; the route needs one
+exit=1

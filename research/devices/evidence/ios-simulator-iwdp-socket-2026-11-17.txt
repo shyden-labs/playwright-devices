@@ -1,0 +1,46 @@
+# measured 2026-11-17 23:18:59 WIB, iPhone 18 Pro simulator 1955585D-532E-4881-9E5F-593D91EE1062, macOS 27.2.1, Xcode 27.2, ios_webkit_debug_proxy 1.9.3
+# socket: launchctl print gui/$(id -u) has no RWI path; found with find /private/var/tmp -name '*webinspectord_sim.socket'
+$ ios_webkit_debug_proxy -s unix:/private/var/tmp/com.apple.launchd.kZOUiNBJLx/com.apple.webinspectord_sim.socket
+$ curl http://127.0.0.1:9221/json (device names only)
+   "deviceName": "SIMULATOR",
+   "url": "127.0.0.1:9222"
+   "deviceName": "Sean’s iPhone",
+   "url": "127.0.0.1:9223"
+$ curl http://127.0.0.1:9222/json
+   "title": "Example Domain",
+   "url": "https://example.com/",
+   "title": "Can’t Open Page",
+   "url": "data:text/html,",
+   "title": "",
+   "url": "about:blank",
+# earlier 'Unable to connect to SIMULATOR' (iwdp-simulator-debug.txt) was the default -s localhost:27753
+
+# 2026-11-18 00:00-00:20 WIB, run-ios-simulator-journey.zsh on the same simulator (journey not yet reached):
+# - 19 stale webinspectord_sim.socket files under /private/var/tmp; `xcrun simctl getenv <udid> RWI_LISTEN_SOCKET` names the live one.
+# - WebDriverAgent built CODE_SIGNING_ALLOWED=NO, and ad-hoc, both refused at launch while Safari was opening:
+#   "Application failed preflight checks" (SBMainWorkspace, BSErrorCodeDescription = Busy).
+#   Launched alone (ad-hoc), WDA answered /status after ~100 s (version 14.1.1).
+# - `simctl openurl <udid> about:blank` refused: LSApplicationWorkspaceErrorDomain 115.
+# - http://127.0.0.1:9/ opens Safari's "Not allowed to use restricted network port" page.
+# - The proxy's tab list lags: a tab opened by the launch of Safari is not listed until another page event;
+#   after a second openurl it listed 2 tabs (both data:text/html error pages); after Safari was terminated
+#   it still listed 3. A later openurl of http://127.0.0.1:65535/ timed out (NSPOSIXErrorDomain 60) with
+#   swap at 9.8 of 11 GB, and the measurement was stopped there.
+
+# 2026-11-18 ~00:50 WIB, same simulator, 6 other Claude sessions open, swap 6.5 of 7 GB before boot:
+# - booting the simulator took swap to 9.4 of 10 GB; `simctl openurl <udid> http://127.0.0.1:8765/`
+#   (a local python http.server page) timed out again (NSPOSIXErrorDomain 60), the second time under
+#   swap pressure, never seen with swap low. The tab-lag question stays unmeasured: the probe also gave
+#   the proxy a bad -c argument (SIMULATOR:9222 is not a config it accepts: "Unknown file"), so its
+#   empty tab lists say nothing. Simulator shut down, claims released.
+
+# 2026-11-18 00:55-01:06 WIB, same simulator, swap 3.5 GB before boot, 10.2 GB with it booted:
+# - proxy started straight after boot: "Unable to connect to SIMULATOR" although getenv's socket was the
+#   live one (lsof: launchd_sim and webinspectord hold it); started again later it connected
+#   ("Connected :9222 to SIMULATOR"), :9221 listing SIMULATOR on 9222 and the iPhone on 9223.
+# - with Safari showing http://127.0.0.1:8765/index.html (the server logged Safari's GET), :9222/json
+#   listed no page at all; nor with the proxy started before Safari and three openurl page events
+#   after it (one of the three timed out, NSPOSIXErrorDomain 60), nor after `simctl launch`. The
+#   iPhone on 9223 listed its page throughout. On 2026-11-17 23:18 the same command listed 3 pages.
+# - not settled: whether the empty list is the swap pressure (every openurl timeout so far came with
+#   swap above 9 GB) or the simulator's Safari state. Simulator shut down at 01:06.
