@@ -79,4 +79,5 @@ jobs:
         with:
           name: package
           path: package
-      - run: npm publish package/*.tgz --access public
+      # `./` so npm reads a file: bare `package/<name>.tgz` is parsed as a GitHub owner/repo (v0.1.2 run).
+      - run: npm publish ./package/*.tgz --access public

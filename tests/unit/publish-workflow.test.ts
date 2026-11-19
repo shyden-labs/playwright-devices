@@ -55,7 +55,9 @@ describe('publish.yml', () => {
     expect(publish).toMatch(/^ {10}sparse-checkout: docker\/node\/Dockerfile\n {10}sparse-checkout-cone-mode: false$/m);
     expect(publish).not.toMatch(/npm ci|npm-ci|npm install|npm run/);
     expect(publish).toMatch(/uses: actions\/download-artifact@/);
-    expect(runs(publish)).toEqual(['npm publish package/*.tgz --access public']);
+    // `./` makes npm read a file: `package/<name>.tgz` alone is parsed as a GitHub owner/repo and
+    // fetched over git (the v0.1.2 run, 2026-11-19; npm-package-arg gives type git vs file).
+    expect(runs(publish)).toEqual(['npm publish ./package/*.tgz --access public']);
   });
 
   it('points setup-node at the npm registry, which trusted publishing signs in to', () => {
