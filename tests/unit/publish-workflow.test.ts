@@ -35,12 +35,15 @@ describe('publish.yml', () => {
     expect(build).not.toMatch(/environment:/);
   });
 
-  it('checks the tag, installs, builds, drops prepare from the manifest and packs, in that order', () => {
+  it('checks the tag, installs, builds, drops prepare from the manifest, makes the pack folder and packs, in that order', () => {
     expect(build).toContain('name: The release tag is v followed by the package version');
     expect(runs(build)).toEqual([
       'node scripts/npm-ci.ts',
       'npm run build',
       'npm pkg delete scripts.prepare',
+      // npm pack writes into --pack-destination but does not create it: without the folder it exits
+      // 254 with ENOENT (the v0.1.1 publish run, 2026-11-19, and measured locally the same day).
+      'mkdir -p package',
       'npm pack --pack-destination package',
     ]);
     expect(build).toMatch(/uses: actions\/upload-artifact@/);
