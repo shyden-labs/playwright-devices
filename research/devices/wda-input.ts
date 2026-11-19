@@ -27,8 +27,13 @@ interface Rect {
   height: number;
 }
 
-/** How long a native list may take to open after the tap that opens it, and how often to look. */
-const nativeCeilingMs = 3000;
+/**
+ * How long a native list may take to open after the tap that opens it, and how often to look. The
+ * wait ends as soon as the item shows, so a fast phone loses nothing. 60 s: Safari's Files picker
+ * took 18-26 s to open on a freshly booted simulator at 5 GB swap (measured 2026-11-19, evidence
+ * ios-simulator-files-picker-timing-2026-11-19.txt), where 3 s had failed run 5.
+ */
+const nativeCeilingMs = 60_000;
 const nativePollMs = 100;
 
 interface Point {

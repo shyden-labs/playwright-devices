@@ -1,0 +1,13 @@
+# iOS simulator journey run 6, iPhone 18 Pro simulator (iOS 27.2), fresh boot, 2026-11-19 07:49 WIB (shyden-labs/playwright-devices#7)
+## change under test: native wait ceiling 3 s -> 60 s (wda-input.ts), test timeout 60 s -> 300 s
+## result: the Files picker now opens in time: Choose File, Browse and On My iPhone were found and tapped (run 5 failed at Browse after 3 s). The run then failed twice:
+- the runner's folder (WebDriverAgentRunner-Runner) was not found within 60 s: the screen reads 'On My iPhone is Empty', though the fixture had copied device-journey.txt into the runner's data container Documents. Cause not proven.
+- typing 'Ayu' into Name gave 'A' (soft assertion). Cause not proven; on the real iPhone the same step passes (evidence/ios-webkit.json).
+## swap: total = 3072.00M  used = 2134.38M  free = 937.62M  (encrypted) at start; total = 7168.00M  used = 6106.31M  free = 1061.69M  (encrypted) at end. Too high to continue: simulator work stopped, claims released.
+## test 5.7 min; report: ios-simulator-webkit-2026-11-19-run6.json
+## run log (errors)
+  ✘  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (5.7m)
+    Error: expect(locator).toHaveText(expected) failed
+    Expected: "Ayu"
+    Received: "A"
+    Error: no visible native button or text labelled "WebDriverAgentRunner-Runner" appeared within 60000ms

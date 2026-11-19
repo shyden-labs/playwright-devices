@@ -1,0 +1,208 @@
+{
+  "config": {
+    "argv": [
+      "/Users/shyden/.local/share/node/v26.13.0/bin/node",
+      "/Users/shyden/Developer/Repos/playwright-devices/node_modules/.bin/playwright",
+      "test",
+      "-c",
+      "playwright.devices.config.ts"
+    ],
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices/research/devices",
+        "testIgnore": [],
+        "testMatch": "journey.spec.ts",
+        "timeout": 300000,
+        "use": {
+          "baseURL": "http://localhost:4517",
+          "trace": "on"
+        },
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "evidence/ios-webkit.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": {
+      "command": "node serve.ts",
+      "port": 4517,
+      "reuseExistingServer": false
+    }
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a page is read, tapped, typed into and scrolled by real input",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 344658,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('typed-result')\nExpected: \u001b[32m\"A\u001b[7myu\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"A\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"soft toHaveText\" getByTestId('typed-result') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('typed-result')\u001b[22m\n\u001b[2m    5 × locator resolved to <p data-testid=\"typed-result\">A</p>\u001b[22m\n\u001b[2m      - unexpected value \"A\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('typed-result')\nExpected: \u001b[32m\"A\u001b[7myu\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"A\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"soft toHaveText\" getByTestId('typed-result') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('typed-result')\u001b[22m\n\u001b[2m    5 × locator resolved to <p data-testid=\"typed-result\">A</p>\u001b[22m\n\u001b[2m      - unexpected value \"A\"\u001b[22m\n\n    at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:26:55",
+                    "location": {
+                      "file": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts",
+                      "column": 55,
+                      "line": 26
+                    },
+                    "snippet": " \u001b[90m 24 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'Name'\u001b[39m)\u001b[33m.\u001b[39mtap()\u001b[33m;\u001b[39m\n \u001b[90m 25 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mkeyboard\u001b[33m.\u001b[39mtype(\u001b[32m'Ayu'\u001b[39m)\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 26 |\u001b[39m   \u001b[36mawait\u001b[39m expect\u001b[33m.\u001b[39msoft(page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'typed-result'\u001b[39m))\u001b[33m.\u001b[39mtoHaveText(\u001b[32m'Ayu'\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 27 |\u001b[39m\n \u001b[90m 28 |\u001b[39m   \u001b[90m// AC 4: the <select> opens the phone's own list, outside the page; the option is touched there.\u001b[39m\n \u001b[90m 29 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'Colour'\u001b[39m)\u001b[33m.\u001b[39mtap()\u001b[33m;\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts",
+                        "column": 55,
+                        "line": 26
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('typed-result')\nExpected: \u001b[32m\"A\u001b[7myu\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"A\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"soft toHaveText\" getByTestId('typed-result') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('typed-result')\u001b[22m\n\u001b[2m    5 × locator resolved to <p data-testid=\"typed-result\">A</p>\u001b[22m\n\u001b[2m      - unexpected value \"A\"\u001b[22m\n\n\n  24 |   await page.getByLabel('Name').tap();\n  25 |   await page.keyboard.type('Ayu');\n> 26 |   await expect.soft(page.getByTestId('typed-result')).toHaveText('Ayu');\n     |                                                       ^\n  27 |\n  28 |   // AC 4: the <select> opens the phone's own list, outside the page; the option is touched there.\n  29 |   await page.getByLabel('Colour').tap();\n    at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:26:55"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/wda-input.ts",
+                        "column": 17,
+                        "line": 154
+                      },
+                      "message": "Error: no visible native button or text labelled \"WebDriverAgentRunner-Runner\" appeared within 60000ms\n\n   at wda-input.ts:154\n\n  152 |         }\n  153 |         if (Date.now() >= deadline)\n> 154 |           throw new Error(`no visible native button or text labelled \"${label}\" appeared within ${String(nativeCeilingMs)}ms`);\n      |                 ^\n  155 |         await new Promise((resolve) => setTimeout(resolve, nativePollMs));\n  156 |       }\n  157 |     },\n    at Object.tapNative (/Users/shyden/Developer/Repos/playwright-devices/research/devices/wda-input.ts:154:17)\n    at /Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:289:11\n    at /Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:351:11\n    at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:35:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-19T00:55:35.703Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screen when \"WebDriverAgentRunner-Runner\" was not found",
+                      "contentType": "text/plain",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-WebDriverAgentRunner-Runner-was-not-found-2d7eac8a9e4f295f2a7a640fa7fe7518b857b5c8.txt"
+                    },
+                    {
+                      "name": "screen when \"Cancel\" was not found",
+                      "contentType": "text/plain",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Cancel-was-not-found-46fc351ecdc4863223f106255e5dd9629073c340.txt"
+                    },
+                    {
+                      "name": "screen when \"Done\" was not found",
+                      "contentType": "text/plain",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Done-was-not-found-579a389059c8607312a43d0800f264ed75cf70fa.txt"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts",
+                    "column": 55,
+                    "line": 26
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
+          "file": "journey.spec.ts",
+          "line": 10,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-19T00:55:27.387Z",
+    "duration": 353285.941,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
