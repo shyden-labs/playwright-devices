@@ -15,7 +15,7 @@ function fakeWda(answers: Record<string, (call: Call) => unknown>) {
     const url = new URL(input instanceof Request ? input.url : input);
     const call: Call = {
       method: init?.method ?? 'GET',
-      path: url.pathname,
+      path: decodeURIComponent(url.pathname),
       body: typeof init?.body === 'string' ? JSON.parse(init.body) : undefined,
     };
     calls.push(call);
@@ -85,5 +85,121 @@ describe('a refused command', () => {
     const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
 
     await expect(client.typeText('a')).rejects.toThrow('WebDriverAgent refused POST /session/s1/elements (404): unknown command');
+  });
+});
+
+/** The W3C touch a real finger makes: down at (x, y), a short hold, then up. */
+function touchTap(x: number, y: number) {
+  return {
+    actions: [
+      {
+        type: 'pointer',
+        id: 'finger',
+        parameters: { pointerType: 'touch' },
+        actions: [
+          { type: 'pointerMove', duration: 0, x, y },
+          { type: 'pointerDown', button: 0 },
+          { type: 'pause', duration: 50 },
+          { type: 'pointerUp', button: 0 },
+        ],
+      },
+    ],
+  };
+}
+
+describe('tapAt', () => {
+  it('sends one W3C touch tap at the screen point, rounded to whole points', async () => {
+    const wda = fakeWda({ ...session, 'POST /session/s1/actions': () => null });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await client.tapAt({ x: 120.4, y: 300.6 });
+
+    expect(wda.calls.filter((c) => c.path === '/session/s1/actions').map((c) => c.body)).toEqual([touchTap(120, 301)]);
+  });
+});
+
+describe('swipe', () => {
+  it('drags one finger from the start point to the end point over 300 ms', async () => {
+    const wda = fakeWda({ ...session, 'POST /session/s1/actions': () => null });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await client.swipe({ x: 200, y: 600 }, { x: 200, y: 200 });
+
+    expect(wda.calls.filter((c) => c.path === '/session/s1/actions').map((c) => c.body)).toEqual([
+      {
+        actions: [
+          {
+            type: 'pointer',
+            id: 'finger',
+            parameters: { pointerType: 'touch' },
+            actions: [
+              { type: 'pointerMove', duration: 0, x: 200, y: 600 },
+              { type: 'pointerDown', button: 0 },
+              { type: 'pointerMove', duration: 300, x: 200, y: 200 },
+              { type: 'pointerUp', button: 0 },
+            ],
+          },
+        ],
+      },
+    ]);
+  });
+});
+
+describe('tapFirstShown', () => {
+  /** WebDriverAgent listing only the labels in `shown`, the n-th look onwards. */
+  function screenWith(shown: string[], fromLook = 1) {
+    let looks = 0;
+    return fakeWda({
+      ...session,
+      'POST /session/s1/elements': (call) => {
+        looks += 1;
+        const label = /^label == "(.*)"$/.exec((call.body as { value: string }).value)?.[1] ?? '';
+        return looks >= fromLook && shown.includes(label) ? [{ ELEMENT: `el-${label}` }] : [];
+      },
+      'POST /session/s1/element/el-On My iPad/click': () => null,
+      'POST /session/s1/element/el-Browse/click': () => null,
+    });
+  }
+
+  it('taps whichever of the labels shows, so one step serves the iPhone and the iPad', async () => {
+    const wda = screenWith(['On My iPad']);
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    const tapped = await client.tapFirstShown(['Browse', 'On My iPhone', 'On My iPad']);
+
+    expect(tapped).toBe('On My iPad');
+    expect(wda.calls.filter((c) => c.path.endsWith('/click')).map((c) => c.path)).toEqual(['/session/s1/element/el-On My iPad/click']);
+    expect(wda.calls.find((c) => c.path === '/session/s1/elements')?.body).toEqual({
+      using: 'predicate string',
+      value: 'label == "Browse"',
+    });
+  });
+
+  it('prefers the earlier label when several show', async () => {
+    const wda = screenWith(['On My iPad', 'Browse']);
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    expect(await client.tapFirstShown(['Browse', 'On My iPad'])).toBe('Browse');
+  });
+
+  it('keeps looking while a slow picker opens (listed at t+26 s on the simulator)', async () => {
+    const wda = screenWith(['Browse'], 200);
+    const clock = fakeClock();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock });
+
+    expect(await client.tapFirstShown(['Browse'])).toBe('Browse');
+    expect(clock.now()).toBeGreaterThan(9_000);
+  });
+
+  it('fails at 60 s naming every label it looked for, and taps nothing', async () => {
+    const wda = screenWith([]);
+    const clock = fakeClock();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock });
+
+    await expect(client.tapFirstShown(['Browse', 'On My iPad'])).rejects.toThrow(
+      'none of "Browse", "On My iPad" showed within 60000 ms; nothing was tapped',
+    );
+    expect(clock.now()).toBe(60_000);
+    expect(wda.calls.some((c) => c.path.endsWith('/click'))).toBe(false);
   });
 });

@@ -30,6 +30,27 @@ const POLL_MS = 100;
  */
 const KEYBOARD_CEILING_MS = 15_000;
 
+/** The simulator's Files picker was first listed 26 s after the tap (2026-11-19 evidence); about twice that. */
+const NATIVE_CEILING_MS = 60_000;
+
+/** A point on the screen, in WebDriverAgent's points. */
+export interface ScreenPoint {
+  x: number;
+  y: number;
+}
+
+/** W3C's key for an element reference; WebDriverAgent also sends the older `ELEMENT`. */
+const W3C_ELEMENT = 'element-6066-11e4-a52e-4f735466cecf';
+
+/** One finger's W3C pointer actions. */
+function finger(actions: object[]) {
+  return { actions: [{ type: 'pointer', id: 'finger', parameters: { pointerType: 'touch' }, actions }] };
+}
+
+function at({ x, y }: ScreenPoint) {
+  return { x: Math.round(x), y: Math.round(y) };
+}
+
 /** The characters a person would type, one per key, accents and emoji kept whole. */
 function graphemes(text: string): string[] {
   return Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), (part) => part.segment);
@@ -63,9 +84,14 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
   const created = (await call('POST', '/session', { capabilities: {} })) as { sessionId: string };
   const base = `/session/${created.sessionId}`;
 
+  /** The ids of the elements WebDriverAgent finds, none when nothing matches. */
+  async function find(using: string, value: string): Promise<string[]> {
+    const found = (await call('POST', `${base}/elements`, { using, value })) as Record<string, string>[];
+    return found.map((element) => element[W3C_ELEMENT] ?? element.ELEMENT ?? '');
+  }
+
   async function keyboardShown(): Promise<boolean> {
-    const found = await call('POST', `${base}/elements`, { using: 'class name', value: 'XCUIElementTypeKeyboard' });
-    return Array.isArray(found) && found.length > 0;
+    return (await find('class name', 'XCUIElementTypeKeyboard')).length > 0;
   }
 
   return {
@@ -77,6 +103,58 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
         `the on-screen keyboard did not show within ${KEYBOARD_CEILING_MS} ms; no keys were sent`,
       );
       await call('POST', `${base}/wda/keys`, { value: graphemes(text) });
+    },
+
+    /** One real finger tap at a screen point. */
+    async tapAt(point: ScreenPoint): Promise<void> {
+      await call(
+        'POST',
+        `${base}/actions`,
+        finger([
+          { type: 'pointerMove', duration: 0, ...at(point) },
+          { type: 'pointerDown', button: 0 },
+          { type: 'pause', duration: 50 },
+          { type: 'pointerUp', button: 0 },
+        ]),
+      );
+    },
+
+    /** One real finger dragged from `from` to `to`. */
+    async swipe(from: ScreenPoint, to: ScreenPoint): Promise<void> {
+      await call(
+        'POST',
+        `${base}/actions`,
+        finger([
+          { type: 'pointerMove', duration: 0, ...at(from) },
+          { type: 'pointerDown', button: 0 },
+          { type: 'pointerMove', duration: 300, ...at(to) },
+          { type: 'pointerUp', button: 0 },
+        ]),
+      );
+    },
+
+    /**
+     * Taps the first of `labels` the screen lists, waiting while a slow native
+     * picker opens, and answers the label tapped. The iPhone and the iPad name
+     * the same step differently (On My iPhone, On My iPad), so one call serves both.
+     */
+    async tapFirstShown(labels: string[]): Promise<string> {
+      let hit: { label: string; id: string } | undefined;
+      const anyShown = async (): Promise<boolean> => {
+        for (const label of labels) {
+          const [id] = await find('predicate string', `label == "${label}"`);
+          if (id !== undefined) {
+            hit = { label, id };
+            return true;
+          }
+        }
+        return false;
+      };
+      const named = labels.map((label) => `"${label}"`).join(', ');
+      await waitFor(anyShown, NATIVE_CEILING_MS, `none of ${named} showed within ${NATIVE_CEILING_MS} ms; nothing was tapped`);
+      const { label, id } = hit as { label: string; id: string };
+      await call('POST', `${base}/element/${encodeURIComponent(id)}/click`, {});
+      return label;
     },
   };
 }
