@@ -60,6 +60,27 @@ if $build || [[ ! -d $derived/Build/Products ]]; then
   # "Application failed preflight checks" (measured 2026-11-18, Xcode 27.2).
 fi
 
+# The journey's file step places its file in the runner's Documents and picks it in Safari's Files
+# picker, which lists an app's Documents only when the app declares file sharing (as
+# run-ios-journey.zsh does for the iPhone). Without the two keys the simulator's Files showed
+# "On My iPhone is Empty" (run 6, 2026-11-19; the built runner's Info.plist measured without them).
+# Xcode generates the Info.plist, so the keys go into the built app, which is ad-hoc signed again.
+runner=("$derived"/Build/Products/*-iphonesimulator/WebDriverAgentRunner-Runner.app(N))
+[[ -n ${runner[1]:-} ]] || { echo "no built WebDriverAgentRunner-Runner.app under $derived; run with --build" >&2; exit 1; }
+runner=${runner[1]}
+if ! /usr/libexec/PlistBuddy -c 'Print :UIFileSharingEnabled' "$runner/Info.plist" >/dev/null 2>&1; then
+  entitlements=$(mktemp)
+  codesign -d --entitlements - --xml "$runner" >"$entitlements" 2>/dev/null
+  /usr/libexec/PlistBuddy -c 'Add :UIFileSharingEnabled bool true' -c 'Add :LSSupportsOpeningDocumentsInPlace bool true' "$runner/Info.plist"
+  if [[ -s $entitlements ]]; then
+    codesign -f -s - --entitlements "$entitlements" --preserve-metadata=identifier,flags "$runner"
+  else
+    codesign -f -s - --preserve-metadata=identifier,flags "$runner"
+  fi
+  rm -f "$entitlements"
+  codesign -v --strict "$runner"
+fi
+
 # One Safari tab: stop Safari, drop the tabs it would restore, start it again.
 xcrun simctl terminate "$udid" com.apple.mobilesafari 2>/dev/null || true
 rm -f "$safari_data"/SafariTabs.db*(N) "$safari_data"/BrowserState.db*(N)

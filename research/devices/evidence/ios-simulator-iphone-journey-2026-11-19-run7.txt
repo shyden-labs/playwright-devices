@@ -1,0 +1,88 @@
+# Simulator run 7, 2026-11-19 ~10:15-10:35 WIB (shyden-labs/playwright-devices#7)
+# Change under test: run-ios-simulator-journey.zsh adds UIFileSharingEnabled + LSSupportsOpeningDocumentsInPlace to the built runner and ad-hoc signs it again.
+# Before (measured 10:12 WIB): built runner Info.plist had neither key ('Entry ... Does Not Exist'); run 6 showed 'On My iPhone is Empty'.
+# After: every nativeChoose label was found and tapped: Choose File, Browse, On My iPhone, WebDriverAgentRunner-Runner folder, device-journey (no error thrown by nativeChooseFile).
+# Still failing: file-result empty after 5 s; 'Photo Library' never appeared within 60 s (screen: plain Safari, no sheet). Typing step passed this run. Swap 6.2 GB at start, 7.1 GB at end.
+
+/Users/shyden/Library/Caches/playwright-devices/wda/derived-sim/Build/Products/Debug-iphonesimulator/WebDriverAgentRunner-Runner.app: replacing existing signature
+
+Running 1 test using 1 worker
+
+  ✘  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (6.6m)
+
+
+  1) journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input ──────────
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByTestId('file-result')
+    Expected: "device-journey.txt"
+    Received: ""
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "soft toHaveText" getByTestId('file-result') with timeout 5000ms
+      - waiting for getByTestId('file-result')
+        11 × locator resolved to <p data-testid="file-result"></p>
+           - unexpected value ""
+
+
+      34 |   await page.getByLabel('File').tap();
+      35 |   await nativeChooseFile('device-journey.txt');
+    > 36 |   await expect.soft(page.getByTestId('file-result')).toHaveText('device-journey.txt');
+         |                                                      ^
+      37 |
+      38 |   // AC 4: an image input opens the phone's own photo picker; the first photo there is touched.
+      39 |   await page.getByLabel('Photo').tap();
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:36:54
+
+    Error: no visible native button or text labelled "Photo Library" appeared within 60000ms
+
+       at wda-input.ts:154
+
+      152 |         }
+      153 |         if (Date.now() >= deadline)
+    > 154 |           throw new Error(`no visible native button or text labelled "${label}" appeared within ${String(nativeCeilingMs)}ms`);
+          |                 ^
+      155 |         await new Promise((resolve) => setTimeout(resolve, nativePollMs));
+      156 |       }
+      157 |     },
+        at Object.tapNative (/Users/shyden/Developer/Repos/playwright-devices/research/devices/wda-input.ts:154:17)
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:289:11
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:388:9
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:40:3
+
+    attachment #1: screen when "Photo Library" was not found (text/plain) ──────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Photo-Library-was-not-found-921877bea16450e946a03aeca8fa295582c62ab9.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screen when "Cancel" was not found (text/plain) ─────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Cancel-was-not-found-46fc351ecdc4863223f106255e5dd9629073c340.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screen when "Done" was not found (text/plain) ───────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Done-was-not-found-579a389059c8607312a43d0800f264ed75cf70fa.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: screen when "Cancel" was not found (text/plain) ─────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Cancel-was-not-found-46fc351ecdc4863223f106255e5dd9629073c340.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: screen when "Done" was not found (text/plain) ───────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Done-was-not-found-579a389059c8607312a43d0800f264ed75cf70fa.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+    attachment #7: trace (application/zip) ─────────────────────────────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip
+    Usage:
+
+        npx playwright show-trace evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: journey.spec.ts (6.6m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 failed
+    journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input ───────────
