@@ -96,10 +96,12 @@ case $target in
     cp $fixtures/device-journey.txt "$(xcrun simctl get_app_container $udid $runner_id data)/Documents/device-journey.txt"
     socket=$(xcrun simctl getenv $udid RWI_LISTEN_SOCKET)
     require_pf_rule
-    ios_webkit_debug_proxy -s unix:$socket >$wda/logs-sim/iwdp.log 2>&1 &
+    # Only the simulator: the default device list would also attach to a phone on USB, which this run has not claimed.
+    ios_webkit_debug_proxy -c null:9221,SIMULATOR:9222 -s unix:$socket >$wda/logs-sim/iwdp.log 2>&1 &
     pids+=$!
     xcrun simctl openurl $udid http://127.0.0.1:9/
-    wait_for http://127.0.0.1:9222/json webSocketDebuggerUrl 60 'ios_webkit_debug_proxy (a Safari tab)'
+    # A cold inspector and Safari took 51 s to register at 4-5 GB swap (evidence/ios-simulator-inspector-cold-start-2026-11-19.txt).
+    wait_for http://127.0.0.1:9222/json webSocketDebuggerUrl 150 'ios_webkit_debug_proxy (a Safari tab)'
     ;;
   android)
     serial=${2:-} route=${3:-}
