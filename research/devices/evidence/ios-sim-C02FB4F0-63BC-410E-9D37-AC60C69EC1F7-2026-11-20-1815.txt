@@ -1,0 +1,58 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (1.6m)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('photo-result')
+    Expected pattern: /^image\/.+/
+    Received string:  ""
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "soft toHaveText" getByTestId('photo-result') with timeout 5000ms
+      - waiting for getByTestId('photo-result')
+        7 × locator resolved to <output data-testid="photo-result"></output>
+          - unexpected value ""
+
+
+      33 |   await page.getByLabel('Photo').tap();
+      34 |   await nativeChoosePhoto();
+    > 35 |   await expect.soft(page.getByTestId('photo-result')).toHaveText(/^image\/.+/);
+         |                                                       ^
+      36 |
+      37 |   await fingerScroll();
+      38 |   await expect.soft(page.getByTestId('scroll-result')).toHaveText('Scrolled');
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:35:55
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByTestId('scroll-result')
+    Expected: "Scrolled"
+    Received: ""
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "soft toHaveText" getByTestId('scroll-result') with timeout 5000ms
+      - waiting for getByTestId('scroll-result')
+        13 × locator resolved to <output data-testid="scroll-result"></output>
+           - unexpected value ""
+
+
+      36 |
+      37 |   await fingerScroll();
+    > 38 |   await expect.soft(page.getByTestId('scroll-result')).toHaveText('Scrolled');
+         |                                                        ^
+      39 | });
+      40 |
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:38:56
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: ios-sim-C02FB4F0-63BC-410E-9D37-AC60C69EC1F7 exit=1

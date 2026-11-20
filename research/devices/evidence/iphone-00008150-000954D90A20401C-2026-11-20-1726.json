@@ -1,0 +1,173 @@
+{
+  "config": {
+    "argv": [
+      "/Users/shyden/.local/share/node/v26.13.0/bin/node",
+      "/Users/shyden/Developer/Repos/playwright-devices-7tf/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "playwright.devices.config.ts"
+    ],
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices-7tf/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "testIgnore": [],
+        "testMatch": "journey.spec.ts",
+        "timeout": 300000,
+        "use": {},
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/devices/ios-webkit.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a page is read, tapped, typed into and scrolled by real input",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5099,
+                  "error": {
+                    "message": "Error: the marker read back 100 by 102 points, not square: the page is zoomed or the marker is clipped",
+                    "stack": "Error: the marker read back 100 by 102 points, not square: the page is zoomed or the marker is clipped\n    at screenMap (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/screen-map.ts:28:11)\n    at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/screen-marker.ts:59:14\n    at tap (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/real-input-page.ts:83:23)\n    at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:25:3",
+                    "location": {
+                      "file": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/screen-map.ts",
+                      "column": 11,
+                      "line": 28
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39mscreen-map.ts:28\n\n \u001b[90m 26 |\u001b[39m \u001b[36mexport\u001b[39m \u001b[36mfunction\u001b[39m screenMap(place\u001b[33m:\u001b[39m \u001b[33mMarkerPlace\u001b[39m\u001b[33m,\u001b[39m onScreen\u001b[33m:\u001b[39m \u001b[33mBox\u001b[39m) {\n \u001b[90m 27 |\u001b[39m   \u001b[36mif\u001b[39m (onScreen\u001b[33m.\u001b[39mwidth \u001b[33m!==\u001b[39m onScreen\u001b[33m.\u001b[39mheight) {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 28 |\u001b[39m     \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m           \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 29 |\u001b[39m       \u001b[32m`the marker read back ${onScreen.width} by ${onScreen.height} points, not square: the page is zoomed or the marker is clipped`\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 30 |\u001b[39m     )\u001b[33m;\u001b[39m\n \u001b[90m 31 |\u001b[39m   }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/screen-map.ts",
+                        "column": 11,
+                        "line": 28
+                      },
+                      "message": "Error: the marker read back 100 by 102 points, not square: the page is zoomed or the marker is clipped\n\n   at screen-map.ts:28\n\n  26 | export function screenMap(place: MarkerPlace, onScreen: Box) {\n  27 |   if (onScreen.width !== onScreen.height) {\n> 28 |     throw new Error(\n     |           ^\n  29 |       `the marker read back ${onScreen.width} by ${onScreen.height} points, not square: the page is zoomed or the marker is clipped`,\n  30 |     );\n  31 |   }\n    at screenMap (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/screen-map.ts:28:11)\n    at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/screen-marker.ts:59:14\n    at tap (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/real-input-page.ts:83:23)\n    at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:25:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T10:26:04.511Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/screen-map.ts",
+                    "column": 11,
+                    "line": 28
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
+          "file": "journey.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T10:26:04.293Z",
+    "duration": 5363.87,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

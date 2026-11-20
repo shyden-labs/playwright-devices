@@ -1,0 +1,29 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (5.9s)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    Error: the marker read back 100 by 102 points, not square: the page is zoomed or the marker is clipped
+
+       at screen-map.ts:28
+
+      26 | export function screenMap(place: MarkerPlace, onScreen: Box) {
+      27 |   if (onScreen.width !== onScreen.height) {
+    > 28 |     throw new Error(
+         |           ^
+      29 |       `the marker read back ${onScreen.width} by ${onScreen.height} points, not square: the page is zoomed or the marker is clipped`,
+      30 |     );
+      31 |   }
+        at screenMap (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/screen-map.ts:28:11)
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/screen-marker.ts:91:14
+        at tap (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/real-input-page.ts:83:23)
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:25:3
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: iphone-00008150-000954D90A20401C exit=1

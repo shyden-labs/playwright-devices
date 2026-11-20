@@ -1,0 +1,59 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (3.3m)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByTestId('file-result')
+    Expected: "device-journey.txt"
+    Received: ""
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "soft toHaveText" getByTestId('file-result') with timeout 5000ms
+      - waiting for getByTestId('file-result')
+        6 × locator resolved to <output data-testid="file-result"></output>
+          - unexpected value ""
+
+
+      29 |   await page.getByLabel('File').tap();
+      30 |   await nativeChooseFile();
+    > 31 |   await expect.soft(page.getByTestId('file-result')).toHaveText('device-journey.txt');
+         |                                                      ^
+      32 |
+      33 |   await page.getByLabel('Photo').tap();
+      34 |   await nativeChoosePhoto();
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:31:54
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('photo-result')
+    Expected pattern: /^image\/.+/
+    Received string:  ""
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "soft toHaveText" getByTestId('photo-result') with timeout 5000ms
+      - waiting for getByTestId('photo-result')
+        7 × locator resolved to <output data-testid="photo-result"></output>
+          - unexpected value ""
+
+
+      33 |   await page.getByLabel('Photo').tap();
+      34 |   await nativeChoosePhoto();
+    > 35 |   await expect.soft(page.getByTestId('photo-result')).toHaveText(/^image\/.+/);
+         |                                                       ^
+      36 |
+      37 |   await fingerScroll();
+      38 |   await expect.soft(page.getByTestId('scroll-result')).toHaveText('Scrolled');
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:35:55
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: ios-sim-C02FB4F0-63BC-410E-9D37-AC60C69EC1F7 exit=1

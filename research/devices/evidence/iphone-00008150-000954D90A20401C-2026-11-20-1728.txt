@@ -1,0 +1,29 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (1.2m)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    Error: none of "device-journey" showed within 60000 ms; nothing was tapped
+
+       at wda-client.ts:97
+
+       95 |     const deadline = clock.now() + ceilingMs;
+       96 |     while (!(await ready())) {
+    >  97 |       if (clock.now() >= deadline) throw new Error(failure);
+          |                                          ^
+       98 |       await clock.sleep(POLL_MS);
+       99 |     }
+      100 |   }
+        at waitFor (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/wda-client.ts:97:42)
+        at Object.tapFirstShown (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/wda-client.ts:220:7)
+        at iosChooseFile (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/ios-native.ts:34:3)
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:30:3
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: iphone-00008150-000954D90A20401C exit=1
