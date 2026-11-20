@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { WdaClock } from '../../research/devices/wda-client.ts';
 import { MARKER_LABEL, screenPointsOf, type MarkerPage } from '../../research/devices/screen-marker.ts';
 import { MARKER_CSS_SIZE, type Box } from '../../research/devices/screen-map.ts';
 
@@ -42,6 +43,19 @@ function fakePage(log: string[]): MarkerPage {
 
 const box: Box = { x: 16, y: 92, width: 96, height: 48 };
 
+/** A clock that only moves when the code sleeps; past 5 s means a wait without its ceiling. */
+function fakeClock(): WdaClock {
+  let t = 0;
+  return {
+    now: () => t,
+    sleep: (ms: number) => {
+      t += ms;
+      if (t > 5_000) return Promise.reject(new Error('waited past 5000 ms: a wait has no ceiling'));
+      return Promise.resolve();
+    },
+  };
+}
+
 describe('screenPointsOf', () => {
   it('draws the fixed marker, reads it back through WebDriverAgent, removes it, and maps the box centre', async () => {
     const log: string[] = [];
@@ -66,6 +80,8 @@ describe('screenPointsOf', () => {
         pointerEvents: 'none',
         background: 'rgb(255, 0, 255)',
       })} role=img`,
+      // Read twice: two agreeing reads mean the page has stopped moving.
+      `read ${MARKER_LABEL}`,
       `read ${MARKER_LABEL}`,
       `removed ${MARKER_LABEL}`,
     ]);
@@ -75,6 +91,8 @@ describe('screenPointsOf', () => {
     const log: string[] = [];
     const rects = [
       { x: 0, y: 68, width: 100, height: 100 },
+      { x: 0, y: 68, width: 100, height: 100 },
+      { x: 0, y: 20, width: 100, height: 100 },
       { x: 0, y: 20, width: 100, height: 100 },
     ];
     const reader = { rectOf: () => Promise.resolve(rects.shift() as Box) };
@@ -82,6 +100,31 @@ describe('screenPointsOf', () => {
 
     expect(await toScreen(box)).toEqual({ x: 64, y: 184 });
     expect(await toScreen(box)).toEqual({ x: 64, y: 136 });
+  });
+
+  it('waits for the page to stop moving: a read taken while the keyboard moved it is not used', async () => {
+    // Measured on the iPhone Air, 2026-11-20: right after typing, the marker read back 100 by 102.
+    const rects = [
+      { x: 0, y: 300, width: 100, height: 102 },
+      { x: 0, y: 68, width: 100, height: 100 },
+      { x: 0, y: 68, width: 100, height: 100 },
+    ];
+    const reader = { rectOf: () => Promise.resolve(rects.shift() as Box) };
+
+    expect(await screenPointsOf(fakePage([]), reader, fakeClock())(box)).toEqual({ x: 64, y: 184 });
+  });
+
+  it('fails at 5 s when the marker never reads the same twice, naming the last two reads, and removes it', async () => {
+    const log: string[] = [];
+    let y = 0;
+    const reader = { rectOf: () => Promise.resolve({ x: 0, y: (y += 1), width: 100, height: 100 }) };
+    const clock = fakeClock();
+
+    await expect(screenPointsOf(fakePage(log), reader, clock)(box)).rejects.toThrow(
+      /^the marker did not settle within 5000 ms; last two reads: \{"x":0,"y":\d+,"width":100,"height":100\} then \{/,
+    );
+    expect(clock.now()).toBe(5_000);
+    expect(log.at(-1)).toBe(`removed ${MARKER_LABEL}`);
   });
 
   it('removes the marker even when WebDriverAgent cannot find it, and passes the failure on', async () => {

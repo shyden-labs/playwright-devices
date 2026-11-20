@@ -8,7 +8,7 @@
  * on every call follows the browser's toolbar, which can move after a scroll.
  */
 import { MARKER_CSS_SIZE, screenMap, type Box } from './screen-map.ts';
-import type { ScreenPoint } from './wda-client.ts';
+import type { ScreenPoint, WdaClock } from './wda-client.ts';
 
 /** The marker's accessibility label: the name the phone lists it by. */
 export const MARKER_LABEL = 'playwright-devices screen marker';
@@ -49,14 +49,46 @@ function removeMarker({ label }: MarkerSpec): void {
   for (const marker of document.querySelectorAll(`[aria-label="${label}"]`)) marker.remove();
 }
 
-/** A `toScreen` for the page stand-in: the screen point at the centre of a page box. */
-export function screenPointsOf(page: MarkerPage, reader: MarkerReader): (box: Box) => Promise<ScreenPoint> {
+/** How long the page may take to stop moving after a keyboard shows or hides, or the toolbar moves. */
+const SETTLE_CEILING_MS = 5_000;
+
+/** Pause between reads while the page settles. */
+const SETTLE_POLL_MS = 100;
+
+const realClock: WdaClock = {
+  now: () => Date.now(),
+  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+};
+
+/** Reads the marker until two reads in a row agree, failing at the ceiling naming the last two. */
+async function settledRect(reader: MarkerReader, clock: WdaClock): Promise<Box> {
+  const deadline = clock.now() + SETTLE_CEILING_MS;
+  let previous = await reader.rectOf(MARKER_LABEL);
+  for (;;) {
+    const current = await reader.rectOf(MARKER_LABEL);
+    if (JSON.stringify(current) === JSON.stringify(previous)) return current;
+    if (clock.now() >= deadline) {
+      throw new Error(
+        `the marker did not settle within ${SETTLE_CEILING_MS} ms; last two reads: ${JSON.stringify(previous)} then ${JSON.stringify(current)}`,
+      );
+    }
+    previous = current;
+    await clock.sleep(SETTLE_POLL_MS);
+  }
+}
+
+/**
+ * A `toScreen` for the page stand-in: the screen point at the centre of a page
+ * box. The marker is read until two reads agree: right after typing on the
+ * iPhone Air it read back 100 by 102 points while the keyboard moved the page
+ * (2026-11-20).
+ */
+export function screenPointsOf(page: MarkerPage, reader: MarkerReader, clock: WdaClock = realClock): (box: Box) => Promise<ScreenPoint> {
   const spec: MarkerSpec = { label: MARKER_LABEL, size: MARKER_CSS_SIZE };
   return async (box) => {
     await page.evaluate(drawMarker, spec);
     try {
-      const onScreen = await reader.rectOf(MARKER_LABEL);
-      return screenMap({ cssLeft: 0, cssTop: 0 }, onScreen).centreOf(box);
+      return screenMap({ cssLeft: 0, cssTop: 0 }, await settledRect(reader, clock)).centreOf(box);
     } finally {
       await page.evaluate(removeMarker, spec);
     }
