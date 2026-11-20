@@ -1,0 +1,163 @@
+import type { Page } from '@playwright/test';
+import { describe, expect, it } from 'vitest';
+import { androidSession, iosSession } from '../../research/devices/device-session.ts';
+import { PHOTO_GRID_IMAGE } from '../../research/devices/ios-native.ts';
+
+/** A WebDriverAgent stand-in recording each step; `shown` is what the screen lists. */
+function fakeWda(shown: string[] = []) {
+  const steps: string[] = [];
+  return {
+    steps,
+    tapFirstShown: (labels: string[]) => {
+      const hit = labels.find((label) => shown.includes(label)) ?? labels[0] ?? '';
+      steps.push(`tap ${hit}`);
+      return Promise.resolve(hit);
+    },
+    tapIfShown: (labels: string[]) => {
+      const hit = labels.find((label) => shown.includes(label));
+      steps.push(hit === undefined ? `look for ${labels.join(', ')}` : `tap ${hit}`);
+      return Promise.resolve(hit);
+    },
+    tapTopLeftOf: (predicate: string) => {
+      steps.push(`tap top-left of ${predicate}`);
+      return Promise.resolve();
+    },
+    tapAt: () => Promise.resolve(),
+    typeText: () => Promise.resolve(),
+    rectOf: () => Promise.resolve({ x: 0, y: 0, width: 100, height: 100 }),
+    windowSize: () => Promise.resolve({ width: 400, height: 800 }),
+    swipe: (from: { x: number; y: number }, to: { x: number; y: number }) => {
+      steps.push(`swipe ${from.x},${from.y} -> ${to.x},${to.y}`);
+      return Promise.resolve();
+    },
+    close: () => {
+      steps.push('close');
+      return Promise.resolve();
+    },
+  };
+}
+
+const page = {} as Page;
+const file = { folder: 'WebDriverAgentRunner-Runner', label: 'device-journey' };
+
+describe('iosSession', () => {
+  it('routes each native step through WebDriverAgent', async () => {
+    const wda = fakeWda(['Choose File', 'Browse', 'On My iPhone']);
+    const session = iosSession({ page, wda, baseURL: 'http://mac.local:4321', file });
+
+    await session.nativeChoose('Green');
+    await session.nativeChooseFile();
+    await session.nativeChoosePhoto();
+    await session.fingerScroll();
+
+    expect(wda.steps).toEqual([
+      'tap Green',
+      'tap Choose File',
+      'tap Browse',
+      'tap On My iPhone',
+      `tap ${file.folder}`,
+      `tap ${file.label}`,
+      'tap Photo Library',
+      `tap top-left of ${PHOTO_GRID_IMAGE}`,
+      'tap Done',
+      'swipe 200,360 -> 200,120',
+    ]);
+  });
+
+  it('close shuts a picker left open, then ends the WebDriverAgent session', async () => {
+    const wda = fakeWda(['Cancel']);
+    await iosSession({ page, wda, baseURL: 'http://mac.local:4321', file }).close();
+    expect(wda.steps).toEqual(['tap Cancel', 'look for Done', 'close']);
+  });
+
+  it('close ends the WebDriverAgent session even when closing the picker fails, and reports that failure', async () => {
+    const wda = fakeWda();
+    wda.tapIfShown = () => Promise.reject(new Error('WebDriverAgent went away'));
+    await expect(iosSession({ page, wda, baseURL: 'http://mac.local:4321', file }).close()).rejects.toThrow('WebDriverAgent went away');
+    expect(wda.steps).toEqual(['close']);
+  });
+
+  it('gives the test a page stand-in, not the real page', () => {
+    const session = iosSession({ page, wda: fakeWda(), baseURL: 'http://mac.local:4321', file });
+    expect(session.page).not.toBe(page);
+  });
+});
+
+/** An adb stand-in: the screen lists `shown`, the size is 1080x2400; every call is recorded. */
+function fakeAdb(shown: string[] = []) {
+  const calls: string[] = [];
+  const adb = (args: string[]) => {
+    const call = args.join(' ');
+    calls.push(call);
+    if (call.startsWith('exec-out uiautomator dump')) {
+      const nodes = shown.map((text, i) => `<node text="${text}" content-desc="" bounds="[0,${i * 100}][100,${i * 100 + 100}]" />`);
+      return Promise.resolve(`<hierarchy>${nodes.join('')}</hierarchy>`);
+    }
+    if (call === 'shell wm size') return Promise.resolve('Physical size: 1080x2400\n');
+    return Promise.resolve('');
+  };
+  return { adb, calls, kept: () => calls.filter((c) => !c.startsWith('exec-out uiautomator dump')) };
+}
+
+const files = { document: '/repo/fixtures/device-journey.txt', photo: '/repo/fixtures/device-journey.png' };
+const BROADCAST = 'shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://';
+
+describe('androidSession', () => {
+  it('stages the document in Downloads and the photo in Pictures before the test, so the pickers list them', async () => {
+    const device = fakeAdb();
+    await androidSession({ page, adb: device.adb, files });
+    expect(device.kept()).toEqual([
+      'push /repo/fixtures/device-journey.txt /sdcard/Download/device-journey.txt',
+      `${BROADCAST}/sdcard/Download/device-journey.txt`,
+      'push /repo/fixtures/device-journey.png /sdcard/Pictures/device-journey.png',
+      `${BROADCAST}/sdcard/Pictures/device-journey.png`,
+    ]);
+  });
+
+  it('routes each native step through uiautomator and adb input, and gives the test the real page', async () => {
+    const device = fakeAdb(['Green', 'Files', 'device-journey.txt']);
+    const session = await androidSession({ page, adb: device.adb, files });
+    const before = device.kept().length;
+
+    await session.nativeChoose('Green');
+    await session.nativeChooseFile();
+    await session.fingerScroll();
+
+    expect(session.page).toBe(page);
+    expect(device.kept().slice(before)).toEqual([
+      'shell input tap 50 50',
+      'shell input tap 50 150',
+      'shell input tap 50 250',
+      'shell wm size',
+      'shell input swipe 540 1080 540 360 400',
+    ]);
+  });
+
+  it('close shuts a picker left open, then removes both staged files', async () => {
+    const device = fakeAdb(['Done']);
+    const session = await androidSession({ page, adb: device.adb, files });
+    const before = device.kept().length;
+
+    await session.close();
+
+    expect(device.kept().slice(before)).toEqual([
+      'shell input tap 50 50',
+      'shell rm -f /sdcard/Download/device-journey.txt',
+      `${BROADCAST}/sdcard/Download/device-journey.txt`,
+      'shell rm -f /sdcard/Pictures/device-journey.png',
+      `${BROADCAST}/sdcard/Pictures/device-journey.png`,
+    ]);
+  });
+
+  it('close removes the staged files even when closing the picker fails, and reports that failure', async () => {
+    const device = fakeAdb();
+    let screenReadable = true;
+    const adb = (args: string[]) =>
+      !screenReadable && args[1] === 'uiautomator' ? Promise.reject(new Error('device offline')) : device.adb(args);
+    const session = await androidSession({ page, adb, files });
+    screenReadable = false;
+
+    await expect(session.close()).rejects.toThrow('device offline');
+    expect(device.calls.filter((c) => c.startsWith('shell rm -f'))).toHaveLength(2);
+  });
+});
