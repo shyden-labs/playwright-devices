@@ -31,17 +31,17 @@ describe('centreOfText', () => {
   });
 });
 
-/** A trimmed dump of Google's photo picker: two photos in a row, one below. */
+/** A trimmed dump of Google's photo picker: a row of two photos, and one above on the right. */
 const PHOTOS = `<hierarchy rotation="0">
   <node text="" content-desc="Photo taken on 20 Nov 2026, 10:01" bounds="[400,500][700,800]" />
   <node text="" content-desc="Photo taken on 20 Nov 2026, 10:02" bounds="[100,500][400,800]" />
-  <node text="" content-desc="Photo taken on 19 Nov 2026, 09:00" bounds="[100,200][400,499]" />
+  <node text="" content-desc="Photo taken on 19 Nov 2026, 09:00" bounds="[400,200][700,499]" />
   <node text="Done" content-desc="" bounds="[800,2200][1000,2300]" />
 </hierarchy>`;
 
 describe('centreOfFirstDescribed', () => {
   it('answers the topmost, then leftmost, node whose description starts with the prefix', () => {
-    expect(centreOfFirstDescribed(PHOTOS, 'Photo taken on')).toEqual({ x: 250, y: 349.5 });
+    expect(centreOfFirstDescribed(PHOTOS, 'Photo taken on')).toEqual({ x: 550, y: 349.5 });
   });
 
   it('answers undefined when no description starts with it', () => {
