@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MARKER_LABEL, screenPointsOf, type MarkerPage } from '../../research/devices/ios-marker.ts';
+import { MARKER_LABEL, screenPointsOf, type MarkerPage } from '../../research/devices/screen-marker.ts';
 import { MARKER_CSS_SIZE, type Box } from '../../research/devices/screen-map.ts';
 
 /** A page stand-in: runs each evaluated function against a tiny fake DOM and records what it did. */

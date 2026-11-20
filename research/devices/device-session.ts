@@ -15,9 +15,9 @@ import {
   stageAndroidFile,
 } from './android-native.ts';
 import { androidFingerScroll, iosFingerScroll, type Adb, type IosSwiper } from './finger-scroll.ts';
-import { screenPointsOf, type MarkerReader } from './ios-marker.ts';
+import { screenPointsOf, type MarkerReader } from './screen-marker.ts';
 import { iosChooseFile, iosChooseOption, iosChoosePhoto, iosClosePicker, type FileInFiles, type NativeScreen } from './ios-native.ts';
-import { iosPage, type IosInput } from './ios-page.ts';
+import { realInputPage, type RealInput } from './real-input-page.ts';
 
 /** What the journey's fixtures hand the test. */
 export interface DeviceSession {
@@ -40,7 +40,7 @@ async function thenAlways(first: () => Promise<void>, last: () => Promise<void>)
 }
 
 /** The WebDriverAgent client, as the iOS session uses it. */
-export type IosDevice = IosInput & MarkerReader & IosSwiper & NativeScreen & { close(): Promise<void> };
+export type IosDevice = RealInput & MarkerReader & IosSwiper & NativeScreen & { close(): Promise<void> };
 
 export interface IosSessionOptions {
   /** Safari's one tab, reached through ios_webkit_debug_proxy. */
@@ -53,7 +53,7 @@ export interface IosSessionOptions {
 
 export function iosSession({ page, wda, baseURL, file }: IosSessionOptions): DeviceSession {
   return {
-    page: iosPage(page, { input: wda, toScreen: screenPointsOf(page, wda), baseURL }),
+    page: realInputPage(page, { input: wda, toScreen: screenPointsOf(page, wda), baseURL }),
     nativeChoose: (option) => iosChooseOption(wda, option),
     nativeChooseFile: () => iosChooseFile(wda, file),
     nativeChoosePhoto: () => iosChoosePhoto(wda),

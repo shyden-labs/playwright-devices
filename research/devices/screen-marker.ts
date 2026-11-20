@@ -1,16 +1,16 @@
 /**
- * Page boxes to iOS screen points, measured afresh for every tap
+ * Page boxes to screen points, measured afresh for every tap
  * (shyden-labs/playwright-devices#7).
  *
  * The page draws a fixed 100x100 marker at the viewport's top left,
- * WebDriverAgent reads where it landed, and the marker is removed again.
- * Measuring on every call follows Safari's toolbar, which can move after a
- * scroll.
+ * the phone's accessibility tree says where it landed (WebDriverAgent on iOS,
+ * a uiautomator dump on Android), and the marker is removed again. Measuring
+ * on every call follows the browser's toolbar, which can move after a scroll.
  */
 import { MARKER_CSS_SIZE, screenMap, type Box } from './screen-map.ts';
 import type { ScreenPoint } from './wda-client.ts';
 
-/** The marker's accessibility label: the name WebDriverAgent finds it by. */
+/** The marker's accessibility label: the name the phone lists it by. */
 export const MARKER_LABEL = 'playwright-devices screen marker';
 
 /** The part of Playwright's `Page` the marker needs. */
@@ -18,7 +18,7 @@ export interface MarkerPage {
   evaluate<R, A>(fn: (arg: A) => R, arg: A): Promise<R>;
 }
 
-/** The part of the WebDriverAgent client the marker needs. */
+/** Where the phone lists an element, by its accessibility label. */
 export interface MarkerReader {
   rectOf(accessibilityId: string): Promise<Box>;
 }
@@ -49,7 +49,7 @@ function removeMarker({ label }: MarkerSpec): void {
   for (const marker of document.querySelectorAll(`[aria-label="${label}"]`)) marker.remove();
 }
 
-/** A `toScreen` for the iOS page: the screen point at the centre of a page box. */
+/** A `toScreen` for the page stand-in: the screen point at the centre of a page box. */
 export function screenPointsOf(page: MarkerPage, reader: MarkerReader): (box: Box) => Promise<ScreenPoint> {
   const spec: MarkerSpec = { label: MARKER_LABEL, size: MARKER_CSS_SIZE };
   return async (box) => {

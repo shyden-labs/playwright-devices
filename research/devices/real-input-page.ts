@@ -1,27 +1,28 @@
 /**
- * A stand-in for Playwright's `Page` on iOS Safari (shyden-labs/playwright-devices#7).
+ * A stand-in for Playwright's `Page` on a phone (shyden-labs/playwright-devices#7).
  *
- * Playwright reaches Safari through ios_webkit_debug_proxy and can navigate,
- * read and assert, but its input there is page JavaScript faking events. So
- * every read goes to the real page, and every tap and key goes to
- * WebDriverAgent as a real finger or key. Input not routed yet throws naming
- * the method: it never falls back to Playwright's synthetic events.
+ * Playwright can navigate, read and assert on Safari and Chrome on a phone,
+ * but its input there is not the phone's: page JavaScript faking events on iOS,
+ * DevTools-injected events on Android. So every read goes to the real page,
+ * and every tap and key goes to the phone's own input (WebDriverAgent on iOS,
+ * `adb shell input` on Android). Input not routed yet throws naming the
+ * method: it never falls back to Playwright's synthetic events.
  */
 import type { Locator, Page } from '@playwright/test';
 import type { Box } from './screen-map.ts';
 import type { ScreenPoint } from './wda-client.ts';
 
 /** The real input this stand-in sends. */
-export interface IosInput {
+export interface RealInput {
   tapAt(point: ScreenPoint): Promise<void>;
   typeText(text: string): Promise<void>;
 }
 
-export interface IosPageOptions {
-  input: IosInput;
+export interface RealInputPageOptions {
+  input: RealInput;
   /** The screen point at the centre of a page box. */
   toScreen: (box: Box) => Promise<ScreenPoint>;
-  /** Resolves relative URLs: Playwright gives this route no context of its own to hold it. */
+  /** Resolves relative URLs: Playwright gives the iOS route no context of its own to hold it. */
   baseURL: string;
 }
 
@@ -64,7 +65,7 @@ const UNROUTED_LOCATOR_INPUT = new Set([
 
 function refuse(method: string): () => never {
   return () => {
-    throw new Error(`not routed to WebDriverAgent yet: ${method}`);
+    throw new Error(`not routed to real input yet: ${method}`);
   };
 }
 
@@ -73,7 +74,7 @@ function refuseAll(prefix: string): object {
   return new Proxy({}, { get: (_target, prop) => refuse(`${prefix}.${String(prop)}`) });
 }
 
-export function iosPage(page: Page, { input, toScreen, baseURL }: IosPageOptions): Page {
+export function realInputPage(page: Page, { input, toScreen, baseURL }: RealInputPageOptions): Page {
   const nameOf = (locator: Locator): string => String((locator as unknown as { name?: string }).name ?? locator);
 
   async function tap(locator: Locator): Promise<void> {

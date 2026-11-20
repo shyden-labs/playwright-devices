@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { describe, expect, it } from 'vitest';
-import { iosPage, type IosInput } from '../../research/devices/ios-page.ts';
+import { realInputPage, type RealInput } from '../../research/devices/real-input-page.ts';
 import type { Box } from '../../research/devices/screen-map.ts';
 import type { ScreenPoint } from '../../research/devices/wda-client.ts';
 
@@ -44,7 +44,7 @@ function fakePage(calls: string[], box: Box | null = { x: 10, y: 20, width: 30, 
   return page as unknown as Page;
 }
 
-function fakeInput(calls: string[]): IosInput {
+function fakeInput(calls: string[]): RealInput {
   return {
     tapAt: (point: ScreenPoint) => {
       calls.push(`wda tap ${point.x},${point.y}`);
@@ -62,11 +62,11 @@ const toScreen = (box: Box) => Promise.resolve({ x: box.x + box.width / 2, y: 10
 
 function build(box?: Box | null) {
   const calls: string[] = [];
-  const page = iosPage(fakePage(calls, box), { input: fakeInput(calls), toScreen, baseURL: 'http://127.0.0.1:4173/' });
+  const page = realInputPage(fakePage(calls, box), { input: fakeInput(calls), toScreen, baseURL: 'http://127.0.0.1:4173/' });
   return { calls, page };
 }
 
-describe('iosPage', () => {
+describe('realInputPage', () => {
   it('opens a relative URL against the base URL, which this route ignores otherwise', async () => {
     const { calls, page } = build();
 
@@ -130,6 +130,6 @@ describe('iosPage', () => {
   ])('refuses %s, which is not routed to real input yet, rather than fake it', (_name, act, method) => {
     const { page } = build();
 
-    expect(() => act(page)).toThrow(`not routed to WebDriverAgent yet: ${method}`);
+    expect(() => act(page)).toThrow(`not routed to real input yet: ${method}`);
   });
 });
