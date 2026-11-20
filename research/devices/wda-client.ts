@@ -112,6 +112,15 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
     return (await find('class name', 'XCUIElementTypeKeyboard')).length > 0;
   }
 
+  /** The first of `labels` the screen lists now, with its element id. */
+  async function firstShown(labels: string[]): Promise<{ label: string; id: string } | undefined> {
+    for (const label of labels) {
+      const [id] = await find('predicate string', `label == "${label}"`);
+      if (id !== undefined) return { label, id };
+    }
+    return undefined;
+  }
+
   async function tapAt(point: ScreenPoint): Promise<void> {
     await call(
       'POST',
@@ -204,20 +213,22 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
     async tapFirstShown(labels: string[]): Promise<string> {
       let hit: { label: string; id: string } | undefined;
       const anyShown = async (): Promise<boolean> => {
-        for (const label of labels) {
-          const [id] = await find('predicate string', `label == "${label}"`);
-          if (id !== undefined) {
-            hit = { label, id };
-            return true;
-          }
-        }
-        return false;
+        hit = await firstShown(labels);
+        return hit !== undefined;
       };
       const named = labels.map((label) => `"${label}"`).join(', ');
       await waitFor(anyShown, NATIVE_CEILING_MS, `none of ${named} showed within ${NATIVE_CEILING_MS} ms; nothing was tapped`);
       const { label, id } = hit as { label: string; id: string };
       await call('POST', `${base}/element/${encodeURIComponent(id)}/click`, {});
       return label;
+    },
+
+    /** Looks once, without waiting, and taps the first of `labels` listed; answers it, or undefined when none showed. */
+    async tapIfShown(labels: string[]): Promise<string | undefined> {
+      const hit = await firstShown(labels);
+      if (hit === undefined) return undefined;
+      await call('POST', `${base}/element/${encodeURIComponent(hit.id)}/click`, {});
+      return hit.label;
     },
   };
 }

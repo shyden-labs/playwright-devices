@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PHOTO_GRID_IMAGE, iosChooseFile, iosChooseOption, iosChoosePhoto } from '../../research/devices/ios-native.ts';
+import { PHOTO_GRID_IMAGE, iosChooseFile, iosChooseOption, iosChoosePhoto, iosClosePicker } from '../../research/devices/ios-native.ts';
 
 /** A native screen stand-in: each look answers the first listed label that is "shown", and records every step. */
 function fakeScreen(shown: string[]) {
@@ -10,6 +10,11 @@ function fakeScreen(shown: string[]) {
       const hit = labels.find((label) => shown.includes(label));
       if (hit === undefined) return Promise.reject(new Error(`none of ${labels.join(', ')} showed`));
       steps.push(`tap ${hit}`);
+      return Promise.resolve(hit);
+    },
+    tapIfShown(labels: string[]) {
+      const hit = labels.find((label) => shown.includes(label));
+      steps.push(hit === undefined ? `look for ${labels.join(', ')}` : `tap ${hit}`);
       return Promise.resolve(hit);
     },
     tapTopLeftOf(predicate: string) {
@@ -49,5 +54,19 @@ describe('iosChoosePhoto', () => {
     await iosChoosePhoto(screen);
     expect(screen.steps).toEqual(['tap Photo Library', `tap top-left of ${PHOTO_GRID_IMAGE}`, 'tap Done']);
     expect(PHOTO_GRID_IMAGE).toBe("type == 'XCUIElementTypeImage' AND name == 'PXGGridLayout-Info'");
+  });
+});
+
+describe('iosClosePicker', () => {
+  it('a picker left open swallows the next run’s touches: Cancel, then Done, whichever shows', async () => {
+    const screen = fakeScreen(['Cancel', 'Done']);
+    await iosClosePicker(screen);
+    expect(screen.steps).toEqual(['tap Cancel', 'tap Done']);
+  });
+
+  it('with no picker open, it only looks', async () => {
+    const screen = fakeScreen([]);
+    await iosClosePicker(screen);
+    expect(screen.steps).toEqual(['look for Cancel', 'look for Done']);
   });
 });

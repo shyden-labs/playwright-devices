@@ -7,6 +7,7 @@
 /** The part of the WebDriverAgent client the native steps need. */
 export interface NativeScreen {
   tapFirstShown(labels: string[]): Promise<string>;
+  tapIfShown(labels: string[]): Promise<string | undefined>;
   tapTopLeftOf(predicate: string): Promise<void>;
 }
 
@@ -38,4 +39,14 @@ export async function iosChoosePhoto(screen: NativeScreen): Promise<void> {
   await screen.tapFirstShown(['Photo Library']);
   await screen.tapTopLeftOf(PHOTO_GRID_IMAGE);
   await screen.tapFirstShown(['Done']);
+}
+
+/**
+ * Closes a native picker a failed step left open: one left open swallowed the
+ * next run's touches (2026-11-19 simulator run). Cancel leaves Files and the
+ * Photo Library; Done leaves a picker that only Done closes. Looks, never waits.
+ */
+export async function iosClosePicker(screen: NativeScreen): Promise<void> {
+  await screen.tapIfShown(['Cancel']);
+  await screen.tapIfShown(['Done']);
 }

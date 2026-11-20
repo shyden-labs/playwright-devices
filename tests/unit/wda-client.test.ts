@@ -315,3 +315,36 @@ describe('tapTopLeftOf', () => {
     expect(wda.calls.some((c) => c.path.endsWith('/actions'))).toBe(false);
   });
 });
+
+describe('tapIfShown', () => {
+  /** WebDriverAgent listing only the labels in `shown`. */
+  function screenWith(shown: string[]) {
+    return fakeWda({
+      ...session,
+      'POST /session/s1/elements': (call) => {
+        const label = /^label == "(.*)"$/.exec((call.body as { value: string }).value)?.[1] ?? '';
+        return shown.includes(label) ? [{ ELEMENT: `el-${label}` }] : [];
+      },
+      'POST /session/s1/element/el-Cancel/click': () => null,
+    });
+  }
+
+  it('taps the label when the screen lists it, and answers the label', async () => {
+    const wda = screenWith(['Cancel']);
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    expect(await client.tapIfShown(['Done', 'Cancel'])).toBe('Cancel');
+    expect(wda.calls.filter((c) => c.path.endsWith('/click')).map((c) => c.path)).toEqual(['/session/s1/element/el-Cancel/click']);
+  });
+
+  it('looks once, without waiting, and taps nothing when no label shows', async () => {
+    const wda = screenWith([]);
+    const clock = fakeClock();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock });
+
+    expect(await client.tapIfShown(['Cancel', 'Done'])).toBeUndefined();
+    expect(clock.now()).toBe(0);
+    expect(wda.calls.filter((c) => c.path === '/session/s1/elements')).toHaveLength(2);
+    expect(wda.calls.some((c) => c.path.endsWith('/click'))).toBe(false);
+  });
+});
