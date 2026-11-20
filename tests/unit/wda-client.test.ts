@@ -440,3 +440,32 @@ describe('screenshot', () => {
     expect(await client.screenshot()).toEqual(png);
   });
 });
+
+describe('waitGone', () => {
+  it('waits until nothing matches the predicate: a picker still closing swallows the next swipe', async () => {
+    let looks = 0;
+    const wda = fakeWda({
+      ...session,
+      'POST /session/s1/elements': () => {
+        looks += 1;
+        return looks < 4 ? [{ ELEMENT: 'done' }] : [];
+      },
+    });
+    const clock = fakeClock();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock });
+
+    await client.waitGone('label == "Done"');
+
+    expect(looks).toBe(4);
+    expect(wda.calls.find((c) => c.path === '/session/s1/elements')?.body).toEqual({ using: 'predicate string', value: 'label == "Done"' });
+  });
+
+  it('fails at 60 s naming what stayed', async () => {
+    const wda = fakeWda({ ...session, 'POST /session/s1/elements': () => [{ ELEMENT: 'done' }] });
+    const clock = fakeClock();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock });
+
+    await expect(client.waitGone('label == "Done"')).rejects.toThrow('label == "Done" was still on the screen after 60000 ms');
+    expect(clock.now()).toBe(60_000);
+  });
+});

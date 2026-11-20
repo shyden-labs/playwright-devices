@@ -17,6 +17,10 @@ function fakeScreen(shown: string[]) {
       steps.push(hit === undefined ? `look for ${labels.join(', ')}` : `tap ${hit}`);
       return Promise.resolve(hit);
     },
+    waitGone(predicate: string) {
+      steps.push(`wait until gone: ${predicate}`);
+      return Promise.resolve();
+    },
     tapCellIcon(name: string) {
       steps.push(`tap the icon of ${name}`);
       return Promise.resolve();
@@ -48,13 +52,20 @@ describe('iosChooseFile', () => {
       'tap On My iPhone',
       `tap the icon of ${file.folder}`,
       `tap the icon of ${file.label}`,
+      `wait until gone: type == 'XCUIElementTypeCell' AND label BEGINSWITH '${file.label}, '`,
     ]);
   });
 
   it('on the iPad, whose picker opens with its sidebar: Choose File, On My iPad, the runner’s folder, the file', async () => {
     const screen = fakeScreen(['Choose File', 'On My iPad']);
     await iosChooseFile(screen, file);
-    expect(screen.steps).toEqual(['tap Choose File', 'tap On My iPad', `tap the icon of ${file.folder}`, `tap the icon of ${file.label}`]);
+    expect(screen.steps).toEqual([
+      'tap Choose File',
+      'tap On My iPad',
+      `tap the icon of ${file.folder}`,
+      `tap the icon of ${file.label}`,
+      `wait until gone: type == 'XCUIElementTypeCell' AND label BEGINSWITH '${file.label}, '`,
+    ]);
   });
 });
 
@@ -62,7 +73,12 @@ describe('iosChoosePhoto', () => {
   it('Photo Library, the first photo in the grid, Done', async () => {
     const screen = fakeScreen(['Photo Library', 'Done']);
     await iosChoosePhoto(screen);
-    expect(screen.steps).toEqual(['tap Photo Library', `tap top-left of ${PHOTO_GRID_IMAGE}`, 'tap Done']);
+    expect(screen.steps).toEqual([
+      'tap Photo Library',
+      `tap top-left of ${PHOTO_GRID_IMAGE}`,
+      'tap Done',
+      `wait until gone: ${PHOTO_GRID_IMAGE}`,
+    ]);
     expect(PHOTO_GRID_IMAGE).toBe("type == 'XCUIElementTypeImage' AND name == 'PXGGridLayout-Info'");
   });
 });

@@ -9,6 +9,7 @@ export interface NativeScreen {
   tapFirstShown(labels: string[]): Promise<string>;
   tapIfShown(labels: string[]): Promise<string | undefined>;
   tapCellIcon(name: string): Promise<void>;
+  waitGone(predicate: string): Promise<void>;
   tapTopLeftOf(predicate: string): Promise<void>;
 }
 
@@ -33,6 +34,8 @@ export async function iosChooseFile(screen: NativeScreen, { folder, label }: Fil
   if (reached === 'Browse') await screen.tapFirstShown(['On My iPhone', 'On My iPad']);
   await screen.tapCellIcon(folder);
   await screen.tapCellIcon(label);
+  // The picker is still closing for a while after the tap; the next touch must not land on it.
+  await screen.waitGone(`type == 'XCUIElementTypeCell' AND label BEGINSWITH '${label}, '`);
 }
 
 /** Photo Library, the grid's first photo, Done: the picker selects on tap and returns only on Done. */
@@ -40,6 +43,7 @@ export async function iosChoosePhoto(screen: NativeScreen): Promise<void> {
   await screen.tapFirstShown(['Photo Library']);
   await screen.tapTopLeftOf(PHOTO_GRID_IMAGE);
   await screen.tapFirstShown(['Done']);
+  await screen.waitGone(PHOTO_GRID_IMAGE);
 }
 
 /**

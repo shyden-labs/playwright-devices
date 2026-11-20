@@ -261,6 +261,16 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
       await tapAt({ x: cell.x + cell.width / 2, y: cell.y + cell.height / 4 });
     },
 
+    /**
+     * Waits until nothing matches `predicate`: a native picker still closing
+     * swallows the next touch (iPad simulator, 2026-11-20: the finger scroll
+     * right after the photo picker's Done was lost).
+     */
+    async waitGone(predicate: string): Promise<void> {
+      const gone = async (): Promise<boolean> => (await find('predicate string', predicate)).length === 0;
+      await waitFor(gone, NATIVE_CEILING_MS, `${predicate} was still on the screen after ${NATIVE_CEILING_MS} ms`);
+    },
+
     /** Looks once, without waiting, and taps the first of `labels` listed; answers it, or undefined when none showed. */
     async tapIfShown(labels: string[]): Promise<string | undefined> {
       const hit = await firstShown(labels);

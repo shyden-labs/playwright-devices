@@ -18,6 +18,10 @@ function fakeWda(shown: string[] = []) {
       steps.push(hit === undefined ? `look for ${labels.join(', ')}` : `tap ${hit}`);
       return Promise.resolve(hit);
     },
+    waitGone: (predicate: string) => {
+      steps.push(`wait until gone: ${predicate}`);
+      return Promise.resolve();
+    },
     tapCellIcon: (name: string) => {
       steps.push(`tap the icon of ${name}`);
       return Promise.resolve();
@@ -62,9 +66,11 @@ describe('iosSession', () => {
       'tap On My iPhone',
       `tap the icon of ${file.folder}`,
       `tap the icon of ${file.label}`,
+      `wait until gone: type == 'XCUIElementTypeCell' AND label BEGINSWITH '${file.label}, '`,
       'tap Photo Library',
       `tap top-left of ${PHOTO_GRID_IMAGE}`,
       'tap Done',
+      `wait until gone: ${PHOTO_GRID_IMAGE}`,
       'swipe 200,360 -> 200,120',
     ]);
   });
