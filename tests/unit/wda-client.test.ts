@@ -214,3 +214,46 @@ describe('close', () => {
     expect(wda.calls.map((c) => `${c.method} ${c.path}`)).toEqual(['POST /session', 'DELETE /session/s1']);
   });
 });
+
+describe('rectOf', () => {
+  /** A screen whose element `label` is listed from the `shownFromLook`th look on. */
+  function screenWithRect(label: string, rect: object, shownFromLook = 1) {
+    let looks = 0;
+    return fakeWda({
+      ...session,
+      'POST /session/s1/elements': (call) => {
+        looks += 1;
+        const body = call.body as { using: string; value: string };
+        return body.using === 'accessibility id' && body.value === label && looks >= shownFromLook ? [{ ELEMENT: 'm1' }] : [];
+      },
+      'GET /session/s1/element/m1/rect': () => rect,
+    });
+  }
+
+  it('answers the screen rectangle of the element with that accessibility id', async () => {
+    const wda = screenWithRect('marker', { x: 0, y: 68, width: 100, height: 100 });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    expect(await client.rectOf('marker')).toEqual({ x: 0, y: 68, width: 100, height: 100 });
+    expect(wda.calls.at(-1)).toMatchObject({ method: 'GET', path: '/session/s1/element/m1/rect' });
+  });
+
+  it('keeps looking while the element is not yet listed', async () => {
+    const wda = screenWithRect('marker', { x: 0, y: 68, width: 100, height: 100 }, 4);
+    const clock = fakeClock();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock });
+
+    expect(await client.rectOf('marker')).toEqual({ x: 0, y: 68, width: 100, height: 100 });
+    expect(wda.calls.filter((c) => c.path === '/session/s1/elements')).toHaveLength(4);
+  });
+
+  it('fails at 5 s naming the element when it is never listed, and reads no rectangle', async () => {
+    const wda = screenWithRect('marker', {}, Number.POSITIVE_INFINITY);
+    const clock = fakeClock();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock });
+
+    await expect(client.rectOf('marker')).rejects.toThrow('no element with accessibility id "marker" showed within 5000 ms');
+    expect(clock.now()).toBe(5_000);
+    expect(wda.calls.some((c) => c.path.endsWith('/rect'))).toBe(false);
+  });
+});

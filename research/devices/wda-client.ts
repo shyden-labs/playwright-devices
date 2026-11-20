@@ -33,10 +33,22 @@ const KEYBOARD_CEILING_MS = 15_000;
 /** The simulator's Files picker was first listed 26 s after the tap (2026-11-19 evidence); about twice that. */
 const NATIVE_CEILING_MS = 60_000;
 
+/**
+ * Assumed, not yet measured: the page marker is drawn just before it is looked
+ * for, so it should be listed at once; the iPad simulator run measures it.
+ */
+const ELEMENT_CEILING_MS = 5_000;
+
 /** A point on the screen, in WebDriverAgent's points. */
 export interface ScreenPoint {
   x: number;
   y: number;
+}
+
+/** A rectangle on the screen, in WebDriverAgent's points. */
+export interface ScreenRect extends ScreenPoint {
+  width: number;
+  height: number;
 }
 
 /** W3C's key for an element reference; WebDriverAgent also sends the older `ELEMENT`. */
@@ -108,6 +120,21 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
         `the on-screen keyboard did not show within ${KEYBOARD_CEILING_MS} ms; no keys were sent`,
       );
       await call('POST', `${base}/wda/keys`, { value: graphemes(text) });
+    },
+
+    /** The screen rectangle, in points, of the element with this accessibility id, once it is listed. */
+    async rectOf(accessibilityId: string): Promise<ScreenRect> {
+      let id: string | undefined;
+      const listed = async (): Promise<boolean> => {
+        [id] = await find('accessibility id', accessibilityId);
+        return id !== undefined;
+      };
+      await waitFor(
+        listed,
+        ELEMENT_CEILING_MS,
+        `no element with accessibility id "${accessibilityId}" showed within ${ELEMENT_CEILING_MS} ms`,
+      );
+      return (await call('GET', `${base}/element/${encodeURIComponent(id as string)}/rect`)) as ScreenRect;
     },
 
     /** One real finger tap at a screen point. */
