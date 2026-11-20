@@ -22,12 +22,12 @@ import { realInputPage, type RealInput } from './real-input-page.ts';
 /** What the journey's fixtures hand the test. */
 export interface DeviceSession {
   page: Page;
-  nativeChoose(option: string): Promise<void>;
-  nativeChooseFile(): Promise<void>;
-  nativeChoosePhoto(): Promise<void>;
-  fingerScroll(): Promise<void>;
+  nativeChoose: (option: string) => Promise<void>;
+  nativeChooseFile: () => Promise<void>;
+  nativeChoosePhoto: () => Promise<void>;
+  fingerScroll: () => Promise<void>;
   /** Shuts a picker a failed step left open, then releases the device; call it in the fixture's teardown. */
-  close(): Promise<void>;
+  close: () => Promise<void>;
 }
 
 /** Runs `first`, then `last` whatever happened, and reports `first`'s failure. */
