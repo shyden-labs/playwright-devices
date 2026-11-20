@@ -40,6 +40,16 @@ wait_for() {
   print "run-journey: $what answered after $(( SECONDS - start )) s"
 }
 
+# ios_webkit_debug_proxy listens on every address and has no option to stop that;
+# the pf rule in research/devices/mac-setup/ (shyden-labs/playwright-devices#19)
+# keeps its ports to this Mac. Refuse to start it unless that rule was loaded.
+require_pf_rule() {
+  grep -q 'port 9221:9322' /etc/pf.shyden.conf 2>/dev/null ||
+    die "/etc/pf.shyden.conf does not block ports 9221-9322; install research/devices/mac-setup/ first"
+  launchctl print system/uk.co.shyden.pf 2>/dev/null | grep -q 'last exit code = 0' ||
+    die "the pf rule's launchd job (uk.co.shyden.pf) has not loaded it; install research/devices/mac-setup/ first"
+}
+
 # Starts WebDriverAgent with the cached build in `derived`, logging to `logs`.
 start_wda() {
   local udid=$1 derived=$2 logs=$3
@@ -69,6 +79,7 @@ case $target in
     wait_for http://127.0.0.1:8100/status '"ready"' 180 WebDriverAgent
     xcrun devicectl device copy to --device $udid --domain-type appDataContainer --domain-identifier $runner_id \
       --source $fixtures/device-journey.txt --destination Documents/device-journey.txt >/dev/null
+    require_pf_rule
     ios_webkit_debug_proxy -c $udid:9222 >$wda/logs/iwdp.log 2>&1 &
     pids+=$!
     open_tab_through_wda
@@ -83,6 +94,7 @@ case $target in
     wait_for http://127.0.0.1:8100/status '"ready"' 300 WebDriverAgent
     cp $fixtures/device-journey.txt "$(xcrun simctl get_app_container $udid $runner_id data)/Documents/device-journey.txt"
     socket=$(xcrun simctl getenv $udid RWI_LISTEN_SOCKET)
+    require_pf_rule
     ios_webkit_debug_proxy -s unix:$socket >$wda/logs-sim/iwdp.log 2>&1 &
     pids+=$!
     xcrun simctl openurl $udid http://127.0.0.1:9/
