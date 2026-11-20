@@ -45,6 +45,12 @@ export interface ScreenPoint {
   y: number;
 }
 
+/** The screen's size, in WebDriverAgent's points. */
+export interface ScreenSize {
+  width: number;
+  height: number;
+}
+
 /** A rectangle on the screen, in WebDriverAgent's points. */
 export interface ScreenRect extends ScreenPoint {
   width: number;
@@ -135,6 +141,11 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
         `no element with accessibility id "${accessibilityId}" showed within ${ELEMENT_CEILING_MS} ms`,
       );
       return (await call('GET', `${base}/element/${encodeURIComponent(id as string)}/rect`)) as ScreenRect;
+    },
+
+    /** The screen's size, in points. */
+    async windowSize(): Promise<ScreenSize> {
+      return (await call('GET', `${base}/window/size`)) as ScreenSize;
     },
 
     /** One real finger tap at a screen point. */
