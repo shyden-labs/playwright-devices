@@ -25,3 +25,22 @@ export function centreOfText(dump: string, text: string): ScreenPoint | undefine
   const [left, top, right, bottom] = hit.slice(2, 6).map(Number) as [number, number, number, number];
   return { x: (left + right) / 2, y: (top + bottom) / 2 };
 }
+
+/** One `<node …>` element's description and bounds. */
+const DESCRIBED = /<node\b[^>]*?\bcontent-desc="([^"]*)"[^>]*?\bbounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/g;
+
+/**
+ * The centre of the topmost, then leftmost, node whose description starts with
+ * `prefix`; undefined when none does. Google's photo picker gives each photo
+ * no text, only a description such as "Photo taken on …".
+ */
+export function centreOfFirstDescribed(dump: string, prefix: string): ScreenPoint | undefined {
+  const boxes = [...dump.matchAll(DESCRIBED)]
+    .filter((node) => unescapeXml(node[1] ?? '').startsWith(prefix))
+    .map((node) => node.slice(2, 6).map(Number) as [number, number, number, number])
+    .sort(([leftA, topA], [leftB, topB]) => topA - topB || leftA - leftB);
+  const [first] = boxes;
+  if (first === undefined) return undefined;
+  const [left, top, right, bottom] = first;
+  return { x: (left + right) / 2, y: (top + bottom) / 2 };
+}

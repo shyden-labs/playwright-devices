@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { centreOfText } from '../../research/devices/android-screen.ts';
+import { centreOfFirstDescribed, centreOfText } from '../../research/devices/android-screen.ts';
 
 /** A trimmed `uiautomator dump` of Chrome's native <select> list. */
 const DUMP = `<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
@@ -28,5 +28,23 @@ describe('centreOfText', () => {
     const twice = DUMP.replace('text="Pear drop"', 'text="Pear"');
 
     expect(() => centreOfText(twice, 'Pear')).toThrow('2 nodes on the screen read "Pear": cannot tell which to touch');
+  });
+});
+
+/** A trimmed dump of Google's photo picker: two photos in a row, one below. */
+const PHOTOS = `<hierarchy rotation="0">
+  <node text="" content-desc="Photo taken on 20 Nov 2026, 10:01" bounds="[400,500][700,800]" />
+  <node text="" content-desc="Photo taken on 20 Nov 2026, 10:02" bounds="[100,500][400,800]" />
+  <node text="" content-desc="Photo taken on 19 Nov 2026, 09:00" bounds="[100,200][400,499]" />
+  <node text="Done" content-desc="" bounds="[800,2200][1000,2300]" />
+</hierarchy>`;
+
+describe('centreOfFirstDescribed', () => {
+  it('answers the topmost, then leftmost, node whose description starts with the prefix', () => {
+    expect(centreOfFirstDescribed(PHOTOS, 'Photo taken on')).toEqual({ x: 250, y: 349.5 });
+  });
+
+  it('answers undefined when no description starts with it', () => {
+    expect(centreOfFirstDescribed(PHOTOS, 'Video taken on')).toBeUndefined();
   });
 });
