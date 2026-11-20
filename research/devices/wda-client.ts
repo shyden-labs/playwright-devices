@@ -14,7 +14,17 @@ export interface WdaOptions {
   url: string;
   fetchFn?: typeof fetch;
   clock?: WdaClock;
+  /** How long one request may go unanswered before it fails naming itself. */
+  requestCeilingMs?: number;
 }
+
+/**
+ * WebDriverAgent itself waits at most 10 s for the app to settle before it
+ * answers; the slowest answers in the 2026-11-20 iPad simulator logs took
+ * about 4 s. One tap went unanswered for 152 s that day and the test timed out
+ * naming nothing; three times WebDriverAgent's own wait is the ceiling.
+ */
+const REQUEST_CEILING_MS = 30_000;
 
 const realClock: WdaClock = {
   now: () => Date.now(),
@@ -77,14 +87,25 @@ function graphemes(text: string): string[] {
   return Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(text), (part) => part.segment);
 }
 
-export async function connectWda({ url, fetchFn = fetch, clock = realClock }: WdaOptions) {
+export async function connectWda({ url, fetchFn = fetch, clock = realClock, requestCeilingMs = REQUEST_CEILING_MS }: WdaOptions) {
   async function call(method: 'GET' | 'POST' | 'DELETE', path: string, body?: unknown): Promise<unknown> {
-    const response = await fetchFn(new URL(path, url), {
-      method,
-      headers: { 'content-type': 'application/json' },
-      ...(body === undefined ? {} : { body: JSON.stringify(body) }),
-    });
-    const parsed = (await response.json()) as { value: unknown };
+    const unanswered = new AbortController();
+    const timer = setTimeout(() => {
+      unanswered.abort(new Error(`WebDriverAgent did not answer ${method} ${path} within ${requestCeilingMs} ms`));
+    }, requestCeilingMs);
+    let parsed: { value: unknown };
+    let response: Response;
+    try {
+      response = await fetchFn(new URL(path, url), {
+        method,
+        headers: { 'content-type': 'application/json' },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        signal: unanswered.signal,
+      });
+      parsed = (await response.json()) as { value: unknown };
+    } finally {
+      clearTimeout(timer);
+    }
     if (!response.ok) {
       const message =
         (parsed.value as { message?: string; error?: string } | null)?.message ?? (parsed.value as { error?: string } | null)?.error;

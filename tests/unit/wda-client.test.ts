@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { connectWda, type WdaClock } from '../../research/devices/wda-client.ts';
 
 /** One HTTP call the client made to WebDriverAgent. */
@@ -85,6 +85,52 @@ describe('a refused command', () => {
     const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
 
     await expect(client.typeText('a')).rejects.toThrow('WebDriverAgent refused POST /session/s1/elements (404): unknown command');
+  });
+});
+
+/** WebDriverAgent answering everything but a tap, which it holds until the client gives up (iPad simulator, 2026-11-20 run 2: 152 s). */
+function tapNeverAnswered() {
+  const answered = fakeWda({ ...session });
+  return (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+    const path = new URL(input instanceof Request ? input.url : input).pathname;
+    if (init?.method !== 'POST' || !path.endsWith('/actions')) return answered.fetchFn(input, init);
+    return new Promise((_resolve, reject) => {
+      init.signal?.addEventListener('abort', () => {
+        reject(init.signal?.reason as Error);
+      });
+    });
+  };
+}
+
+describe('a command WebDriverAgent never answers', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('fails at the request ceiling naming the method and the path', async () => {
+    const client = await connectWda({
+      url: 'http://127.0.0.1:8100',
+      fetchFn: tapNeverAnswered(),
+      clock: fakeClock(),
+      requestCeilingMs: 20,
+    });
+
+    await expect(client.tapAt({ x: 1, y: 1 })).rejects.toThrow('WebDriverAgent did not answer POST /session/s1/actions within 20 ms');
+  });
+
+  it('gives up after 30 s by default, not before', async () => {
+    vi.useFakeTimers();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: tapNeverAnswered(), clock: fakeClock() });
+    let settled = false;
+    const tap = client.tapAt({ x: 1, y: 1 }).finally(() => {
+      settled = true;
+    });
+    const failure = expect(tap).rejects.toThrow('WebDriverAgent did not answer POST /session/s1/actions within 30000 ms');
+
+    await vi.advanceTimersByTimeAsync(29_999);
+    expect(settled).toBe(false);
+    await vi.advanceTimersByTimeAsync(1);
+    await failure;
   });
 });
 
