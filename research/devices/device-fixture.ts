@@ -8,6 +8,7 @@ import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { _android, chromium, expect, test as base, webkit, type Browser, type Page } from '@playwright/test';
 import { androidSession, iosSession, routeFrom, withNamedSteps, type DeviceSession } from './device-session.ts';
+import { requireChromeDebugApp, startChromeCold, stopChromeAfterPlaywright } from './android-chrome-start.ts';
 import type { Adb } from './finger-scroll.ts';
 import { startJourneyServer } from './serve.ts';
 import { connectWda } from './wda-client.ts';
@@ -58,29 +59,41 @@ async function connect(baseURL: string): Promise<Connection> {
     }
     case 'android-cdp': {
       const adb = adbFor(required('ANDROID_SERIAL'));
-      const browser = await chromium.connectOverCDP(`http://127.0.0.1:${process.env.ANDROID_CDP_PORT ?? '9230'}`);
+      const port = Number(process.env.ANDROID_CDP_PORT ?? '9230');
+      const chrome = await startChromeCold({ adb, port });
+      const browser = await chromium.connectOverCDP(`http://127.0.0.1:${port}`);
       const [context] = browser.contexts();
       if (context === undefined) throw new Error('Chrome on the phone offered no browser context');
       const page = await context.newPage();
       return {
         session: await androidSession({ page, adb, baseURL, files }),
         disconnect: async () => {
-          await page.close();
-          await browser.close();
+          try {
+            await page.close();
+            await browser.close();
+          } finally {
+            await chrome.stop();
+          }
         },
       };
     }
     case 'android-playwright': {
       const serial = required('ANDROID_SERIAL');
+      const adb = adbFor(serial);
+      await requireChromeDebugApp(adb);
       const device = (await _android.devices()).find((found) => found.serial() === serial);
       if (device === undefined) throw new Error(`Playwright lists no Android device ${serial}`);
       const context = await device.launchBrowser();
       const page = await context.newPage();
       return {
-        session: await androidSession({ page, adb: adbFor(serial), baseURL, files }),
+        session: await androidSession({ page, adb, baseURL, files }),
         disconnect: async () => {
-          await context.close();
-          await device.close();
+          try {
+            await context.close();
+            await device.close();
+          } finally {
+            await stopChromeAfterPlaywright(adb);
+          }
         },
       };
     }

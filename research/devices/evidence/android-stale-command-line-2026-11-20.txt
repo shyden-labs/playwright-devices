@@ -4,7 +4,7 @@
 Each report: "Test timeout of 300000ms exceeded while setting up "session"." (android-playwright-3b402284-2026-11-20-2227/2233/2240/2246/2252.json).
 android-cdp passed 5 of 5 and the iPhone 5 of 5 in the same rounds.
 
-## 22:59 probe (.superpowers/sdd/33/probe-launch.ts, DEBUG=pw:android), debug app cleared:
+## 22:59 probe (research/devices/probes/probe-launch.ts, DEBUG=pw:android), debug app cleared:
 0.1s launchBrowser()
 pw:android Force-stopping com.android.chrome
 pw:android Starting com.android.chrome _ --disable-fre ... --remote-debugging-socket-name=playwright_53136659..._devtools_remote ...

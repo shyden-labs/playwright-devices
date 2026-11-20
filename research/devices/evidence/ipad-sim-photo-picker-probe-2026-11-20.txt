@@ -6,7 +6,7 @@
 ## run-journey output
 run-journey: WebDriverAgent answered after 196 s
 run-journey: ios_webkit_debug_proxy (a Safari tab) answered after 118 s
-run-journey: probing ios-sim-C02FB4F0-63BC-410E-9D37-AC60C69EC1F7 with .superpowers/sdd/7/probe-ipad-photo.ts
+run-journey: probing ios-sim-C02FB4F0-63BC-410E-9D37-AC60C69EC1F7 with research/devices/probes/probe-ipad-photo.ts
 --- photo library open: 16 visible buttons/bars ---
 --- after tapping the first photo: 9 visible buttons/bars ---
 --- after tapping Done: 16 visible buttons/bars ---

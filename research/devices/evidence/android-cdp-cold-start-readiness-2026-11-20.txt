@@ -1,4 +1,4 @@
-# #33 AC1: CDP readiness over 20 cold starts, OnePlus 3b402284, 2026-11-20 ~23:25 WIB. Probe: .superpowers/sdd/33/probe-cold-start.ts (git-ignored). Each round: force-stop Chrome, remove any command-line file, forward tcp:9230, am start, poll /proc/net/unix until @chrome_devtools_remote, then chromium.connectOverCDP at once (no retry).
+# #33 AC1: CDP readiness over 20 cold starts, OnePlus 3b402284, 2026-11-20 ~23:25 WIB. Probe: research/devices/probes/probe-cold-start.ts. Each round: force-stop Chrome, remove any command-line file, forward tcp:9230, am start, poll /proc/net/unix until @chrome_devtools_remote, then chromium.connectOverCDP at once (no retry).
 round 1: socket seen 525 ms after am start; connected in 49 ms, contexts 1
 round 2: socket seen 478 ms after am start; connected in 10 ms, contexts 1
 round 3: socket seen 515 ms after am start; connected in 11 ms, contexts 1
