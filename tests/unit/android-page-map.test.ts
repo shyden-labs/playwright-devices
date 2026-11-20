@@ -53,14 +53,10 @@ function inTurn<T>(values: T[]): () => Promise<T> {
 describe('androidScreenPointsOf', () => {
   it('waits for the keyboard to finish resizing the page: a read mixing the old viewport and the new area is not used', async () => {
     // Measured 2026-11-20: right after typing, the page still said 759 while the dump already showed the shrunk area.
-    const page = {
-      evaluate: inTurn([
-        { ...VIEWPORT, height: 759.43 },
-        { ...VIEWPORT, height: 437.43 },
-      ]),
-    };
+    // Reads: before the keyboard; the mix (old viewport, shrunk area); then settled, twice.
+    const page = { evaluate: inTurn([VIEWPORT, VIEWPORT, { ...VIEWPORT, height: 437.43 }]) };
     const shrunk = { ...AREA, height: 1727 };
-    const screen = { pageArea: inTurn([shrunk]) };
+    const screen = { pageArea: inTurn([AREA, shrunk]) };
 
     const point = await androidScreenPointsOf(page, screen, fakeClock())({ x: 16, y: 355, width: 265.6, height: 44.3 });
 
