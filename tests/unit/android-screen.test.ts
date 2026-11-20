@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { centreOfFirstDescribed, centreOfText } from '../../research/devices/android-screen.ts';
+import { centreOfFirstDescribed, centreOfText, rectOfLabel } from '../../research/devices/android-screen.ts';
 
 /** A trimmed `uiautomator dump` of Chrome's native <select> list. */
 const DUMP = `<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
@@ -46,5 +46,24 @@ describe('centreOfFirstDescribed', () => {
 
   it('answers undefined when no description starts with it', () => {
     expect(centreOfFirstDescribed(PHOTOS, 'Video taken on')).toBeUndefined();
+  });
+});
+
+describe('rectOfLabel', () => {
+  const page = `<hierarchy rotation="0">
+  <node text="" content-desc="playwright-devices screen marker" bounds="[0,236][263,499]" />
+  <node text="Tap me" content-desc="" bounds="[100,600][500,700]" />
+</hierarchy>`;
+
+  it('answers the bounds of the node whose description is the label, as a rectangle', () => {
+    expect(rectOfLabel(page, 'playwright-devices screen marker')).toEqual({ x: 0, y: 236, width: 263, height: 263 });
+  });
+
+  it('also finds a node whose text is the label', () => {
+    expect(rectOfLabel(page, 'Tap me')).toEqual({ x: 100, y: 600, width: 400, height: 100 });
+  });
+
+  it('answers undefined when no node has that label, never a partial match', () => {
+    expect(rectOfLabel(page, 'playwright-devices screen')).toBeUndefined();
   });
 });

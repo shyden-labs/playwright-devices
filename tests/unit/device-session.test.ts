@@ -105,7 +105,7 @@ const BROADCAST = 'shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCA
 describe('androidSession', () => {
   it('stages the document in Downloads and the photo in Pictures before the test, so the pickers list them', async () => {
     const device = fakeAdb();
-    await androidSession({ page, adb: device.adb, files });
+    await androidSession({ page, adb: device.adb, baseURL: 'http://127.0.0.1:4321', files });
     expect(device.kept()).toEqual([
       'push /repo/fixtures/device-journey.txt /sdcard/Download/device-journey.txt',
       `${BROADCAST}/sdcard/Download/device-journey.txt`,
@@ -114,16 +114,15 @@ describe('androidSession', () => {
     ]);
   });
 
-  it('routes each native step through uiautomator and adb input, and gives the test the real page', async () => {
+  it('routes each native step through uiautomator and adb input', async () => {
     const device = fakeAdb(['Green', 'Files', 'device-journey.txt']);
-    const session = await androidSession({ page, adb: device.adb, files });
+    const session = await androidSession({ page, adb: device.adb, baseURL: 'http://127.0.0.1:4321', files });
     const before = device.kept().length;
 
     await session.nativeChoose('Green');
     await session.nativeChooseFile();
     await session.fingerScroll();
 
-    expect(session.page).toBe(page);
     expect(device.kept().slice(before)).toEqual([
       'shell input tap 50 50',
       'shell input tap 50 150',
@@ -133,9 +132,14 @@ describe('androidSession', () => {
     ]);
   });
 
+  it("gives the test a page stand-in, so taps and keys go through Android's own input", async () => {
+    const session = await androidSession({ page, adb: fakeAdb().adb, baseURL: 'http://127.0.0.1:4321', files });
+    expect(session.page).not.toBe(page);
+  });
+
   it('close shuts a picker left open, then removes both staged files', async () => {
     const device = fakeAdb(['Done']);
-    const session = await androidSession({ page, adb: device.adb, files });
+    const session = await androidSession({ page, adb: device.adb, baseURL: 'http://127.0.0.1:4321', files });
     const before = device.kept().length;
 
     await session.close();
@@ -154,7 +158,7 @@ describe('androidSession', () => {
     let screenReadable = true;
     const adb = (args: string[]) =>
       !screenReadable && args[1] === 'uiautomator' ? Promise.reject(new Error('device offline')) : device.adb(args);
-    const session = await androidSession({ page, adb, files });
+    const session = await androidSession({ page, adb, baseURL: 'http://127.0.0.1:4321', files });
     screenReadable = false;
 
     await expect(session.close()).rejects.toThrow('device offline');

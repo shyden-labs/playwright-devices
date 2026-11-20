@@ -126,6 +126,46 @@ describe('connectAndroidScreen', () => {
   });
 });
 
+describe('real input on Android', () => {
+  const MARKER: Node = { desc: 'playwright-devices screen marker', bounds: [0, 236, 263, 499] };
+
+  it('rectOf waits for the label to be listed and answers its rectangle', async () => {
+    const device = fakeAdb([[], [MARKER]]);
+    const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
+    expect(await screen.rectOf('playwright-devices screen marker')).toEqual({ x: 0, y: 236, width: 263, height: 263 });
+  });
+
+  it('rectOf fails at 5 s naming the label', async () => {
+    const device = fakeAdb([[]]);
+    const clock = fakeClock();
+    const screen = connectAndroidScreen({ adb: device.adb, clock });
+    await expect(screen.rectOf('playwright-devices screen marker')).rejects.toThrow(
+      'nothing labelled "playwright-devices screen marker" showed within 5000 ms',
+    );
+    expect(clock.now()).toBe(5_000);
+  });
+
+  it('tapAt touches the point, rounded to whole pixels', async () => {
+    const device = fakeAdb([[]]);
+    await connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).tapAt({ x: 131.6, y: 367.4 });
+    expect(device.taps()).toEqual(['shell input tap 132 367']);
+  });
+
+  it("typeText sends the text through the phone's shell quoted, with spaces as %s", async () => {
+    const device = fakeAdb([[]]);
+    await connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).typeText("Ana's tea & toast");
+    expect(device.calls).toEqual(["shell input text 'Ana'\\''s%stea%s&%stoast'"]);
+  });
+
+  it('typeText refuses what adb input cannot type, sending nothing', async () => {
+    const device = fakeAdb([[]]);
+    const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
+    await expect(screen.typeText('café')).rejects.toThrow('adb input text types printable ASCII only; cannot type "café"');
+    await expect(screen.typeText('100%sure')).rejects.toThrow('adb input text reads %s as a space; cannot type "100%sure"');
+    expect(device.calls).toEqual([]);
+  });
+});
+
 describe('the steps a person takes on Android', () => {
   it('<select>: touches the option in Chrome’s native list', async () => {
     const device = fakeAdb([[GREEN]]);

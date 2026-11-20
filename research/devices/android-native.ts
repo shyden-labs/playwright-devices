@@ -7,9 +7,9 @@
  * `adb shell input tap`, Android's own input service.
  */
 import { basename } from 'node:path';
-import { centreOfFirstDescribed, centreOfText } from './android-screen.ts';
+import { centreOfFirstDescribed, centreOfText, rectOfLabel } from './android-screen.ts';
 import type { Adb } from './finger-scroll.ts';
-import type { ScreenPoint, WdaClock } from './wda-client.ts';
+import type { ScreenPoint, ScreenRect, WdaClock } from './wda-client.ts';
 
 /**
  * Prints the dump to adb's output instead of a file on the phone.
@@ -22,6 +22,19 @@ const POLL_MS = 250;
 
 /** The same ceiling as iOS's native pickers: the slowest measured opened in 26 s. */
 const NATIVE_CEILING_MS = 60_000;
+
+/** The screen marker is drawn just before it is looked for; the same assumed ceiling as on iOS, to be measured. */
+const ELEMENT_CEILING_MS = 5_000;
+
+/** Printable ASCII: all `adb shell input text` can type. */
+const TYPABLE = /^[\x20-\x7e]*$/;
+
+/** `text` for `adb shell input text`: spaces as %s, then quoted for the phone's shell. */
+function inputTextArgument(text: string): string {
+  if (!TYPABLE.test(text)) throw new Error(`adb input text types printable ASCII only; cannot type "${text}"`);
+  if (text.includes('%s')) throw new Error(`adb input text reads %s as a space; cannot type "${text}"`);
+  return `'${text.replaceAll(' ', '%s').replaceAll("'", "'\\''")}'`;
+}
 
 const realClock: WdaClock = {
   now: () => Date.now(),
@@ -51,8 +64,8 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
   }
 
   /** Asks `look` until it answers, failing at the ceiling with `failure`. */
-  async function waitFor<T>(look: () => Promise<T | undefined>, failure: string): Promise<T> {
-    const deadline = clock.now() + NATIVE_CEILING_MS;
+  async function waitFor<T>(look: () => Promise<T | undefined>, failure: string, ceilingMs = NATIVE_CEILING_MS): Promise<T> {
+    const deadline = clock.now() + ceilingMs;
     for (;;) {
       const found = await look();
       if (found !== undefined) return found;
@@ -62,6 +75,23 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
   }
 
   return {
+    /** A real touch at a screen point, in the phone's pixels. */
+    tapAt: touch,
+
+    /** Types `text` into the focused field through Android's input service. */
+    async typeText(text: string): Promise<void> {
+      await adb(['shell', 'input', 'text', inputTextArgument(text)]);
+    },
+
+    /** Where the screen lists the element labelled `label`, waiting briefly for it. */
+    async rectOf(label: string): Promise<ScreenRect> {
+      return waitFor(
+        async () => rectOfLabel(await dump(), label),
+        `nothing labelled "${label}" showed within ${ELEMENT_CEILING_MS} ms`,
+        ELEMENT_CEILING_MS,
+      );
+    },
+
     /** Touches the first of `texts` the screen lists, waiting while a slow picker opens; answers the text touched. */
     async tapFirstShown(texts: string[]): Promise<string> {
       const named = texts.map((text) => `"${text}"`).join(', ');

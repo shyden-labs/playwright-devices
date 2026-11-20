@@ -5,7 +5,7 @@
  * of the page, so the fixture reads the screen's node tree and touches a node
  * with `adb shell input tap` at its centre.
  */
-import type { ScreenPoint } from './wda-client.ts';
+import type { ScreenPoint, ScreenRect } from './wda-client.ts';
 
 const ENTITIES: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" };
 
@@ -43,4 +43,21 @@ export function centreOfFirstDescribed(dump: string, prefix: string): ScreenPoin
   if (first === undefined) return undefined;
   const [left, top, right, bottom] = first;
   return { x: (left + right) / 2, y: (top + bottom) / 2 };
+}
+
+/** One `<node …>` element's text, description and bounds. */
+const LABELLED = /<node\b[^>]*?\btext="([^"]*)"[^>]*?\bcontent-desc="([^"]*)"[^>]*?\bbounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/g;
+
+/**
+ * The rectangle of the node whose description or text is exactly `label`;
+ * undefined when none is. Chrome lists a page element's accessible name as one
+ * or the other (which, for the screen marker, the first phone run measures).
+ */
+export function rectOfLabel(dump: string, label: string): ScreenRect | undefined {
+  for (const node of dump.matchAll(LABELLED)) {
+    if (unescapeXml(node[1] ?? '') !== label && unescapeXml(node[2] ?? '') !== label) continue;
+    const [left, top, right, bottom] = node.slice(3, 7).map(Number) as [number, number, number, number];
+    return { x: left, y: top, width: right - left, height: bottom - top };
+  }
+  return undefined;
 }

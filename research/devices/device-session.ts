@@ -67,20 +67,21 @@ export function iosSession({ page, wda, baseURL, file }: IosSessionOptions): Dev
 }
 
 export interface AndroidSessionOptions {
-  /** Chrome's page, its input already Android's own on this route. */
+  /** Chrome's page; its taps and keys are DevTools-injected, so the stand-in sends them through adb. */
   page: Page;
   adb: Adb;
+  baseURL: string;
   /** The journey's document and photo, on this Mac. */
   files: { document: string; photo: string };
 }
 
 /** Stages the journey's files on the phone (the pickers list only indexed files), and answers the session. */
-export async function androidSession({ page, adb, files }: AndroidSessionOptions): Promise<DeviceSession> {
+export async function androidSession({ page, adb, baseURL, files }: AndroidSessionOptions): Promise<DeviceSession> {
   const screen = connectAndroidScreen({ adb });
   const removeDocument = await stageAndroidFile(adb, files.document, '/sdcard/Download');
   const removePhoto = await stageAndroidFile(adb, files.photo, '/sdcard/Pictures');
   return {
-    page,
+    page: realInputPage(page, { input: screen, toScreen: screenPointsOf(page, screen), baseURL }),
     nativeChoose: (option) => androidChooseOption(screen, option),
     nativeChooseFile: () => androidChooseFile(screen, basename(files.document)),
     nativeChoosePhoto: () => androidChoosePhoto(screen),
