@@ -23,12 +23,20 @@ evidence=$repo/research/devices/evidence
 stamp=$(date +%F-%H%M)
 pids=()
 forwarded=''
+android_serial=''
 
 die() { print -u2 "run-journey: $*"; exit 2; }
 
 cleanup() {
   for pid in $pids; do kill $pid 2>/dev/null || true; done
   [[ -n $forwarded ]] && adb -s $forwarded forward --remove tcp:9230 2>/dev/null || true
+  # Leave the phone as found: the android-playwright route leaves Chrome running as the debug app on
+  # Playwright's own socket, with no chrome_devtools_remote, and the next CDP run's connection is reset
+  # (seen by ShyTalk, 2026-11-20 19:49 WIB; likely shyden-labs/playwright-devices#33).
+  if [[ -n $android_serial ]]; then
+    adb -s $android_serial shell am force-stop com.android.chrome 2>/dev/null || true
+    adb -s $android_serial shell am clear-debug-app 2>/dev/null || true
+  fi
 }
 trap cleanup EXIT
 
@@ -114,6 +122,7 @@ case $target in
       die "usage: run-journey.zsh android <serial> <android-cdp|android-playwright>"
     label=$route-$serial
     export ANDROID_SERIAL=$serial
+    android_serial=$serial
     if [[ $route == android-cdp ]]; then
       # Chrome opens its DevTools socket only once it runs in the foreground, so start it cold.
       adb -s $serial shell am force-stop com.android.chrome
