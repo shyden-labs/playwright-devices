@@ -105,6 +105,7 @@ describe('screenPointsOf', () => {
   it('waits for the page to stop moving: a read taken while the keyboard moved it is not used', async () => {
     // Measured on the iPhone Air, 2026-11-20: right after typing, the marker read back 100 by 102.
     const rects = [
+      { x: 0, y: 320, width: 100, height: 102 },
       { x: 0, y: 300, width: 100, height: 102 },
       { x: 0, y: 68, width: 100, height: 100 },
       { x: 0, y: 68, width: 100, height: 100 },
