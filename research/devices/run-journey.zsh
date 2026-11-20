@@ -140,5 +140,7 @@ set +e
 result=${pipestatus[1]}
 set -e
 cp $repo/test-results/devices/$route.json $evidence/$label-$stamp.json
+# A failed run's device screenshot, if Playwright wrote it as a file.
+for shot in $repo/test-results/**/*.png(N); do cp $shot $evidence/$label-$stamp-${shot:t}; done
 print "run-journey: $label exit=$result" | tee -a $out
 exit $result

@@ -168,6 +168,19 @@ describe('real input on Android', () => {
   });
 });
 
+describe('screenshot', () => {
+  it('answers the screen as PNG bytes, sent base64 so adb’s text output keeps them whole', async () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+    const calls: string[] = [];
+    const adb = (args: string[]) => {
+      calls.push(args.join(' '));
+      return Promise.resolve(`${png.toString('base64')}\n`);
+    };
+    expect(await connectAndroidScreen({ adb, clock: fakeClock() }).screenshot()).toEqual(png);
+    expect(calls).toEqual(['exec-out screencap -p | base64']);
+  });
+});
+
 describe('the steps a person takes on Android', () => {
   it('<select>: touches the option in Chrome’s native list', async () => {
     const device = fakeAdb([[GREEN]]);

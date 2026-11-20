@@ -109,10 +109,14 @@ export const test = base.extend<JourneyFixtures, { journeyURL: string }>({
     },
     { scope: 'worker' },
   ],
-  session: async ({ journeyURL }, use) => {
+  session: async ({ journeyURL }, use, testInfo) => {
     const { session, disconnect } = await connect(journeyURL);
     try {
       await use(session);
+      // The device's own screen, before teardown closes anything: Playwright's screenshot shows only the page.
+      if (testInfo.status !== testInfo.expectedStatus) {
+        await testInfo.attach('device screen at failure', { body: await session.screenshot(), contentType: 'image/png' });
+      }
     } finally {
       try {
         await session.close();

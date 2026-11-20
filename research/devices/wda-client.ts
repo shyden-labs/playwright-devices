@@ -155,6 +155,11 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
       await call('DELETE', base);
     },
 
+    /** The screen as PNG bytes: the evidence kept when a test fails. */
+    async screenshot(): Promise<Buffer> {
+      return Buffer.from((await call('GET', `${base}/screenshot`)) as string, 'base64');
+    },
+
     /** Types `text` once the on-screen keyboard is listed: keys sent before it shows are lost. */
     async typeText(text: string): Promise<void> {
       await waitFor(

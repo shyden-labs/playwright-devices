@@ -34,6 +34,7 @@ function fakeWda(shown: string[] = []) {
       steps.push(`swipe ${from.x},${from.y} -> ${to.x},${to.y}`);
       return Promise.resolve();
     },
+    screenshot: () => Promise.resolve(Buffer.from('ios screen')),
     close: () => {
       steps.push('close');
       return Promise.resolve();
@@ -81,6 +82,11 @@ describe('iosSession', () => {
     expect(wda.steps).toEqual(['close']);
   });
 
+  it('screenshots the device through WebDriverAgent', async () => {
+    const session = iosSession({ page, wda: fakeWda(), baseURL: 'http://mac.local:4321', file });
+    expect(await session.screenshot()).toEqual(Buffer.from('ios screen'));
+  });
+
   it('gives the test a page stand-in, not the real page', () => {
     const session = iosSession({ page, wda: fakeWda(), baseURL: 'http://mac.local:4321', file });
     expect(session.page).not.toBe(page);
@@ -98,6 +104,7 @@ function fakeAdb(shown: string[] = []) {
       return Promise.resolve(`<hierarchy>${nodes.join('')}</hierarchy>`);
     }
     if (call === 'shell wm size') return Promise.resolve('Physical size: 1080x2400\n');
+    if (call === 'exec-out screencap -p | base64') return Promise.resolve(Buffer.from('android screen').toString('base64'));
     return Promise.resolve('');
   };
   return { adb, calls, kept: () => calls.filter((c) => !c.startsWith('exec-out uiautomator dump')) };
@@ -139,6 +146,11 @@ describe('androidSession', () => {
   it("gives the test a page stand-in, so taps and keys go through Android's own input", async () => {
     const session = await androidSession({ page, adb: fakeAdb().adb, baseURL: 'http://127.0.0.1:4321', files });
     expect(session.page).not.toBe(page);
+  });
+
+  it('screenshots the phone through adb', async () => {
+    const session = await androidSession({ page, adb: fakeAdb().adb, baseURL: 'http://127.0.0.1:4321', files });
+    expect(await session.screenshot()).toEqual(Buffer.from('android screen'));
   });
 
   it('close shuts a picker left open, then removes both staged files', async () => {

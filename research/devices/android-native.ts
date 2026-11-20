@@ -78,6 +78,11 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
   }
 
   return {
+    /** The screen as PNG bytes, sent base64 so adb's text output keeps them whole: the evidence kept when a test fails. */
+    async screenshot(): Promise<Buffer> {
+      return Buffer.from((await adb(['exec-out', 'screencap -p | base64'])).trim(), 'base64');
+    },
+
     /** A real touch at a screen point, in the phone's pixels. */
     tapAt: touch,
 

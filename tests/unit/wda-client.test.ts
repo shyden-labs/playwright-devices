@@ -430,3 +430,13 @@ describe('a look while the view changes', () => {
     );
   });
 });
+
+describe('screenshot', () => {
+  it('answers the screen as PNG bytes', async () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+    const wda = fakeWda({ ...session, 'GET /session/s1/screenshot': () => png.toString('base64') });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    expect(await client.screenshot()).toEqual(png);
+  });
+});
