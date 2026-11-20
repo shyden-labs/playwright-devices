@@ -12,28 +12,42 @@ test('a page is read, tapped, typed into and scrolled by real input', async ({
   nativeChoosePhoto,
   fingerScroll,
 }) => {
-  await page.goto('/journey.html');
-  await expect(page.getByRole('heading', { name: 'Device journey' })).toBeVisible();
+  await test.step('open the page', async () => {
+    await page.goto('/journey.html');
+    await expect(page.getByRole('heading', { name: 'Device journey' })).toBeVisible();
+  });
 
-  await page.getByRole('button', { name: 'Tap me' }).tap();
-  await expect.soft(page.getByTestId('tap-result')).toHaveText('Tapped');
+  await test.step('tap', async () => {
+    await page.getByRole('button', { name: 'Tap me' }).tap();
+    await expect.soft(page.getByTestId('tap-result')).toHaveText('Tapped');
+  });
 
-  await page.getByLabel('Name').tap();
-  await page.keyboard.type('Ana');
-  await expect.soft(page.getByTestId('typed-result')).toHaveText('Hello, Ana');
+  await test.step('type', async () => {
+    await page.getByLabel('Name').tap();
+    await page.keyboard.type('Ana');
+    await expect.soft(page.getByTestId('typed-result')).toHaveText('Hello, Ana');
+  });
 
-  await page.getByLabel('Colour').tap();
-  await nativeChoose('Green');
-  await expect.soft(page.getByTestId('colour-result')).toHaveText('Green');
+  await test.step('choose a colour', async () => {
+    await page.getByLabel('Colour').tap();
+    await nativeChoose('Green');
+    await expect.soft(page.getByTestId('colour-result')).toHaveText('Green');
+  });
 
-  await page.getByLabel('File').tap();
-  await nativeChooseFile();
-  await expect.soft(page.getByTestId('file-result')).toHaveText('device-journey.txt');
+  await test.step('choose a file', async () => {
+    await page.getByLabel('File').tap();
+    await nativeChooseFile();
+    await expect.soft(page.getByTestId('file-result')).toHaveText('device-journey.txt');
+  });
 
-  await page.getByLabel('Photo').tap();
-  await nativeChoosePhoto();
-  await expect.soft(page.getByTestId('photo-result')).toHaveText(/^image\/.+/);
+  await test.step('choose a photo', async () => {
+    await page.getByLabel('Photo').tap();
+    await nativeChoosePhoto();
+    await expect.soft(page.getByTestId('photo-result')).toHaveText(/^image\/.+/);
+  });
 
-  await fingerScroll();
-  await expect.soft(page.getByTestId('scroll-result')).toHaveText('Scrolled');
+  await test.step('finger scroll', async () => {
+    await fingerScroll();
+    await expect.soft(page.getByTestId('scroll-result')).toHaveText('Scrolled');
+  });
 });
