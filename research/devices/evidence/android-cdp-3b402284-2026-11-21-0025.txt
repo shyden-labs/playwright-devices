@@ -1,0 +1,7 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (40.7s)
+
+  1 passed (41.0s)
+run-journey: android-cdp-3b402284 exit=0
