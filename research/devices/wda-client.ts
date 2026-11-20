@@ -112,6 +112,19 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
     return (await find('class name', 'XCUIElementTypeKeyboard')).length > 0;
   }
 
+  async function tapAt(point: ScreenPoint): Promise<void> {
+    await call(
+      'POST',
+      `${base}/actions`,
+      finger([
+        { type: 'pointerMove', duration: 0, ...at(point) },
+        { type: 'pointerDown', button: 0 },
+        { type: 'pause', duration: 50 },
+        { type: 'pointerUp', button: 0 },
+      ]),
+    );
+  }
+
   return {
     /** Deletes this client's WebDriverAgent session; call it in the test's `finally`. */
     async close(): Promise<void> {
@@ -149,18 +162,7 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
     },
 
     /** One real finger tap at a screen point. */
-    async tapAt(point: ScreenPoint): Promise<void> {
-      await call(
-        'POST',
-        `${base}/actions`,
-        finger([
-          { type: 'pointerMove', duration: 0, ...at(point) },
-          { type: 'pointerDown', button: 0 },
-          { type: 'pause', duration: 50 },
-          { type: 'pointerUp', button: 0 },
-        ]),
-      );
-    },
+    tapAt,
 
     /** One real finger dragged from `from` to `to`. */
     async swipe(from: ScreenPoint, to: ScreenPoint): Promise<void> {
@@ -174,6 +176,24 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
           { type: 'pointerUp', button: 0 },
         ]),
       );
+    },
+
+    /**
+     * Taps the centre of the topmost, then leftmost, element a WebDriverAgent
+     * predicate matches, waiting while a slow native picker opens: the photo
+     * grid's first photo has no label of its own.
+     */
+    async tapTopLeftOf(predicate: string): Promise<void> {
+      let ids: string[] = [];
+      const listed = async (): Promise<boolean> => {
+        ids = await find('predicate string', predicate);
+        return ids.length > 0;
+      };
+      await waitFor(listed, NATIVE_CEILING_MS, `nothing matching ${predicate} showed within ${NATIVE_CEILING_MS} ms; nothing was tapped`);
+      const rects: ScreenRect[] = [];
+      for (const id of ids) rects.push((await call('GET', `${base}/element/${encodeURIComponent(id)}/rect`)) as ScreenRect);
+      const [first] = rects.sort((a, b) => a.y - b.y || a.x - b.x) as [ScreenRect];
+      await tapAt({ x: first.x + first.width / 2, y: first.y + first.height / 2 });
     },
 
     /**

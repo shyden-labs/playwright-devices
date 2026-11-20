@@ -266,3 +266,52 @@ describe('windowSize', () => {
     expect(await client.windowSize()).toEqual({ width: 420, height: 912 });
   });
 });
+
+describe('tapTopLeftOf', () => {
+  const grid = "type == 'XCUIElementTypeImage' AND name == 'PXGGridLayout-Info'";
+  /** Three grid images; listed from the `shownFromLook`th look on. */
+  function photoGrid(shownFromLook = 1) {
+    let looks = 0;
+    return fakeWda({
+      ...session,
+      'POST /session/s1/elements': () => {
+        looks += 1;
+        return looks >= shownFromLook ? [{ ELEMENT: 'a' }, { ELEMENT: 'c' }, { ELEMENT: 'b' }] : [];
+      },
+      'GET /session/s1/element/a/rect': () => ({ x: 200, y: 100, width: 100, height: 100 }),
+      'GET /session/s1/element/b/rect': () => ({ x: 100, y: 100, width: 100, height: 100 }),
+      'GET /session/s1/element/c/rect': () => ({ x: 0, y: 200, width: 100, height: 100 }),
+      'POST /session/s1/actions': () => null,
+    });
+  }
+
+  it('taps the centre of the topmost, then leftmost, element the predicate matches', async () => {
+    const wda = photoGrid();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await client.tapTopLeftOf(grid);
+
+    expect(wda.calls.find((c) => c.path === '/session/s1/elements')?.body).toEqual({ using: 'predicate string', value: grid });
+    const tap = wda.calls.find((c) => c.path === '/session/s1/actions')?.body as { actions: { actions: object[] }[] };
+    expect(tap.actions[0]?.actions[0]).toEqual({ type: 'pointerMove', duration: 0, x: 150, y: 150 });
+  });
+
+  it('keeps looking while the picker opens', async () => {
+    const wda = photoGrid(5);
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await client.tapTopLeftOf(grid);
+
+    expect(wda.calls.filter((c) => c.path === '/session/s1/elements')).toHaveLength(5);
+  });
+
+  it('fails at 60 s naming the predicate, and taps nothing', async () => {
+    const wda = photoGrid(Number.POSITIVE_INFINITY);
+    const clock = fakeClock();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock });
+
+    await expect(client.tapTopLeftOf(grid)).rejects.toThrow(`nothing matching ${grid} showed within 60000 ms; nothing was tapped`);
+    expect(clock.now()).toBe(60_000);
+    expect(wda.calls.some((c) => c.path.endsWith('/actions'))).toBe(false);
+  });
+});
