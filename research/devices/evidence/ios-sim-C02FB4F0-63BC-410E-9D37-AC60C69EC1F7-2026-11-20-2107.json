@@ -1,0 +1,186 @@
+{
+  "config": {
+    "argv": [
+      "/Users/shyden/.local/share/node/v26.13.0/bin/node",
+      "/Users/shyden/Developer/Repos/playwright-devices-7tf/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "playwright.devices.config.ts"
+    ],
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices-7tf/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "testIgnore": [],
+        "testMatch": "journey.spec.ts",
+        "timeout": 300000,
+        "use": {},
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/devices/ios-webkit.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a page is read, tapped, typed into and scrolled by real input",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 269639,
+                  "error": {
+                    "message": "Error: WebDriverAgent did not answer POST /session/9E9FFDA9-02E0-40B6-A987-1B83A2FCC0F1/elements within 30000 ms",
+                    "stack": "Error: WebDriverAgent did not answer POST /session/9E9FFDA9-02E0-40B6-A987-1B83A2FCC0F1/elements within 30000 ms"
+                  },
+                  "errors": [
+                    {
+                      "message": "Error: WebDriverAgent did not answer POST /session/9E9FFDA9-02E0-40B6-A987-1B83A2FCC0F1/elements within 30000 ms"
+                    },
+                    {
+                      "message": "Error: WebDriverAgent did not answer GET /session/9E9FFDA9-02E0-40B6-A987-1B83A2FCC0F1/screenshot within 30000 ms"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "open the page",
+                      "duration": 38996
+                    },
+                    {
+                      "title": "tap",
+                      "duration": 5696
+                    },
+                    {
+                      "title": "type",
+                      "duration": 8776
+                    },
+                    {
+                      "title": "choose a colour",
+                      "duration": 30257
+                    },
+                    {
+                      "title": "choose a file",
+                      "duration": 134152,
+                      "error": {
+                        "message": "Error: WebDriverAgent did not answer POST /session/9E9FFDA9-02E0-40B6-A987-1B83A2FCC0F1/elements within 30000 ms",
+                        "stack": "Error: WebDriverAgent did not answer POST /session/9E9FFDA9-02E0-40B6-A987-1B83A2FCC0F1/elements within 30000 ms"
+                      }
+                    }
+                  ],
+                  "startTime": "2026-11-20T14:12:46.328Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
+          "file": "journey.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T14:12:44.138Z",
+    "duration": 272021.387,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}
