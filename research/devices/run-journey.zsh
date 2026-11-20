@@ -30,12 +30,14 @@ die() { print -u2 "run-journey: $*"; exit 2; }
 cleanup() {
   for pid in $pids; do kill $pid 2>/dev/null || true; done
   [[ -n $forwarded ]] && adb -s $forwarded forward --remove tcp:9230 2>/dev/null || true
-  # Leave the phone as found: the android-playwright route leaves Chrome running as the debug app on
-  # Playwright's own socket, with no chrome_devtools_remote, and the next CDP run's connection is reset
-  # (seen by ShyTalk, 2026-11-20 19:49 WIB; likely shyden-labs/playwright-devices#33).
+  # Leave the phone as found: Playwright deletes Chrome's command-line file only after a launch that
+  # worked, and a file left behind names Playwright's socket, so Chrome opens no chrome_devtools_remote
+  # and the next CDP run finds nothing (shyden-labs/playwright-devices#33, measured 2026-11-20 23:02 WIB:
+  # evidence/android-stale-command-line-2026-11-20.txt). Chrome stays the debug app: that is the
+  # phone's setup, and without it Chrome ignores the file and Playwright's launch hangs.
   if [[ -n $android_serial ]]; then
     adb -s $android_serial shell am force-stop com.android.chrome 2>/dev/null || true
-    adb -s $android_serial shell am clear-debug-app 2>/dev/null || true
+    adb -s $android_serial shell rm -f /data/local/tmp/chrome-command-line 2>/dev/null || true
   fi
 }
 trap cleanup EXIT
@@ -123,9 +125,15 @@ case $target in
     label=$route-$serial
     export ANDROID_SERIAL=$serial
     android_serial=$serial
+    # Playwright's launch needs Chrome as the debug app (`adb shell am set-debug-app --persistent
+    # com.android.chrome`); without it the launch waits for a socket Chrome never opens.
+    [[ $route == android-cdp || $(adb -s $serial shell settings get global debug_app | tr -d '\r') == com.android.chrome ]] ||
+      die "Chrome is not the debug app on $serial, so Playwright's launch would hang: run adb -s $serial shell am set-debug-app --persistent com.android.chrome"
     if [[ $route == android-cdp ]]; then
-      # Chrome opens its DevTools socket only once it runs in the foreground, so start it cold.
+      # Chrome opens its DevTools socket only once it runs in the foreground, so start it cold, without
+      # a command-line file a killed run may have left (it would rename the socket).
       adb -s $serial shell am force-stop com.android.chrome
+      adb -s $serial shell rm -f /data/local/tmp/chrome-command-line
       adb -s $serial shell am start -n com.android.chrome/com.google.android.apps.chrome.Main -d http://127.0.0.1:9/ >/dev/null
       adb -s $serial forward tcp:9230 localabstract:chrome_devtools_remote >/dev/null
       forwarded=$serial

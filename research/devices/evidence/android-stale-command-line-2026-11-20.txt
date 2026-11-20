@@ -1,0 +1,27 @@
+# Android: why the routes broke each other (shyden-labs/playwright-devices#33, #7), OnePlus 3b402284, 2026-11-20 (WIB = UTC+7)
+
+## 22:27-22:57: android-playwright timed out in 5 of 5 rounds after 427f2df's cleanup (am clear-debug-app)
+Each report: "Test timeout of 300000ms exceeded while setting up "session"." (android-playwright-3b402284-2026-11-20-2227/2233/2240/2246/2252.json).
+android-cdp passed 5 of 5 and the iPhone 5 of 5 in the same rounds.
+
+## 22:59 probe (.superpowers/sdd/33/probe-launch.ts, DEBUG=pw:android), debug app cleared:
+0.1s launchBrowser()
+pw:android Force-stopping com.android.chrome
+pw:android Starting com.android.chrome _ --disable-fre ... --remote-debugging-socket-name=playwright_53136659..._devtools_remote ...
+pw:android Polling the socket localabstract:playwright_53136659..._devtools_remote
+Error: launchBrowser() hung 90000 ms
+(Playwright 1.65.1 writes /data/local/tmp/chrome-command-line but never sets the debug app; Chrome on a user build reads that file only as the debug app.)
+
+## 23:01 after `adb shell am set-debug-app --persistent com.android.chrome`:
+pw:android Connected to localabstract:playwright_2b368367..._devtools_remote
+1.2s launched
+
+## 23:02 the CDP route's start (force-stop, am start, forward tcp:9230 localabstract:chrome_devtools_remote), debug app set:
+== A: stale command-line file present (--remote-debugging-socket-name=playwright_stale_devtools_remote)
+no chrome_devtools_remote in 20 s
+@playwright_stale_devtools_remote
+== B: file removed
+socket up after ~2s
+@chrome_devtools_remote
+
+Reading: a command-line file left by an android-playwright launch that did not finish (Playwright removes it only after a launch that worked) renames Chrome's socket, so the next android-cdp run finds no chrome_devtools_remote: the #33 mechanism. The fix removes the file (after every Android run and before each CDP start) and keeps Chrome as the debug app.
