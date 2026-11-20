@@ -7,7 +7,8 @@
 #   run-journey.zsh android <serial> <route>       phone or emulator; route android-cdp or android-playwright
 #   PROBE=<script.ts> run-journey.zsh …            the same device side, a measurement script instead of the journey
 #
-# Claim first: the USB phones through ~/.claude/locks/usb-devices, a simulator or
+# Claim first: the USB phones through ~/.claude/locks/usb-devices (a simulator run too: its
+# inspector proxy attaches every iPhone on USB), a simulator or
 # emulator through ~/.claude/scripts/sim-use.zsh. This script starts the device
 # side (WebDriverAgent, ios_webkit_debug_proxy, Chrome's DevTools forward),
 # runs the journey, stops everything it started, and copies the report into
@@ -96,8 +97,12 @@ case $target in
     cp $fixtures/device-journey.txt "$(xcrun simctl get_app_container $udid $runner_id data)/Documents/device-journey.txt"
     socket=$(xcrun simctl getenv $udid RWI_LISTEN_SOCKET)
     require_pf_rule
-    # Only the simulator: the default device list would also attach to a phone on USB, which this run has not claimed.
-    ios_webkit_debug_proxy -u SIMULATOR:9222 -s unix:$socket >$wda/logs-sim/iwdp.log 2>&1 &
+    # The proxy also attaches every iPhone on USB, and cannot name the simulator (it reads only hex
+    # device ids): so hold the phones' claim for a simulator run too, put each USB iPhone on a port
+    # from 9300, and leave 9222 to the simulator.
+    config=null:9221 port=9300
+    for phone in $(idevice_id -l); do config+=,$phone:$port; (( port += 1 )); done
+    ios_webkit_debug_proxy -c $config,:9222 -s unix:$socket >$wda/logs-sim/iwdp.log 2>&1 &
     pids+=$!
     xcrun simctl openurl $udid http://127.0.0.1:9/
     # A cold inspector and Safari took 51 s to register at 4-5 GB swap (evidence/ios-simulator-inspector-cold-start-2026-11-19.txt).

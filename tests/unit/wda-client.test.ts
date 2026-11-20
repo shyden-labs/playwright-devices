@@ -391,3 +391,42 @@ describe('tapCellIcon', () => {
     expect(never.calls.some((c) => c.path.endsWith('/actions'))).toBe(false);
   });
 });
+
+describe('a look while the view changes', () => {
+  /** Measured on the iPad simulator, 2026-11-20: the look right after tapping Browse. */
+  const STALE =
+    'The previously found element ""Browse" Button" is not present in the current view anymore. Make sure the application UI has the expected state.';
+
+  it('counts WebDriverAgent’s stale-view refusal as nothing shown yet, and keeps waiting', async () => {
+    let looks = 0;
+    const calls: string[] = [];
+    const fetchFn = (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const path = decodeURIComponent(new URL(input instanceof Request ? input.url : input).pathname);
+      calls.push(`${init?.method ?? 'GET'} ${path}`);
+      if (path === '/session') return Promise.resolve(Response.json({ value: { sessionId: 's1' } }));
+      if (path === '/session/s1/elements') {
+        looks += 1;
+        if (looks === 1) return Promise.resolve(Response.json({ value: { error: 'no such element', message: STALE } }, { status: 404 }));
+        return Promise.resolve(Response.json({ value: [{ ELEMENT: 'el-ipad' }] }));
+      }
+      return Promise.resolve(Response.json({ value: null }));
+    };
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn, clock: fakeClock() });
+
+    expect(await client.tapFirstShown(['On My iPad'])).toBe('On My iPad');
+    expect(calls.at(-1)).toBe('POST /session/s1/element/el-ipad/click');
+  });
+
+  it('still fails on any other refusal, naming it', async () => {
+    const fetchFn = (input: string | URL | Request): Promise<Response> => {
+      const path = new URL(input instanceof Request ? input.url : input).pathname;
+      if (path === '/session') return Promise.resolve(Response.json({ value: { sessionId: 's1' } }));
+      return Promise.resolve(Response.json({ value: { error: 'invalid selector', message: 'bad predicate' } }, { status: 400 }));
+    };
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn, clock: fakeClock() });
+
+    await expect(client.tapFirstShown(['On My iPad'])).rejects.toThrow(
+      'WebDriverAgent refused POST /session/s1/elements (400): bad predicate',
+    );
+  });
+});

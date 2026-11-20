@@ -57,6 +57,9 @@ export interface ScreenRect extends ScreenPoint {
   height: number;
 }
 
+/** WebDriverAgent's refusal of a look made while the view still changes after a tap. */
+const VIEW_CHANGING = 'is not present in the current view anymore';
+
 /** W3C's key for an element reference; WebDriverAgent also sends the older `ELEMENT`. */
 const W3C_ELEMENT = 'element-6066-11e4-a52e-4f735466cecf';
 
@@ -102,9 +105,21 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
   const created = (await call('POST', '/session', { capabilities: {} })) as { sessionId: string };
   const base = `/session/${created.sessionId}`;
 
-  /** The ids of the elements WebDriverAgent finds, none when nothing matches. */
+  /**
+   * The ids of the elements WebDriverAgent finds, none when nothing matches.
+   * Right after a tap changes the view, WebDriverAgent can refuse a look
+   * because its view still holds the element just tapped (measured on the iPad
+   * simulator, 2026-11-20, after Browse): that is nothing listed yet, so the
+   * caller's wait goes on. Every other refusal fails.
+   */
   async function find(using: string, value: string): Promise<string[]> {
-    const found = (await call('POST', `${base}/elements`, { using, value })) as Record<string, string>[];
+    let found: Record<string, string>[];
+    try {
+      found = (await call('POST', `${base}/elements`, { using, value })) as Record<string, string>[];
+    } catch (error) {
+      if (error instanceof Error && error.message.includes(VIEW_CHANGING)) return [];
+      throw error;
+    }
     return found.map((element) => element[W3C_ELEMENT] ?? element.ELEMENT ?? '');
   }
 
