@@ -168,6 +168,8 @@ describe('checkOneSuite', () => {
 });
 
 describe('group-only tests', () => {
+  // Tags as Playwright's JSON reporter writes them: without the '@' (playwright 1.65.1,
+  // lib/runner/index.js _serializeTestSpec: `tags: test.tags.map((tag) => tag.substring(1))`).
   const groupOnly = (tags: string[], reason?: string): Made[] => [
     { title: 'reads' },
     { title: 'pinches', tags, ...(reason === undefined ? {} : { reason }) },
@@ -181,7 +183,7 @@ describe('group-only tests', () => {
   }
 
   it('passes a test listed for one group only when it carries that group tag and a reason', () => {
-    const phones = groupOnly(['@phones'], 'pinch-zoom needs a touch screen');
+    const phones = groupOnly(['phones'], 'pinch-zoom needs a touch screen');
     const listed = listedSplit(phones, [{ title: 'reads' }]);
     const result = checkOneSuite({ listed, ran: listed, groups: GROUPS });
     expect(result.problems).toEqual([]);
@@ -196,7 +198,7 @@ describe('group-only tests', () => {
 
   it('fails a group tag with no reason, or an empty one', () => {
     for (const reason of [undefined, '  ']) {
-      const listed = listedSplit(groupOnly(['@phones'], reason), [{ title: 'reads' }]);
+      const listed = listedSplit(groupOnly(['phones'], reason), [{ title: 'reads' }]);
       expect(checkOneSuite({ listed, ran: listed, groups: GROUPS }).problems).toEqual([
         '"journey.spec.ts › pinches" is tagged @phones but gives no group-only reason (annotation type "group-only")',
       ]);
@@ -204,7 +206,7 @@ describe('group-only tests', () => {
   });
 
   it('fails a test tagged for one group that is also listed for another', () => {
-    const tagged = groupOnly(['@phones'], 'touch only');
+    const tagged = groupOnly(['phones'], 'touch only');
     const listed = listedSplit(tagged, tagged);
     expect(checkOneSuite({ listed, ran: listed, groups: GROUPS }).problems).toEqual([
       '"journey.spec.ts › pinches" is tagged @phones but is also listed for the desktop group',
