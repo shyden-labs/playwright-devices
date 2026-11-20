@@ -1,0 +1,164 @@
+# Real phones, every route, 20 rounds in a row, 2026-11-20 23:32 to 2026-11-21 WIB. Code at d6f2cdb, run script at 6212b2c. Per-run reports beside this file. Order each round: android-playwright, android-cdp, iPhone.
+== round 1 23:32:45
+  1 passed (41.9s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (39.9s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (27.4s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 2 23:34:48
+  1 passed (42.1s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (39.6s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.7s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 3 23:36:49
+  1 passed (42.1s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.1s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.9s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 4 23:38:50
+  1 passed (41.3s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (39.9s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.8s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 5 23:40:49
+  1 passed (43.6s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (39.9s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.7s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 6 23:42:51
+  1 passed (41.4s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.7s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.7s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 7 23:44:52
+  1 passed (41.4s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (39.7s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.6s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 8 23:46:50
+  1 passed (41.5s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (39.8s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (27.0s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 9 23:48:50
+  1 passed (41.6s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (39.9s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.5s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 10 23:50:49
+  1 passed (41.6s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (39.8s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.9s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 11 23:52:49
+  1 passed (41.6s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.2s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.7s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 12 23:54:49
+  1 passed (41.6s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.0s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.6s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 13 23:56:49
+  1 passed (41.7s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.0s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.9s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 14 23:58:49
+  1 passed (41.5s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.1s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.7s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 15 00:00:48
+  1 passed (41.2s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (39.9s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.7s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 16 00:02:48
+  1 passed (41.5s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.1s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.8s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 17 00:04:48
+  1 passed (41.5s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.1s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.6s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 18 00:06:48
+  1 passed (41.9s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.4s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (27.2s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 19 00:08:49
+  1 passed (41.7s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.6s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.9s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 20 00:10:50
+  1 passed (41.8s)
+run-journey: android-playwright-3b402284 exit=0
+run-journey: Chrome's DevTools socket answered after 1 s
+  1 passed (40.4s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.7s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+released
+
+[exited with code 0]
