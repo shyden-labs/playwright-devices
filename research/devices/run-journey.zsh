@@ -5,6 +5,7 @@
 #   run-journey.zsh iphone  <udid>                 real iPhone or iPad over USB
 #   run-journey.zsh ios-sim <udid>                 booted iOS Simulator
 #   run-journey.zsh android <serial> <route>       phone or emulator; route android-cdp or android-playwright
+#   PROBE=<script.ts> run-journey.zsh …            the same device side, a measurement script instead of the journey
 #
 # Claim first: the USB phones through ~/.claude/locks/usb-devices, a simulator or
 # emulator through ~/.claude/scripts/sim-use.zsh. This script starts the device
@@ -117,6 +118,13 @@ case $target in
     ;;
   *) die "usage: run-journey.zsh iphone <udid> | ios-sim <udid> | android <serial> <route>" ;;
 esac
+
+# PROBE=<script.ts> runs a measurement against the same device side instead of the journey.
+if [[ -n ${PROBE:-} ]]; then
+  print "run-journey: probing $label with $PROBE"
+  (cd $repo && DEVICE_ROUTE=$route node $PROBE)
+  exit $?
+fi
 
 out=$evidence/$label-$stamp.txt
 print "run-journey: $label, route $route, output $out"
