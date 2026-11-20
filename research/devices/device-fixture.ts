@@ -7,7 +7,7 @@
 import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { _android, chromium, expect, test as base, webkit, type Browser, type Page } from '@playwright/test';
-import { androidSession, iosSession, routeFrom, type DeviceSession } from './device-session.ts';
+import { androidSession, iosSession, routeFrom, withNamedSteps, type DeviceSession } from './device-session.ts';
 import type { Adb } from './finger-scroll.ts';
 import { startJourneyServer } from './serve.ts';
 import { connectWda } from './wda-client.ts';
@@ -110,7 +110,9 @@ export const test = base.extend<JourneyFixtures, { journeyURL: string }>({
     { scope: 'worker' },
   ],
   session: async ({ journeyURL }, use, testInfo) => {
-    const { session, disconnect } = await connect(journeyURL);
+    const connection = await connect(journeyURL);
+    const { disconnect } = connection;
+    const session = withNamedSteps(connection.session, (name, body) => base.step(name, body));
     try {
       await use(session);
       // The device's own screen, before teardown closes anything: Playwright's screenshot shows only the page.

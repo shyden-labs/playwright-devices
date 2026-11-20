@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { describe, expect, it } from 'vitest';
-import { androidSession, iosSession, routeFrom } from '../../research/devices/device-session.ts';
+import { androidSession, iosSession, routeFrom, withNamedSteps } from '../../research/devices/device-session.ts';
 import { PHOTO_GRID_IMAGE } from '../../research/devices/ios-native.ts';
 
 /** A WebDriverAgent stand-in recording each step; `shown` is what the screen lists. */
@@ -197,5 +197,43 @@ describe('routeFrom', () => {
     const known = 'DEVICE_ROUTE must be one of ios-webkit, android-cdp, android-playwright';
     expect(() => routeFrom({})).toThrow(`${known}; it is unset`);
     expect(() => routeFrom({ DEVICE_ROUTE: 'ios' })).toThrow(`${known}; it is "ios"`);
+  });
+});
+
+describe('withNamedSteps', () => {
+  it("runs each native step inside a step named for it, so a slow stage's report shows which native step took the time", async () => {
+    const wda = fakeWda(['Choose File', 'Browse', 'On My iPhone']);
+    const named: string[] = [];
+    const session = withNamedSteps(iosSession({ page, wda, baseURL: 'http://mac.local:4321', file }), async (name, body) => {
+      named.push(`start ${name}`);
+      await body();
+      named.push(`end ${name}`);
+    });
+
+    await session.nativeChoose('Green');
+    await session.nativeChooseFile();
+    await session.nativeChoosePhoto();
+    await session.fingerScroll();
+
+    expect(named).toEqual([
+      'start native: choose "Green"',
+      'end native: choose "Green"',
+      'start native: choose a file',
+      'end native: choose a file',
+      'start native: choose a photo',
+      'end native: choose a photo',
+      'start native: finger scroll',
+      'end native: finger scroll',
+    ]);
+    expect(wda.steps).toHaveLength(12);
+  });
+
+  it('keeps the page, screenshot and close as they are', () => {
+    const wda = fakeWda();
+    const session = iosSession({ page, wda, baseURL: 'http://mac.local:4321', file });
+    const stepped = withNamedSteps(session, (_name, body) => body());
+    expect(stepped.page).toBe(session.page);
+    expect(stepped.screenshot).toBe(session.screenshot);
+    expect(stepped.close).toBe(session.close);
   });
 });

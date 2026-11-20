@@ -99,6 +99,23 @@ export async function androidSession({ page, adb, baseURL, files }: AndroidSessi
   };
 }
 
+/** Runs `body` as one named step of the test (Playwright's `test.step` in the fixture). */
+export type NamedStep = (name: string, body: () => Promise<void>) => Promise<void>;
+
+/**
+ * The same session with each native step run inside a step named for it, so a
+ * slow stage's report shows which native step took the time.
+ */
+export function withNamedSteps(session: DeviceSession, step: NamedStep): DeviceSession {
+  return {
+    ...session,
+    nativeChoose: (option) => step(`native: choose "${option}"`, () => session.nativeChoose(option)),
+    nativeChooseFile: () => step('native: choose a file', session.nativeChooseFile),
+    nativeChoosePhoto: () => step('native: choose a photo', session.nativeChoosePhoto),
+    fingerScroll: () => step('native: finger scroll', session.fingerScroll),
+  };
+}
+
 /** The ways the journey reaches a phone's browser. */
 export const ROUTES = ['ios-webkit', 'android-cdp', 'android-playwright'] as const;
 export type Route = (typeof ROUTES)[number];
