@@ -11,5 +11,7 @@ export default defineConfig({
   retries: 0,
   // The slowest native picker took 26 s to open on the simulator; three pickers and their ceilings fit.
   timeout: 5 * 60_000,
-  reporter: [['list'], ['json', { outputFile: `research/devices/evidence/${process.env.DEVICE_ROUTE ?? 'unknown'}.json` }]],
+  // The run script copies the report into research/devices/evidence/ once a run is kept: a listing or a
+  // probe must never overwrite kept evidence.
+  reporter: [['list'], ['json', { outputFile: `test-results/devices/${process.env.DEVICE_ROUTE ?? 'unknown'}.json` }]],
 });
