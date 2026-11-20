@@ -23,13 +23,20 @@ export interface MarkerPlace {
   cssTop: number;
 }
 
+/**
+ * WebDriverAgent reports whole points and rounds a fractional rectangle
+ * outward, adding up to a point at each edge: with the keyboard up the iPhone
+ * Air read the marker as 100 by 102 (2026-11-20).
+ */
+const ROUNDING_POINTS = 2;
+
 export function screenMap(place: MarkerPlace, onScreen: Box) {
-  if (onScreen.width !== onScreen.height) {
+  if (Math.abs(onScreen.width - onScreen.height) > ROUNDING_POINTS) {
     throw new Error(
       `the marker read back ${onScreen.width} by ${onScreen.height} points at (${onScreen.x}, ${onScreen.y}), not square: the page is zoomed or the marker is clipped`,
     );
   }
-  const scale = onScreen.width / MARKER_CSS_SIZE;
+  const scale = Math.min(onScreen.width, onScreen.height) / MARKER_CSS_SIZE;
   const originX = onScreen.x - place.cssLeft * scale;
   const originY = onScreen.y - place.cssTop * scale;
   return {
