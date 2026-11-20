@@ -26,7 +26,7 @@ export interface MarkerPlace {
 export function screenMap(place: MarkerPlace, onScreen: Box) {
   if (onScreen.width !== onScreen.height) {
     throw new Error(
-      `the marker read back ${onScreen.width} by ${onScreen.height} points, not square: the page is zoomed or the marker is clipped`,
+      `the marker read back ${onScreen.width} by ${onScreen.height} points at (${onScreen.x}, ${onScreen.y}), not square: the page is zoomed or the marker is clipped`,
     );
   }
   const scale = onScreen.width / MARKER_CSS_SIZE;
