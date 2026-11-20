@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { WdaClock } from '../../research/devices/wda-client.ts';
 import { androidPagePoint, androidScreenPointsOf, type PageViewport } from '../../research/devices/android-page-map.ts';
 
 /** Chrome's page area on the OnePlus CPH2653 (2026-11-20): its top is under the toolbar. */
@@ -30,7 +31,59 @@ describe('androidPagePoint', () => {
   });
 });
 
+/** A clock that only moves when the code sleeps; past 5 s means a wait without its ceiling. */
+function fakeClock(): WdaClock {
+  let t = 0;
+  return {
+    now: () => t,
+    sleep: (ms: number) => {
+      t += ms;
+      if (t > 5_000) return Promise.reject(new Error('waited past 5000 ms: a wait has no ceiling'));
+      return Promise.resolve();
+    },
+  };
+}
+
+/** Answers each value in turn, the last one repeating. */
+function inTurn<T>(values: T[]): () => Promise<T> {
+  let i = 0;
+  return () => Promise.resolve(values[Math.min(i++, values.length - 1)] as T);
+}
+
 describe('androidScreenPointsOf', () => {
+  it('waits for the keyboard to finish resizing the page: a read mixing the old viewport and the new area is not used', async () => {
+    // Measured 2026-11-20: right after typing, the page still said 759 while the dump already showed the shrunk area.
+    const page = {
+      evaluate: inTurn([
+        { ...VIEWPORT, height: 759.43 },
+        { ...VIEWPORT, height: 437.43 },
+      ]),
+    };
+    const shrunk = { ...AREA, height: 1727 };
+    const screen = { pageArea: inTurn([shrunk]) };
+
+    const point = await androidScreenPointsOf(page, screen, fakeClock())({ x: 16, y: 355, width: 265.6, height: 44.3 });
+
+    expect(point.y).toBeCloseTo(160 + 1727 - 437.43 * 3.5 + (355 + 22.15) * 3.5, 1);
+  });
+
+  it('fails at 5 s when the page never settles, naming the last two reads', async () => {
+    let height = 400;
+    const page = {
+      evaluate: () => {
+        height += 1;
+        return Promise.resolve({ ...VIEWPORT, height });
+      },
+    };
+    const clock = fakeClock();
+    const toScreen = androidScreenPointsOf(page, { pageArea: inTurn([AREA]) }, clock);
+
+    await expect(toScreen({ x: 0, y: 0, width: 0, height: 0 })).rejects.toThrow(
+      /the page did not settle within 5000 ms; last two reads: \{/,
+    );
+    expect(clock.now()).toBe(5_000);
+  });
+
   it('reads the page’s viewport and the page area afresh for every box', async () => {
     let reads = 0;
     const page = {
@@ -46,13 +99,14 @@ describe('androidScreenPointsOf', () => {
         return Promise.resolve(AREA);
       },
     };
-    const toScreen = androidScreenPointsOf(page, screen);
+    const toScreen = androidScreenPointsOf(page, screen, fakeClock());
 
     await toScreen({ x: 0, y: 0, width: 0, height: 0 });
     const second = await toScreen({ x: 16, y: 100, width: 200, height: 40 });
 
-    expect(reads).toBe(2);
-    expect(looks).toBe(2);
+    // Two agreeing reads per box: the layout is still.
+    expect(reads).toBe(4);
+    expect(looks).toBe(4);
     expect(second.y).toBeCloseTo(780, 1);
   });
 });

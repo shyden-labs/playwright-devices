@@ -9,7 +9,7 @@
  * Chrome's toolbar hides and shows as the page scrolls.
  */
 import type { Box } from './screen-map.ts';
-import type { ScreenPoint, ScreenRect } from './wda-client.ts';
+import type { ScreenPoint, ScreenRect, WdaClock } from './wda-client.ts';
 
 /** The page's visual viewport, as the page reports it. */
 export interface PageViewport {
@@ -51,7 +51,44 @@ function readViewport(): PageViewport {
   };
 }
 
-/** A `toScreen` for the Android page stand-in: the screen point at the centre of a page box. */
-export function androidScreenPointsOf(page: ViewportPage, screen: PageAreaReader): (box: Box) => Promise<ScreenPoint> {
-  return async (box) => androidPagePoint(box, await page.evaluate(readViewport), await screen.pageArea());
+/** How long the page may take to settle after a keyboard shows or hides, or the toolbar moves. */
+const SETTLE_CEILING_MS = 5_000;
+
+/** Pause between reads while the page settles. */
+const SETTLE_POLL_MS = 100;
+
+const realClock: WdaClock = {
+  now: () => Date.now(),
+  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+};
+
+/**
+ * A `toScreen` for the Android page stand-in: the screen point at the centre
+ * of a page box. The page's viewport and Chrome's page area are read until two
+ * reads in a row agree: right after typing, the page still reported the old
+ * viewport while the screen already showed the keyboard (measured 2026-11-20),
+ * and a tap from that mix landed 1,127 pixels too high.
+ */
+export function androidScreenPointsOf(
+  page: ViewportPage,
+  screen: PageAreaReader,
+  clock: WdaClock = realClock,
+): (box: Box) => Promise<ScreenPoint> {
+  const read = async () => JSON.stringify({ viewport: await page.evaluate(readViewport), area: await screen.pageArea() });
+  return async (box) => {
+    const deadline = clock.now() + SETTLE_CEILING_MS;
+    let previous = await read();
+    for (;;) {
+      const current = await read();
+      if (current === previous) {
+        const { viewport, area } = JSON.parse(current) as { viewport: PageViewport; area: ScreenRect };
+        return androidPagePoint(box, viewport, area);
+      }
+      if (clock.now() >= deadline) {
+        throw new Error(`the page did not settle within ${SETTLE_CEILING_MS} ms; last two reads: ${previous} then ${current}`);
+      }
+      previous = current;
+      await clock.sleep(SETTLE_POLL_MS);
+    }
+  };
 }
