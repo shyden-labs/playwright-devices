@@ -18,6 +18,10 @@ function fakeWda(shown: string[] = []) {
       steps.push(hit === undefined ? `look for ${labels.join(', ')}` : `tap ${hit}`);
       return Promise.resolve(hit);
     },
+    tapCellIcon: (name: string) => {
+      steps.push(`tap the icon of ${name}`);
+      return Promise.resolve();
+    },
     tapTopLeftOf: (predicate: string) => {
       steps.push(`tap top-left of ${predicate}`);
       return Promise.resolve();
@@ -55,8 +59,8 @@ describe('iosSession', () => {
       'tap Choose File',
       'tap Browse',
       'tap On My iPhone',
-      `tap ${file.folder}`,
-      `tap ${file.label}`,
+      `tap the icon of ${file.folder}`,
+      `tap the icon of ${file.label}`,
       'tap Photo Library',
       `tap top-left of ${PHOTO_GRID_IMAGE}`,
       'tap Done',

@@ -223,6 +223,24 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock }: Wd
       return label;
     },
 
+    /**
+     * Taps the icon of the Files cell named `name`, waiting while the folder
+     * lists. Files opens a cell on its icon, not its name (measured on the
+     * iPhone Air, 2026-11-20: the cell "WebDriverAgentRunner-Runner, 1 item"
+     * at y 200, height 176, its icon at y 204-288, its name below).
+     */
+    async tapCellIcon(name: string): Promise<void> {
+      const predicate = `type == 'XCUIElementTypeCell' AND label BEGINSWITH '${name}, '`;
+      let ids: string[] = [];
+      const listed = async (): Promise<boolean> => {
+        ids = await find('predicate string', predicate);
+        return ids.length > 0;
+      };
+      await waitFor(listed, NATIVE_CEILING_MS, `no cell named "${name}" showed within ${NATIVE_CEILING_MS} ms; nothing was tapped`);
+      const cell = (await call('GET', `${base}/element/${encodeURIComponent(ids[0] ?? '')}/rect`)) as ScreenRect;
+      await tapAt({ x: cell.x + cell.width / 2, y: cell.y + cell.height / 4 });
+    },
+
     /** Looks once, without waiting, and taps the first of `labels` listed; answers it, or undefined when none showed. */
     async tapIfShown(labels: string[]): Promise<string | undefined> {
       const hit = await firstShown(labels);

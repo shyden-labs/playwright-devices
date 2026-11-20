@@ -17,6 +17,10 @@ function fakeScreen(shown: string[]) {
       steps.push(hit === undefined ? `look for ${labels.join(', ')}` : `tap ${hit}`);
       return Promise.resolve(hit);
     },
+    tapCellIcon(name: string) {
+      steps.push(`tap the icon of ${name}`);
+      return Promise.resolve();
+    },
     tapTopLeftOf(predicate: string) {
       steps.push(`tap top-left of ${predicate}`);
       return Promise.resolve();
@@ -36,15 +40,21 @@ describe('iosChooseFile', () => {
   const file = { folder: 'WebDriverAgentRunner-Runner', label: 'device-journey' };
 
   it('on the iPhone: Choose File, Browse, On My iPhone, the runner’s folder, the file', async () => {
-    const screen = fakeScreen(['Choose File', 'Browse', 'On My iPhone', file.folder, file.label]);
+    const screen = fakeScreen(['Choose File', 'Browse', 'On My iPhone']);
     await iosChooseFile(screen, file);
-    expect(screen.steps).toEqual(['tap Choose File', 'tap Browse', 'tap On My iPhone', `tap ${file.folder}`, `tap ${file.label}`]);
+    expect(screen.steps).toEqual([
+      'tap Choose File',
+      'tap Browse',
+      'tap On My iPhone',
+      `tap the icon of ${file.folder}`,
+      `tap the icon of ${file.label}`,
+    ]);
   });
 
   it('on the iPad, whose picker opens with its sidebar: Choose File, On My iPad, the runner’s folder, the file', async () => {
-    const screen = fakeScreen(['Choose File', 'On My iPad', file.folder, file.label]);
+    const screen = fakeScreen(['Choose File', 'On My iPad']);
     await iosChooseFile(screen, file);
-    expect(screen.steps).toEqual(['tap Choose File', 'tap On My iPad', `tap ${file.folder}`, `tap ${file.label}`]);
+    expect(screen.steps).toEqual(['tap Choose File', 'tap On My iPad', `tap the icon of ${file.folder}`, `tap the icon of ${file.label}`]);
   });
 });
 

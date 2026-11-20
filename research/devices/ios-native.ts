@@ -8,6 +8,7 @@
 export interface NativeScreen {
   tapFirstShown(labels: string[]): Promise<string>;
   tapIfShown(labels: string[]): Promise<string | undefined>;
+  tapCellIcon(name: string): Promise<void>;
   tapTopLeftOf(predicate: string): Promise<void>;
 }
 
@@ -25,13 +26,13 @@ export interface FileInFiles {
   label: string;
 }
 
-/** Choose File, then the device's own storage (the iPhone goes through Browse; the iPad lists it at once), the folder, the file. */
+/** Choose File, then the device's own storage (the iPhone goes through Browse; the iPad lists it at once), the folder, the file: Files opens a cell on its icon. */
 export async function iosChooseFile(screen: NativeScreen, { folder, label }: FileInFiles): Promise<void> {
   await screen.tapFirstShown(['Choose File']);
   const reached = await screen.tapFirstShown(['Browse', 'On My iPhone', 'On My iPad']);
   if (reached === 'Browse') await screen.tapFirstShown(['On My iPhone', 'On My iPad']);
-  await screen.tapFirstShown([folder]);
-  await screen.tapFirstShown([label]);
+  await screen.tapCellIcon(folder);
+  await screen.tapCellIcon(label);
 }
 
 /** Photo Library, the grid's first photo, Done: the picker selects on tap and returns only on Done. */

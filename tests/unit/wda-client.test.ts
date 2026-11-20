@@ -348,3 +348,46 @@ describe('tapIfShown', () => {
     expect(wda.calls.some((c) => c.path.endsWith('/click'))).toBe(false);
   });
 });
+
+describe('tapCellIcon', () => {
+  /** WebDriverAgent listing the Files grid as measured on the iPhone Air (2026-11-20), from the n-th look onwards. */
+  function filesGrid(fromLook = 1) {
+    let looks = 0;
+    return fakeWda({
+      ...session,
+      'POST /session/s1/elements': (call) => {
+        looks += 1;
+        const { value } = call.body as { value: string };
+        return looks >= fromLook && value === "type == 'XCUIElementTypeCell' AND label BEGINSWITH 'WebDriverAgentRunner-Runner, '"
+          ? [{ ELEMENT: 'cell-1' }]
+          : [];
+      },
+      'GET /session/s1/element/cell-1/rect': () => ({ x: 282, y: 200, width: 128, height: 176 }),
+      'POST /session/s1/actions': () => null,
+    });
+  }
+
+  it('taps the icon of the cell named so (a quarter down the cell): Files ignores a tap on the name', async () => {
+    const wda = filesGrid();
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await client.tapCellIcon('WebDriverAgentRunner-Runner');
+
+    expect(wda.calls.find((c) => c.path === '/session/s1/actions')?.body).toEqual(touchTap(346, 244));
+  });
+
+  it('waits while the folder lists, and fails at 60 s naming the cell, tapping nothing', async () => {
+    const slow = filesGrid(50);
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: slow.fetchFn, clock: fakeClock() });
+    await client.tapCellIcon('WebDriverAgentRunner-Runner');
+
+    const never = fakeWda({ ...session, 'POST /session/s1/elements': () => [] });
+    const clock = fakeClock();
+    const stuck = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: never.fetchFn, clock });
+    await expect(stuck.tapCellIcon('device-journey')).rejects.toThrow(
+      'no cell named "device-journey" showed within 60000 ms; nothing was tapped',
+    );
+    expect(clock.now()).toBe(60_000);
+    expect(never.calls.some((c) => c.path.endsWith('/actions'))).toBe(false);
+  });
+});
