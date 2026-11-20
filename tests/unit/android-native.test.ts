@@ -28,6 +28,7 @@ function fakeClock(): WdaClock {
 
 /** One node a dump lists. */
 interface Node {
+  id?: string;
   text?: string;
   desc?: string;
   bounds: [number, number, number, number];
@@ -35,7 +36,8 @@ interface Node {
 
 function dumpOf(nodes: Node[]): string {
   const lines = nodes.map(
-    ({ text = '', desc = '', bounds: [l, t, r, b] }) => `<node text="${text}" content-desc="${desc}" bounds="[${l},${t}][${r},${b}]" />`,
+    ({ id = '', text = '', desc = '', bounds: [l, t, r, b] }) =>
+      `<node text="${text}" resource-id="${id}" content-desc="${desc}" bounds="[${l},${t}][${r},${b}]" />`,
   );
   return `<hierarchy rotation="0">${lines.join('')}</hierarchy>UI hierchary dumped to: /dev/tty`;
 }
@@ -127,20 +129,20 @@ describe('connectAndroidScreen', () => {
 });
 
 describe('real input on Android', () => {
-  const MARKER: Node = { desc: 'playwright-devices screen marker', bounds: [0, 236, 263, 499] };
+  const PAGE_AREA: Node = { id: 'com.android.chrome:id/compositor_view_holder', bounds: [0, 160, 1440, 3014] };
 
-  it('rectOf waits for the label to be listed and answers its rectangle', async () => {
-    const device = fakeAdb([[], [MARKER]]);
+  it('pageArea answers where Chrome draws the page, read afresh from the screen', async () => {
+    const device = fakeAdb([[], [PAGE_AREA]]);
     const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
-    expect(await screen.rectOf('playwright-devices screen marker')).toEqual({ x: 0, y: 236, width: 263, height: 263 });
+    expect(await screen.pageArea()).toEqual({ x: 0, y: 160, width: 1440, height: 2854 });
   });
 
-  it('rectOf fails at 5 s naming the label', async () => {
+  it("pageArea fails at 5 s when Chrome's page area is not on the screen", async () => {
     const device = fakeAdb([[]]);
     const clock = fakeClock();
     const screen = connectAndroidScreen({ adb: device.adb, clock });
-    await expect(screen.rectOf('playwright-devices screen marker')).rejects.toThrow(
-      'nothing labelled "playwright-devices screen marker" showed within 5000 ms',
+    await expect(screen.pageArea()).rejects.toThrow(
+      "Chrome's page area (com.android.chrome:id/compositor_view_holder) was not on the screen within 5000 ms",
     );
     expect(clock.now()).toBe(5_000);
   });

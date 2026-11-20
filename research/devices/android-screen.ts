@@ -45,18 +45,14 @@ export function centreOfFirstDescribed(dump: string, prefix: string): ScreenPoin
   return { x: (left + right) / 2, y: (top + bottom) / 2 };
 }
 
-/** One `<node …>` element's text, description and bounds. */
-const LABELLED = /<node\b[^>]*?\btext="([^"]*)"[^>]*?\bcontent-desc="([^"]*)"[^>]*?\bbounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/g;
+/** One `<node …>` element's resource id and bounds. */
+const IDENTIFIED = /<node\b[^>]*?\bresource-id="([^"]*)"[^>]*?\bbounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/g;
 
-/**
- * The rectangle of the node whose description or text is exactly `label`;
- * undefined when none is. Chrome lists a page element's accessible name as one
- * or the other (which, for the screen marker, the first phone run measures).
- */
-export function rectOfLabel(dump: string, label: string): ScreenRect | undefined {
-  for (const node of dump.matchAll(LABELLED)) {
-    if (unescapeXml(node[1] ?? '') !== label && unescapeXml(node[2] ?? '') !== label) continue;
-    const [left, top, right, bottom] = node.slice(3, 7).map(Number) as [number, number, number, number];
+/** The rectangle of the node whose resource id is exactly `id`; undefined when none is. */
+export function rectOfResourceId(dump: string, id: string): ScreenRect | undefined {
+  for (const node of dump.matchAll(IDENTIFIED)) {
+    if (node[1] !== id) continue;
+    const [left, top, right, bottom] = node.slice(2, 6).map(Number) as [number, number, number, number];
     return { x: left, y: top, width: right - left, height: bottom - top };
   }
   return undefined;

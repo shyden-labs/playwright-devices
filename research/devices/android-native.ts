@@ -7,7 +7,7 @@
  * `adb shell input tap`, Android's own input service.
  */
 import { basename } from 'node:path';
-import { centreOfFirstDescribed, centreOfText, rectOfLabel } from './android-screen.ts';
+import { centreOfFirstDescribed, centreOfText, rectOfResourceId } from './android-screen.ts';
 import type { Adb } from './finger-scroll.ts';
 import type { ScreenPoint, ScreenRect, WdaClock } from './wda-client.ts';
 
@@ -23,8 +23,11 @@ const POLL_MS = 250;
 /** The same ceiling as iOS's native pickers: the slowest measured opened in 26 s. */
 const NATIVE_CEILING_MS = 60_000;
 
-/** The screen marker is drawn just before it is looked for; the same assumed ceiling as on iOS, to be measured. */
-const ELEMENT_CEILING_MS = 5_000;
+/** Chrome's page area, under its toolbar (measured on the OnePlus CPH2653, Chrome 157, 2026-11-20). */
+export const PAGE_AREA_ID = 'com.android.chrome:id/compositor_view_holder';
+
+/** Chrome is open before any tap, so its page area is listed at once; a short ceiling. */
+const PAGE_AREA_CEILING_MS = 5_000;
 
 /** Printable ASCII: all `adb shell input text` can type. */
 const TYPABLE = /^[\x20-\x7e]*$/;
@@ -83,12 +86,12 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
       await adb(['shell', 'input', 'text', inputTextArgument(text)]);
     },
 
-    /** Where the screen lists the element labelled `label`, waiting briefly for it. */
-    async rectOf(label: string): Promise<ScreenRect> {
+    /** Where Chrome draws the page on the screen, read afresh: its toolbar moves as the page scrolls. */
+    async pageArea(): Promise<ScreenRect> {
       return waitFor(
-        async () => rectOfLabel(await dump(), label),
-        `nothing labelled "${label}" showed within ${ELEMENT_CEILING_MS} ms`,
-        ELEMENT_CEILING_MS,
+        async () => rectOfResourceId(await dump(), PAGE_AREA_ID),
+        `Chrome's page area (${PAGE_AREA_ID}) was not on the screen within ${PAGE_AREA_CEILING_MS} ms`,
+        PAGE_AREA_CEILING_MS,
       );
     },
 

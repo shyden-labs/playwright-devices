@@ -14,6 +14,7 @@ import {
   connectAndroidScreen,
   stageAndroidFile,
 } from './android-native.ts';
+import { androidScreenPointsOf } from './android-page-map.ts';
 import { androidFingerScroll, iosFingerScroll, type Adb, type IosSwiper } from './finger-scroll.ts';
 import { screenPointsOf, type MarkerReader } from './screen-marker.ts';
 import { iosChooseFile, iosChooseOption, iosChoosePhoto, iosClosePicker, type FileInFiles, type NativeScreen } from './ios-native.ts';
@@ -81,7 +82,7 @@ export async function androidSession({ page, adb, baseURL, files }: AndroidSessi
   const removeDocument = await stageAndroidFile(adb, files.document, '/sdcard/Download');
   const removePhoto = await stageAndroidFile(adb, files.photo, '/sdcard/Pictures');
   return {
-    page: realInputPage(page, { input: screen, toScreen: screenPointsOf(page, screen), baseURL }),
+    page: realInputPage(page, { input: screen, toScreen: androidScreenPointsOf(page, screen), baseURL }),
     nativeChoose: (option) => androidChooseOption(screen, option),
     nativeChooseFile: () => androidChooseFile(screen, basename(files.document)),
     nativeChoosePhoto: () => androidChoosePhoto(screen),

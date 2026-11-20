@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { centreOfFirstDescribed, centreOfText, rectOfLabel } from '../../research/devices/android-screen.ts';
+import { centreOfFirstDescribed, centreOfText, rectOfResourceId } from '../../research/devices/android-screen.ts';
 
 /** A trimmed `uiautomator dump` of Chrome's native <select> list. */
 const DUMP = `<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>
@@ -49,21 +49,19 @@ describe('centreOfFirstDescribed', () => {
   });
 });
 
-describe('rectOfLabel', () => {
-  const page = `<hierarchy rotation="0">
-  <node text="" content-desc="playwright-devices screen marker" bounds="[0,236][263,499]" />
-  <node text="Tap me" content-desc="" bounds="[100,600][500,700]" />
+describe('rectOfResourceId', () => {
+  /** Trimmed from the OnePlus CPH2653's dump with Chrome open (2026-11-20). */
+  const chrome = `<hierarchy rotation="0">
+  <node index="0" text="" resource-id="android:id/content" class="android.widget.FrameLayout" content-desc="" bounds="[0,0][1440,3168]" />
+  <node index="0" text="" resource-id="com.android.chrome:id/compositor_view_holder" class="android.widget.FrameLayout" content-desc="" bounds="[0,160][1440,3014]" />
+  <node index="0" text="" resource-id="com.android.chrome:id/control_container" class="android.widget.FrameLayout" content-desc="" bounds="[0,160][1440,360]" />
 </hierarchy>`;
 
-  it('answers the bounds of the node whose description is the label, as a rectangle', () => {
-    expect(rectOfLabel(page, 'playwright-devices screen marker')).toEqual({ x: 0, y: 236, width: 263, height: 263 });
+  it('answers the bounds of the node with that resource id, as a rectangle', () => {
+    expect(rectOfResourceId(chrome, 'com.android.chrome:id/compositor_view_holder')).toEqual({ x: 0, y: 160, width: 1440, height: 2854 });
   });
 
-  it('also finds a node whose text is the label', () => {
-    expect(rectOfLabel(page, 'Tap me')).toEqual({ x: 100, y: 600, width: 400, height: 100 });
-  });
-
-  it('answers undefined when no node has that label, never a partial match', () => {
-    expect(rectOfLabel(page, 'playwright-devices screen')).toBeUndefined();
+  it('answers undefined when no node has that id, never a partial match', () => {
+    expect(rectOfResourceId(chrome, 'com.android.chrome:id/compositor_view')).toBeUndefined();
   });
 });
