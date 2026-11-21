@@ -274,6 +274,31 @@ describe('AssertionCounter', () => {
     ]);
   });
 
+  it('counts an expect.poll once however many attempts it made, as Playwright nests each attempt under the poll', () => {
+    // Playwright 1.65.1 lib/matchers/expect.js: invokePollMatcher runs callMatcherAsStep once per attempt,
+    // each an `expect` step whose parent is the poll's own `expect` step (shyden-labs/playwright-devices#42).
+    const written: string[] = [];
+    const counter = new AssertionCounter({ outputFile: 'c.json', unnamedTarget: 'x' }, (_file, body) => written.push(body));
+    const shell = testCase('firefox', ['shell.spec.ts', 'loads']);
+    const poll = { category: 'expect' } as TestStep;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      counter.onStepEnd(shell, {} as TestResult, { category: 'expect', parent: poll } as TestStep);
+    }
+    counter.onStepEnd(shell, {} as TestResult, poll);
+    counter.onStepEnd(shell, {} as TestResult, step('expect'));
+    const group = { category: 'test.step' } as TestStep;
+    counter.onStepEnd(shell, {} as TestResult, { category: 'expect', parent: group } as TestStep);
+    counter.onStepEnd(shell, {} as TestResult, group);
+    // An expect inside a step inside a retrying expect (expect(...).toPass(() => test.step(...))) is part of it.
+    const retrying = { category: 'expect' } as TestStep;
+    const inner = { category: 'test.step', parent: retrying } as TestStep;
+    counter.onStepEnd(shell, {} as TestResult, { category: 'expect', parent: inner } as TestStep);
+    counter.onStepEnd(shell, {} as TestResult, inner);
+    counter.onStepEnd(shell, {} as TestResult, retrying);
+    counter.onEnd();
+    expect(JSON.parse(written[0] ?? '{}')).toEqual({ firefox: { 'shell.spec.ts › loads': 4 } });
+  });
+
   it('counts a test that made no assertion as 0, so it is not mistaken for a missing count', () => {
     const written: string[] = [];
     const counter = new AssertionCounter({ outputFile: 'c.json', unnamedTarget: 'x' }, (_file, body) => written.push(body));
