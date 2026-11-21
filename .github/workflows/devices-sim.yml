@@ -64,16 +64,19 @@ jobs:
           xcrun simctl bootstatus "$udid" -b
       - run: zsh research/devices/ci/setup-ios-sim.zsh ${{ steps.sim.outputs.udid }}
       - run: zsh research/devices/run-journey.zsh ios-sim ${{ steps.sim.outputs.udid }}
+      # This run's evidence only (the folder also holds the committed evidence), and the WebDriverAgent
+      # log, which exists only once setup got as far as starting it.
       - if: always()
-        # The WebDriverAgent logs exist only once setup got as far as starting it.
         run: |
+          mkdir -p ci-evidence
+          find research/devices/evidence -type f -newer package.json -exec cp {} ci-evidence/ \;
           logs=~/Library/Caches/playwright-devices/wda/logs-sim
-          if [ -d "$logs" ]; then cp "$logs"/*.log research/devices/evidence/; fi
+          if [ -d "$logs" ]; then for f in "$logs"/*.log; do cp "$f" "ci-evidence/wda-$(basename "$f")"; done; fi
       - if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: ios-sim-${{ matrix.device }}
-          path: research/devices/evidence/ios-sim-*
+          path: ci-evidence/
           if-no-files-found: warn
 
   android-emulator:

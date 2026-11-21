@@ -9,6 +9,8 @@ serial=${1:?usage: run-android-emulator.zsh <serial>}
 repo=${0:A:h:h:h:h}
 # Playwright's Android launch needs Chrome as the debug app (research/devices/android-chrome-start.ts).
 adb -s $serial shell am set-debug-app --persistent com.android.chrome
+# The emulator reaches this runner's loopback as 10.0.2.2; the runner has no Wi-Fi (research/devices/serve.ts).
+export JOURNEY_HOST_ALIAS=10.0.2.2
 result=0
 for route in android-playwright android-cdp; do
   zsh $repo/research/devices/run-journey.zsh android $serial $route || result=1
