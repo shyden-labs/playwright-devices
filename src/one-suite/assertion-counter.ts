@@ -18,6 +18,18 @@ export interface AssertionCounterOptions {
 
 export type WriteFile = (file: string, body: string) => void;
 
+/**
+ * Whether an `expect` step sits inside another: Playwright runs each attempt of an `expect.poll` as an
+ * `expect` step under the poll's own, so only the outermost counts, however many attempts it made
+ * (playwright 1.65.1 lib/matchers/expect.js invokePollMatcher; shyden-labs/playwright-devices#42).
+ */
+function insideAnExpect(step: TestStep): boolean {
+  for (let parent = step.parent; parent !== undefined; parent = parent.parent) {
+    if (parent.category === 'expect') return true;
+  }
+  return false;
+}
+
 export class AssertionCounter implements Reporter {
   private readonly counts = new Map<string, Map<string, number>>();
 
@@ -44,7 +56,7 @@ export class AssertionCounter implements Reporter {
   }
 
   onStepEnd(test: TestCase, _result: TestResult, step: TestStep): void {
-    if (step.category !== 'expect') return;
+    if (step.category !== 'expect' || insideAnExpect(step)) return;
     const { target, id } = this.entry(test);
     target.set(id, (target.get(id) ?? 0) + 1);
   }
