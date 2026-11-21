@@ -55,16 +55,75 @@ try {
     );
   }
   writeFileSync(`${out}-before.png`, await wda.screenshot());
-  await wda.tapCellIcon(folder);
-  log('tapped the folder icon as tapCellIcon does');
-  await wait(1000);
-  writeFileSync(`${out}-after-1s.png`, await wda.screenshot());
-  await wait(2000);
-  writeFileSync(`${out}-after-3s.png`, await wda.screenshot());
-  const after = (await raw('POST', '/elements', { using: 'class name', value: 'XCUIElementTypeCell' })) as Record<string, string>[];
-  for (const cell of after) {
-    const id = Object.values(cell)[0] ?? '';
-    log(`after: cell ${JSON.stringify(await raw('GET', `/element/${id}/attribute/label`))}`);
+  const folderCell = async (): Promise<{ id: string; rect: { x: number; y: number; width: number; height: number } }> => {
+    const [found] = (await raw('POST', '/elements', {
+      using: 'predicate string',
+      value: `type == 'XCUIElementTypeCell' AND label BEGINSWITH '${folder}, '`,
+    })) as Record<string, string>[];
+    const id = Object.values(found ?? {})[0] ?? '';
+    return { id, rect: (await raw('GET', `/element/${id}/rect`)) as { x: number; y: number; width: number; height: number } };
+  };
+  const fileShown = async (): Promise<boolean> => {
+    const found = (await raw('POST', '/elements', {
+      using: 'predicate string',
+      value: "type == 'XCUIElementTypeCell' AND label BEGINSWITH 'device-journey, '",
+    })) as unknown[];
+    return found.length > 0;
+  };
+  const press = (x: number, y: number, ms: number) =>
+    raw('POST', '/actions', {
+      actions: [
+        {
+          type: 'pointer',
+          id: 'finger',
+          parameters: { pointerType: 'touch' },
+          actions: [
+            { type: 'pointerMove', duration: 0, x: Math.round(x), y: Math.round(y) },
+            { type: 'pointerDown', button: 0 },
+            { type: 'pause', duration: ms },
+            { type: 'pointerUp', button: 0 },
+          ],
+        },
+      ],
+    });
+  // Each way in turn; the first that opens the folder is the answer (later ways follow the earlier ones).
+  const ways: [string, () => Promise<unknown>][] = [
+    [
+      'icon, 50 ms press (tapCellIcon)',
+      async () => {
+        const { rect } = await folderCell();
+        return press(rect.x + rect.width / 2, rect.y + rect.height / 4, 50);
+      },
+    ],
+    [
+      'icon, 150 ms press',
+      async () => {
+        const { rect } = await folderCell();
+        return press(rect.x + rect.width / 2, rect.y + rect.height / 4, 150);
+      },
+    ],
+    [
+      'WebDriverAgent element click on the cell',
+      async () => {
+        const { id } = await folderCell();
+        return raw('POST', `/element/${id}/click`, {});
+      },
+    ],
+    [
+      'name, 150 ms press',
+      async () => {
+        const { rect } = await folderCell();
+        return press(rect.x + rect.width / 2, rect.y + rect.height * 0.75, 150);
+      },
+    ],
+  ];
+  for (const [name, way] of ways) {
+    log(`try: ${name} -> ${JSON.stringify(await way())}`);
+    await wait(3000);
+    const opened = await fileShown();
+    log(`  file cell shown 3 s later: ${String(opened)}`);
+    writeFileSync(`${out}-after-${name.replace(/\W+/g, '-')}.png`, await wda.screenshot());
+    if (opened) break;
   }
 } finally {
   writeFileSync(`${out}.txt`, lines.join('\n') + '\n');
