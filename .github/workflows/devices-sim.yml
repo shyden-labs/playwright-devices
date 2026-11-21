@@ -69,7 +69,7 @@ jobs:
       - if: always()
         run: |
           mkdir -p ci-evidence
-          find research/devices/evidence -type f -newer package.json -exec cp {} ci-evidence/ \;
+          find research/devices/evidence -type f -newer research/devices/journey.spec.ts | while read -r f; do cp "$f" ci-evidence/; done
           logs=~/Library/Caches/playwright-devices/wda/logs-sim
           if [ -d "$logs" ]; then for f in "$logs"/*.log; do cp "$f" "ci-evidence/wda-$(basename "$f")"; done; fi
       - if: always()
