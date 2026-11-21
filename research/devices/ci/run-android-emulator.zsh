@@ -9,8 +9,8 @@ serial=${1:?usage: run-android-emulator.zsh <serial>}
 repo=${0:A:h:h:h:h}
 # Playwright's Android launch needs Chrome as the debug app (research/devices/android-chrome-start.ts).
 adb -s $serial shell am set-debug-app --persistent com.android.chrome
-status=0
+result=0
 for route in android-playwright android-cdp; do
-  zsh $repo/research/devices/run-journey.zsh android $serial $route || status=1
+  zsh $repo/research/devices/run-journey.zsh android $serial $route || result=1
 done
-exit $status
+exit $result

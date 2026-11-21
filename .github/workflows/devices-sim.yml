@@ -23,7 +23,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        device: ['iPhone 18 Pro', 'iPad Pro 13-inch (M5)', 'iPad mini (A20 Pro)', 'iPhone Duo']
+        # The runtimes the laptop has each device on; iPhone Duo is on iOS 27.1 only there.
+        include:
+          - { device: 'iPhone 18 Pro', runtime: 'iOS-27-2' }
+          - { device: 'iPad Pro 13-inch (M5)', runtime: 'iOS-27-2' }
+          - { device: 'iPad mini (A20 Pro)', runtime: 'iOS-27-2' }
+          - { device: 'iPhone Duo', runtime: 'iOS-27-1' }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - id: node
@@ -41,12 +46,17 @@ jobs:
       - id: sim
         env:
           DEVICE: ${{ matrix.device }}
+          RUNTIME: com.apple.CoreSimulator.SimRuntime.${{ matrix.runtime }}
         run: |
           udid=$(xcrun simctl list devices available -j | node -e '
             let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => {
               const { devices } = JSON.parse(s);
-              const found = (devices["com.apple.CoreSimulator.SimRuntime.iOS-27-2"] ?? []).find((d) => d.name === process.env.DEVICE);
-              if (!found) { console.error(`no ${process.env.DEVICE} on iOS 27.2`); process.exit(1); }
+              const found = (devices[process.env.RUNTIME] ?? []).find((d) => d.name === process.env.DEVICE);
+              if (!found) {
+                const where = Object.entries(devices).filter(([, list]) => list.some((d) => d.name === process.env.DEVICE)).map(([k]) => k);
+                console.error(`no ${process.env.DEVICE} on ${process.env.RUNTIME}; it is on: ${where.join(", ") || "no runtime"}`);
+                process.exit(1);
+              }
               console.log(found.udid);
             });')
           echo "udid=$udid" >> "$GITHUB_OUTPUT"

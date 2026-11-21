@@ -42,8 +42,15 @@ else
 fi
 codesign -v --strict $runner
 
-# The run script refuses to start ios_webkit_debug_proxy without the pf rule that keeps its ports to
-# this machine (shyden-labs/playwright-devices#19).
+# The run script refuses to start ios_webkit_debug_proxy unless the pf rule that keeps its ports to
+# this machine is installed as on the laptop: the rule file, loaded by its launchd job
+# (research/devices/mac-setup/, shyden-labs/playwright-devices#19).
 sudo cp $repo/research/devices/mac-setup/pf.shyden.conf /etc/pf.shyden.conf
-sudo pfctl -E -f /etc/pf.shyden.conf
+sudo cp $repo/research/devices/mac-setup/uk.co.shyden.pf.plist /Library/LaunchDaemons/uk.co.shyden.pf.plist
+sudo launchctl bootstrap system /Library/LaunchDaemons/uk.co.shyden.pf.plist
+for _ in {1..20}; do
+  launchctl print system/uk.co.shyden.pf 2>/dev/null | grep -q 'last exit code = 0' && break
+  sleep 1
+done
+launchctl print system/uk.co.shyden.pf | grep -q 'last exit code = 0' || { print -u2 'uk.co.shyden.pf did not load the pf rule within 20 s'; exit 1; }
 sudo pfctl -sr | grep -q '9221:9322' || { print -u2 'pf did not load the 9221-9322 rule'; exit 1; }
