@@ -14,6 +14,7 @@ export JOURNEY_HOST_ALIAS=10.0.2.2
 # A fresh emulator's Chrome covers the page with a "Chrome notifications make things easier" prompt
 # until notifications are allowed (devices-sim run 44882233599).
 adb -s $serial shell pm grant com.android.chrome android.permission.POST_NOTIFICATIONS
+zsh $repo/research/devices/ci/finish-chrome-first-run.zsh $serial
 evidence=$repo/research/devices/evidence
 result=0
 for route in android-playwright android-cdp; do
