@@ -64,6 +64,11 @@ jobs:
           xcrun simctl bootstatus "$udid" -b
       - run: zsh research/devices/ci/setup-ios-sim.zsh ${{ steps.sim.outputs.udid }}
       - run: zsh research/devices/run-journey.zsh ios-sim ${{ steps.sim.outputs.udid }}
+      # Measures the Files folder tap that opens nothing on these simulators (shyden-labs/playwright-devices#38).
+      - if: always()
+        env:
+          PROBE: research/devices/probes/probe-files-folder-tap.ts
+        run: zsh research/devices/run-journey.zsh ios-sim ${{ steps.sim.outputs.udid }}
       # This run's evidence only (the folder also holds the committed evidence), and the WebDriverAgent
       # log, which exists only once setup got as far as starting it.
       - if: always()
