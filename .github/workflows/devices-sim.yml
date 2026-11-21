@@ -23,11 +23,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # The runtimes the laptop has each device on; iPhone Duo is on iOS 27.1 only there.
+        # The runtimes the laptop measured each device on (xcrun simctl list, 2026-11-21): iOS 27.0, and
+        # iPhone Duo on 27.1. On this image's iOS 27.2 simulators the Files picker's folder opened by no
+        # press at all (run 44887028405), while 27.1 opened it at the first tap.
         include:
-          - { device: 'iPhone 18 Pro', runtime: 'iOS-27-2' }
-          - { device: 'iPad Pro 13-inch (M5)', runtime: 'iOS-27-2' }
-          - { device: 'iPad mini (A20 Pro)', runtime: 'iOS-27-2' }
+          - { device: 'iPhone 18 Pro', runtime: 'iOS-27-0' }
+          - { device: 'iPad Pro 13-inch (M5)', runtime: 'iOS-27-0' }
+          - { device: 'iPad mini (A17 Pro)', runtime: 'iOS-27-0' }
           - { device: 'iPhone Duo', runtime: 'iOS-27-1' }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
