@@ -422,6 +422,45 @@ describe('tapCellIcon', () => {
     expect(wda.calls.find((c) => c.path === '/session/s1/actions')?.body).toEqual(touchTap(346, 244));
   });
 
+  it('taps only once the cell has stopped moving: a view sliding in moves its cells (CI, 2026-11-21)', async () => {
+    // On a fast runner the folder cell was found 0.4 s after On My iPhone opened, still sliding in, and
+    // the tap at its first position opened nothing (devices-sim run 44882233599, shyden-labs/playwright-devices#38).
+    const positions = [{ x: 700 }, { x: 420 }, { x: 282 }, { x: 282 }];
+    let reads = 0;
+    const wda = fakeWda({
+      ...session,
+      'POST /session/s1/elements': () => [{ ELEMENT: 'cell-1' }],
+      'GET /session/s1/element/cell-1/rect': () => ({
+        ...positions[Math.min(reads++, positions.length - 1)],
+        y: 200,
+        width: 128,
+        height: 176,
+      }),
+      'POST /session/s1/actions': () => null,
+    });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await client.tapCellIcon('WebDriverAgentRunner-Runner');
+
+    const taps = wda.calls.filter((c) => c.path === '/session/s1/actions');
+    expect(taps.map((c) => c.body)).toEqual([touchTap(346, 244)]);
+  });
+
+  it('fails naming the cell when it never stops moving within 10 s, tapping nothing', async () => {
+    let reads = 0;
+    const wda = fakeWda({
+      ...session,
+      'POST /session/s1/elements': () => [{ ELEMENT: 'cell-1' }],
+      'GET /session/s1/element/cell-1/rect': () => ({ x: (reads += 1), y: 200, width: 128, height: 176 }),
+    });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await expect(client.tapCellIcon('device-journey')).rejects.toThrow(
+      'the cell named "device-journey" was still moving after 10000 ms; nothing was tapped',
+    );
+    expect(wda.calls.some((c) => c.path.endsWith('/actions'))).toBe(false);
+  });
+
   it('waits while the folder lists, and fails at 60 s naming the cell, tapping nothing', async () => {
     const slow = filesGrid(50);
     const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: slow.fetchFn, clock: fakeClock() });

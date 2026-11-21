@@ -37,7 +37,7 @@ describe('every workflow', () => {
   });
 
   it('is judged', () => {
-    expect(files).toEqual(['check-release-cut.yml', 'ci.yml', 'publish.yml', 'sonarcloud.yml']);
+    expect(files).toEqual(['check-release-cut.yml', 'ci.yml', 'devices-sim.yml', 'publish.yml', 'sonarcloud.yml']);
   });
 
   it.each(files)('%s swallows no failure and gates no step on the token', (file) => {
