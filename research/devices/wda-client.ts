@@ -33,6 +33,8 @@ const realClock: WdaClock = {
 
 /** How often a wait asks WebDriverAgent again. */
 const POLL_MS = 100;
+/** A cell still moving after this is not sliding in; something keeps moving it. */
+const SETTLE_CEILING_MS = 10_000;
 
 /**
  * The keyboard showed 0.3-1.3 s after the tap on the iPad simulator; a slow
@@ -278,7 +280,19 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
         return ids.length > 0;
       };
       await waitFor(listed, NATIVE_CEILING_MS, `no cell named "${name}" showed within ${NATIVE_CEILING_MS} ms; nothing was tapped`);
-      const cell = (await call('GET', `${base}/element/${encodeURIComponent(ids[0] ?? '')}/rect`)) as ScreenRect;
+      // A view sliding in moves its cells: tap only once two looks agree (shyden-labs/playwright-devices#38).
+      const rectPath = `${base}/element/${encodeURIComponent(ids[0] ?? '')}/rect`;
+      let cell = (await call('GET', rectPath)) as ScreenRect;
+      const started = clock.now();
+      for (;;) {
+        await clock.sleep(POLL_MS);
+        const again = (await call('GET', rectPath)) as ScreenRect;
+        if (again.x === cell.x && again.y === cell.y && again.width === cell.width && again.height === cell.height) break;
+        cell = again;
+        if (clock.now() - started >= SETTLE_CEILING_MS) {
+          throw new Error(`the cell named "${name}" was still moving after ${SETTLE_CEILING_MS} ms; nothing was tapped`);
+        }
+      }
       await tapAt({ x: cell.x + cell.width / 2, y: cell.y + cell.height / 4 });
     },
 
