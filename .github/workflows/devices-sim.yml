@@ -1,0 +1,107 @@
+# The unchanged journey on the iOS Simulator and the Android emulator, on GitHub-hosted runners
+# (shyden-labs/playwright-devices#38, Shyden's choice 2026-11-21: off the 8 GB laptop, where every
+# simulator run stalled at 7-8 GB swap). Standard runners are free on public repositories. Real phones
+# stay on the laptop. Every third-party `uses:` is a full commit SHA with its tag in a comment.
+name: devices-sim
+
+on:
+  pull_request:
+    paths:
+      - 'research/devices/**'
+      - 'playwright.devices.config.ts'
+      - '.github/workflows/devices-sim.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  ios-sim:
+    # The only image with Xcode 27.2 and the iOS 27.2 simulators the laptop measured (runner-images
+    # xcode-27-arm64-Readme.md, image 20261104): 3 CPU, 7 GB, nothing else running on it.
+    runs-on: xcode-27
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        device: ['iPhone 18 Pro', 'iPad Pro 13-inch (M5)', 'iPad mini (A20 Pro)', 'iPhone Duo']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: node
+        run: |
+          version=$(sed -nE 's/^FROM node:([0-9]+\.[0-9]+\.[0-9]+)$/\1/p' docker/node/Dockerfile)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+          cache: 'npm'
+      - run: node scripts/npm-ci.ts
+      - run: sudo xcode-select -s /Applications/Xcode_27.2.app
+      - run: brew install ios-webkit-debug-proxy
+      - id: sim
+        env:
+          DEVICE: ${{ matrix.device }}
+        run: |
+          udid=$(xcrun simctl list devices available -j | node -e '
+            let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => {
+              const { devices } = JSON.parse(s);
+              const found = (devices["com.apple.CoreSimulator.SimRuntime.iOS-27-2"] ?? []).find((d) => d.name === process.env.DEVICE);
+              if (!found) { console.error(`no ${process.env.DEVICE} on iOS 27.2`); process.exit(1); }
+              console.log(found.udid);
+            });')
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+      - run: zsh research/devices/ci/setup-ios-sim.zsh ${{ steps.sim.outputs.udid }}
+      - run: zsh research/devices/run-journey.zsh ios-sim ${{ steps.sim.outputs.udid }}
+      - if: always()
+        # The WebDriverAgent logs exist only once setup got as far as starting it.
+        run: |
+          logs=~/Library/Caches/playwright-devices/wda/logs-sim
+          if [ -d "$logs" ]; then cp "$logs"/*.log research/devices/evidence/; fi
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ios-sim-${{ matrix.device }}
+          path: research/devices/evidence/ios-sim-*
+          if-no-files-found: warn
+
+  android-emulator:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: ['pixel_9', 'pixel_tablet']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: node
+        run: |
+          version=$(sed -nE 's/^FROM node:([0-9]+\.[0-9]+\.[0-9]+)$/\1/p' docker/node/Dockerfile)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+          cache: 'npm'
+      - run: node scripts/npm-ci.ts
+      - run: sudo apt-get install -y zsh
+      # The emulator needs KVM (android-emulator-runner's README).
+      - run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 36
+          # The Play Store image carries Chrome, as the phone does.
+          target: playstore
+          arch: x86_64
+          profile: ${{ matrix.profile }}
+          script: zsh research/devices/ci/run-android-emulator.zsh emulator-5554
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-emulator-${{ matrix.profile }}
+          path: research/devices/evidence/android-*-emulator-5554-*
+          if-no-files-found: warn

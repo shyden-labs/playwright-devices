@@ -106,6 +106,7 @@ describe('no workflow approves an install script past allowScripts', () => {
       'dependabot.yml',
       'workflows/check-release-cut.yml',
       'workflows/ci.yml',
+      'workflows/devices-sim.yml',
       'workflows/publish.yml',
       'workflows/sonarcloud.yml',
     ]);
