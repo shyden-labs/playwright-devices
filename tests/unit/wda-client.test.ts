@@ -165,28 +165,16 @@ describe('tapAt', () => {
 });
 
 describe('swipe', () => {
-  it('drags one finger from the start point to the end point over 300 ms', async () => {
-    const wda = fakeWda({ ...session, 'POST /session/s1/actions': () => null });
+  // W3C /actions went unanswered for 30 s after the iPad photo picker closed, while this endpoint answered
+  // in 1.8 s (iPad Pro 13) and 3.3 s (iPad mini) and the page scrolled (run 44974365844, 2026-11-22).
+  it("drags one finger from the start point to the end point over 0.3 s through WebDriverAgent's drag endpoint", async () => {
+    const wda = fakeWda({ ...session, 'POST /session/s1/wda/dragfromtoforduration': () => null });
     const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
 
-    await client.swipe({ x: 200, y: 600 }, { x: 200, y: 200 });
+    await client.swipe({ x: 200.4, y: 600.6 }, { x: 200, y: 200 });
 
-    expect(wda.calls.filter((c) => c.path === '/session/s1/actions').map((c) => c.body)).toEqual([
-      {
-        actions: [
-          {
-            type: 'pointer',
-            id: 'finger',
-            parameters: { pointerType: 'touch' },
-            actions: [
-              { type: 'pointerMove', duration: 0, x: 200, y: 600 },
-              { type: 'pointerDown', button: 0 },
-              { type: 'pointerMove', duration: 300, x: 200, y: 200 },
-              { type: 'pointerUp', button: 0 },
-            ],
-          },
-        ],
-      },
+    expect(wda.calls.filter((c) => c.path.startsWith('/session/s1/')).map((c) => [c.path, c.body])).toEqual([
+      ['/session/s1/wda/dragfromtoforduration', { fromX: 200, fromY: 601, toX: 200, toY: 200, duration: 0.3 }],
     ]);
   });
 });

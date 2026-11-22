@@ -76,6 +76,9 @@ const VIEW_CHANGING = 'is not present in the current view anymore';
 /** W3C's key for an element reference; WebDriverAgent also sends the older `ELEMENT`. */
 const W3C_ELEMENT = 'element-6066-11e4-a52e-4f735466cecf';
 
+/** How long a swipe's finger takes to travel, in seconds. */
+const SWIPE_SECONDS = 0.3;
+
 /** One finger's W3C pointer actions. */
 function finger(actions: object[]) {
   return { actions: [{ type: 'pointer', id: 'finger', parameters: { pointerType: 'touch' }, actions }] };
@@ -221,18 +224,21 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
     /** One real finger tap at a screen point. */
     tapAt,
 
-    /** One real finger dragged from `from` to `to`. */
+    /**
+     * One real finger dragged from `from` to `to`, through WebDriverAgent's drag endpoint: after the iPad
+     * photo picker closed, W3C /actions went unanswered for 30 s while this answered in 1.8 to 3.3 s and the
+     * page scrolled (iPad Pro 13 and iPad mini simulators, run 44974365844, 2026-11-22).
+     */
     async swipe(from: ScreenPoint, to: ScreenPoint): Promise<void> {
-      await call(
-        'POST',
-        `${base}/actions`,
-        finger([
-          { type: 'pointerMove', duration: 0, ...at(from) },
-          { type: 'pointerDown', button: 0 },
-          { type: 'pointerMove', duration: 300, ...at(to) },
-          { type: 'pointerUp', button: 0 },
-        ]),
-      );
+      const start = at(from);
+      const end = at(to);
+      await call('POST', `${base}/wda/dragfromtoforduration`, {
+        fromX: start.x,
+        fromY: start.y,
+        toX: end.x,
+        toY: end.y,
+        duration: SWIPE_SECONDS,
+      });
     },
 
     /**

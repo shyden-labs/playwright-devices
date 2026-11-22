@@ -48,12 +48,15 @@ try {
   await wait(3000);
   log(`window ${JSON.stringify(await wda.windowSize())}`);
   const cells = (await raw('POST', '/elements', { using: 'class name', value: 'XCUIElementTypeCell' })) as Record<string, string>[];
-  for (const cell of cells) {
-    const id = Object.values(cell)[0] ?? '';
-    log(
-      `cell ${JSON.stringify(await raw('GET', `/element/${id}/attribute/label`))} rect ${JSON.stringify(await raw('GET', `/element/${id}/rect`))}`,
-    );
-  }
+  const described = await Promise.all(
+    cells.map(async (cell) => {
+      const id = Object.values(cell)[0] ?? '';
+      const label = JSON.stringify(await raw('GET', `/element/${id}/attribute/label`));
+      const rect = JSON.stringify(await raw('GET', `/element/${id}/rect`));
+      return `cell ${label} rect ${rect}`;
+    }),
+  );
+  for (const line of described) log(line);
   writeFileSync(`${out}-before.png`, await wda.screenshot());
   const folderCell = async (): Promise<{ id: string; rect: { x: number; y: number; width: number; height: number } }> => {
     const [found] = (await raw('POST', '/elements', {
