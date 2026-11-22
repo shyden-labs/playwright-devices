@@ -12,10 +12,11 @@ import { androidSwipeArgs, type Adb } from './finger-scroll.ts';
 import { realClock, type ScreenPoint, type ScreenRect, type WdaClock } from './wda-client.ts';
 
 /**
- * Prints the dump to adb's output instead of a file on the phone.
- * Assumed, not yet measured on the phone: the first device run checks it.
+ * Prints the dump of every window to adb's output instead of a file on the phone. Chrome's
+ * <select> list on a tablet is its own window, missing from a plain dump (pixel_tablet emulator,
+ * Android 16, run 45005023346). Assumed on the real phone until its run measures it.
  */
-export const DUMP_COMMAND = ['exec-out', 'uiautomator', 'dump', '/dev/tty'];
+export const DUMP_COMMAND = ['exec-out', 'uiautomator', 'dump', '--windows', '/dev/tty'];
 
 /** How often a wait reads the screen again. */
 const POLL_MS = 250;

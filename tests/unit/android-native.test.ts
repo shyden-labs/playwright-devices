@@ -67,8 +67,10 @@ const DONE: Node = { text: 'Done', bounds: [800, 2200, 1000, 2300] };
 const CANCEL: Node = { text: 'Cancel', bounds: [0, 2200, 200, 2300] };
 
 describe('connectAndroidScreen', () => {
-  it('reads the screen with a uiautomator dump to the terminal', () => {
-    expect(DUMP_COMMAND).toEqual(['exec-out', 'uiautomator', 'dump', '/dev/tty']);
+  it('reads every window on the screen with a uiautomator dump to the terminal', () => {
+    // Round 16 (run 45005023346): the pixel_tablet showed Chrome's open Colour list, yet a plain
+    // dump had no "Green"; the list is its own window, which only --windows reads.
+    expect(DUMP_COMMAND).toEqual(['exec-out', 'uiautomator', 'dump', '--windows', '/dev/tty']);
   });
 
   it('tapFirstShown touches the centre of the first listed text with adb input tap, and answers it', async () => {

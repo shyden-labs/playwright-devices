@@ -27,6 +27,17 @@ for route in android-playwright android-cdp; do
   adb -s $serial shell dumpsys activity activities | grep -m1 ResumedActivity >$evidence/android-emulator-after-$route.txt
   # Every window, popups included: the tablet's drop-down list was missing from the plain dump (round 15).
   adb -s $serial exec-out uiautomator dump --windows /dev/tty >$evidence/android-emulator-after-$route-windows.xml 2>&1 || true
+  # Round 16: the pixel_9's file chooser offered Camcorder, Camera and Media picker, no Files. What a
+  # person finds behind Media picker, when the chooser is still open (measures, never fails the job).
+  bounds=$(grep -o 'text="Media picker"[^>]*bounds="[^"]*"' $evidence/android-emulator-after-$route-windows.xml | grep -o '\[[0-9]*,[0-9]*\]\[[0-9]*,[0-9]*\]' | head -1)
+  if [[ -n $bounds ]]; then
+    nums=(${(s:,:)${${bounds//\]\[/,}//[\[\]]/}})
+    adb -s $serial shell input tap $(( (nums[1] + nums[3]) / 2 )) $(( (nums[2] + nums[4]) / 2 ))
+    adb -s $serial shell sleep 5
+    adb -s $serial exec-out screencap -p >$evidence/android-emulator-after-$route-media-picker.png
+    adb -s $serial exec-out uiautomator dump --windows /dev/tty >$evidence/android-emulator-after-$route-media-picker-windows.xml 2>&1 || true
+    adb -s $serial shell input keyevent KEYCODE_BACK
+  fi
 done
 # Where the Colour tap lands after typing (shyden-labs/playwright-devices#38); measures, never fails the job.
 for route in android-playwright android-cdp; do
