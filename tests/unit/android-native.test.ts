@@ -60,6 +60,7 @@ function fakeAdb(screens: Node[][]) {
 
 const GREEN: Node = { text: 'Green', bounds: [100, 900, 980, 1040] };
 const FILES: Node = { text: 'Files', bounds: [0, 2000, 200, 2100] };
+const MEDIA_PICKER: Node = { text: 'Media picker', bounds: [0, 1600, 1080, 1700] };
 const WHILE_USING: Node = { text: 'While using the app', bounds: [134, 1178, 945, 1322] };
 const FILE: Node = { text: 'device-journey.txt', bounds: [0, 400, 1080, 600] };
 const PHOTO: Node = { desc: 'Photo taken on 20 Nov 2026, 10:01', bounds: [100, 500, 400, 800] };
@@ -236,6 +237,14 @@ describe('the steps a person takes on Android', () => {
     const device = fakeAdb([[FILES], [FILE]]);
     await androidChooseFile(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }), 'device-journey.txt');
     expect(device.taps()).toEqual(['shell input tap 100 2050', 'shell input tap 540 500']);
+  });
+
+  it('file: Media picker, where the chooser names its file browser so, then the file', async () => {
+    // pixel_9 emulator, round 16 (run 45005023346): the chooser offered Camcorder, Camera and Media picker,
+    // no Files; round 17 (run 45007095925) measured Media picker opening the file browser (Recent files).
+    const device = fakeAdb([[MEDIA_PICKER], [FILE]]);
+    await androidChooseFile(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }), 'device-journey.txt');
+    expect(device.taps()).toEqual(['shell input tap 540 1650', 'shell input tap 540 500']);
   });
 
   it("file: answers a fresh phone's camera prompt While using the app, then Files, then the file", async () => {

@@ -160,12 +160,18 @@ export async function androidChooseOption(screen: AndroidScreen, option: string)
 const CAMERA_PROMPT_ANSWER = 'While using the app';
 
 /**
- * The chooser's Files, then the file (staged first with `stageAndroidFile`). On a fresh phone Chrome first
- * asks to take pictures (pixel_9 emulator, run 44993134413); a person answers it and goes on.
+ * The chooser's file browser: Files on the OnePlus CPH2653; Media picker on the pixel_9 emulator, which
+ * opens the same file browser (run 45007095925).
+ */
+const FILE_BROWSER = ['Files', 'Media picker'];
+
+/**
+ * The chooser's file browser, then the file (staged first with `stageAndroidFile`). On a fresh phone Chrome
+ * first asks to take pictures (pixel_9 emulator, run 44993134413); a person answers it and goes on.
  */
 export async function androidChooseFile(screen: AndroidScreen, name: string): Promise<void> {
-  if ((await screen.tapFirstShown(['Files', CAMERA_PROMPT_ANSWER])) === CAMERA_PROMPT_ANSWER) {
-    await screen.tapFirstShown(['Files']);
+  if ((await screen.tapFirstShown([...FILE_BROWSER, CAMERA_PROMPT_ANSWER])) === CAMERA_PROMPT_ANSWER) {
+    await screen.tapFirstShown(FILE_BROWSER);
   }
   await screen.tapFirstShown([name]);
 }

@@ -132,6 +132,13 @@ export const test = base.extend<JourneyFixtures, { journeyURL: string }>({
       if (testInfo.status !== testInfo.expectedStatus) {
         await testInfo.attach('device screen at failure', { body: await session.screenshot(), contentType: 'image/png' });
         await testInfo.attach('device screen source at failure', { body: await session.screenSource(), contentType: 'text/xml' });
+        const touches = await session.page
+          .evaluate(() => (window as unknown as { touchesSeen?: string[] }).touchesSeen ?? [])
+          .then(
+            (seen) => seen.join('\n'),
+            (error: unknown) => `the page could not be read: ${String(error)}`,
+          );
+        await testInfo.attach('touches the page saw', { body: touches, contentType: 'text/plain' });
       }
     } finally {
       try {

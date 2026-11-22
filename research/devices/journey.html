@@ -79,6 +79,22 @@
       addEventListener('scroll', () => {
         if (scrollY > 0) show('scroll-result', 'Scrolled');
       });
+      // Every touch the page sees, for the device screen at failure (run 45007095925: the pixel_tablet's Colour tap
+      // opened nothing, and nothing said where it landed).
+      window.touchesSeen = [];
+      for (const type of ['touchstart', 'pointerdown', 'click', 'focusin', 'scroll']) {
+        document.addEventListener(
+          type,
+          (event) => {
+            const point = event.touches?.[0] ?? (event instanceof MouseEvent ? event : undefined);
+            const at = point === undefined ? `scrollY ${Math.round(scrollY)}` : `${Math.round(point.clientX)},${Math.round(point.clientY)}`;
+            const target = event.target instanceof Element ? event.target.id || event.target.tagName : 'document';
+            const view = visualViewport === null ? '' : ` view ${Math.round(visualViewport.height)}`;
+            window.touchesSeen.push(`${Math.round(performance.now())} ms ${type} at ${at} on ${target}${view}`);
+          },
+          true,
+        );
+      }
     </script>
   </body>
 </html>

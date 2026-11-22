@@ -16,9 +16,14 @@ function unescapeXml(text: string): string {
 /** One `<node …>` element's text and bounds, from a uiautomator dump; every match fills all five groups. */
 const NODE = /<node\b[^>]*?\btext="([^"]*)"[^>]*?\bbounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/g;
 
-/** The centre of the one node whose text is exactly `text`; undefined when none has it. */
+/**
+ * The centre of the one node whose text is exactly `text`; undefined when none has it. A node listed
+ * twice at the same bounds counts once: `dump --windows` printed the pixel_tablet's popup list window
+ * twice (run 45007095925).
+ */
 export function centreOfText(dump: string, text: string): ScreenPoint | undefined {
-  const hits = [...dump.matchAll(NODE)].filter((node) => unescapeXml(String(node[1])) === text);
+  const matches = [...dump.matchAll(NODE)].filter((node) => unescapeXml(String(node[1])) === text);
+  const hits = [...new Map(matches.map((node) => [node.slice(2, 6).join(','), node])).values()];
   if (hits.length > 1) throw new Error(`${hits.length} nodes on the screen read "${text}": cannot tell which to touch`);
   const [hit] = hits;
   if (hit === undefined) return undefined;

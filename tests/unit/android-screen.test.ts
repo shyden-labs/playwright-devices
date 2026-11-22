@@ -29,6 +29,14 @@ describe('centreOfText', () => {
 
     expect(() => centreOfText(twice, 'Pear')).toThrow('2 nodes on the screen read "Pear": cannot tell which to touch');
   });
+
+  it('reads one node listed twice, at the same bounds, as one node', () => {
+    // Round 17 (run 45007095925): `dump --windows` printed the pixel_tablet's Colour list window twice,
+    // so its one "Green" came back as two nodes with identical bounds.
+    const listedTwice = DUMP.replace('</hierarchy>', '<node index="0" text="Pear" bounds="[100,900][980,1040]" /></hierarchy>');
+
+    expect(centreOfText(listedTwice, 'Pear')).toEqual({ x: 540, y: 970 });
+  });
 });
 
 /** A trimmed dump of Google's photo picker: a row of two photos, and one above on the right. */
