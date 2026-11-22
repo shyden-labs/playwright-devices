@@ -8,7 +8,7 @@
  * on every call follows the browser's toolbar, which can move after a scroll.
  */
 import { MARKER_CSS_SIZE, screenMap, type Box } from './screen-map.ts';
-import type { ScreenPoint, WdaClock } from './wda-client.ts';
+import { realClock, type ScreenPoint, type WdaClock } from './wda-client.ts';
 
 /** The marker's accessibility label: the name the phone lists it by. */
 export const MARKER_LABEL = 'playwright-devices screen marker';
@@ -54,11 +54,6 @@ const SETTLE_CEILING_MS = 5_000;
 
 /** Pause between reads while the page settles. */
 const SETTLE_POLL_MS = 100;
-
-const realClock: WdaClock = {
-  now: () => Date.now(),
-  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-};
 
 /** Reads the marker until two reads in a row agree, failing at the ceiling naming the last two. */
 async function settledRect(reader: MarkerReader, clock: WdaClock): Promise<Box> {

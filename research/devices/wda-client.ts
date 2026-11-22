@@ -26,7 +26,8 @@ export interface WdaOptions {
  */
 const REQUEST_CEILING_MS = 30_000;
 
-const realClock: WdaClock = {
+/** The wall clock and real timers: the clock every device module uses outside tests. */
+export const realClock: WdaClock = {
   now: () => Date.now(),
   sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 };
@@ -143,7 +144,11 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
       if (error instanceof Error && error.message.includes(VIEW_CHANGING)) return [];
       throw error;
     }
-    return found.map((element) => element[W3C_ELEMENT] ?? element.ELEMENT ?? '');
+    return found.map((element) => {
+      const id = element[W3C_ELEMENT] ?? element.ELEMENT;
+      if (id === undefined) throw new Error(`WebDriverAgent listed an element with no id: ${JSON.stringify(element)}`);
+      return id;
+    });
   }
 
   async function keyboardShown(): Promise<boolean> {
@@ -274,14 +279,16 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
      */
     async tapCellIcon(name: string): Promise<void> {
       const predicate = `type == 'XCUIElementTypeCell' AND label BEGINSWITH '${name}, '`;
-      let ids: string[] = [];
+      let id = '';
       const listed = async (): Promise<boolean> => {
-        ids = await find('predicate string', predicate);
-        return ids.length > 0;
+        const [first] = await find('predicate string', predicate);
+        if (first === undefined) return false;
+        id = first;
+        return true;
       };
       await waitFor(listed, NATIVE_CEILING_MS, `no cell named "${name}" showed within ${NATIVE_CEILING_MS} ms; nothing was tapped`);
       // A view sliding in moves its cells: tap only once two looks agree (shyden-labs/playwright-devices#38).
-      const rectPath = `${base}/element/${encodeURIComponent(ids[0] ?? '')}/rect`;
+      const rectPath = `${base}/element/${encodeURIComponent(id)}/rect`;
       let cell = (await call('GET', rectPath)) as ScreenRect;
       const started = clock.now();
       for (;;) {

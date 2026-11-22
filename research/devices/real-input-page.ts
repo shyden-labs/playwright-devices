@@ -75,11 +75,9 @@ function refuseAll(prefix: string): object {
 }
 
 export function realInputPage(page: Page, { input, toScreen, baseURL }: RealInputPageOptions): Page {
-  const nameOf = (locator: Locator): string => String((locator as unknown as { name?: string }).name ?? locator);
-
   async function tap(locator: Locator): Promise<void> {
     const box = await locator.boundingBox();
-    if (box === null) throw new Error(`cannot tap ${nameOf(locator)}: it has no box on the page (hidden or detached)`);
+    if (box === null) throw new Error(`cannot tap ${locator.toString()}: it has no box on the page (hidden or detached)`);
     await input.tapAt(await toScreen(box));
   }
 
@@ -89,7 +87,7 @@ export function realInputPage(page: Page, { input, toScreen, baseURL }: RealInpu
         if (prop === 'tap' || prop === 'click') return () => tap(target);
         if (typeof prop === 'string' && UNROUTED_LOCATOR_INPUT.has(prop)) return refuse(prop);
         const value: unknown = Reflect.get(target, prop, receiver);
-        if (typeof prop === 'string' && LOCATOR_MAKERS.has(prop) && typeof value === 'function') {
+        if (typeof prop === 'string' && LOCATOR_MAKERS.has(prop)) {
           return (...args: unknown[]) => wrapLocator((value as (...a: unknown[]) => Locator).apply(target, args));
         }
         return typeof value === 'function' ? (value as (...a: unknown[]) => unknown).bind(target) : value;
@@ -110,7 +108,7 @@ export function realInputPage(page: Page, { input, toScreen, baseURL }: RealInpu
       if (prop === 'keyboard') return keyboard;
       if (prop === 'mouse' || prop === 'touchscreen') return refuseAll(prop);
       const value: unknown = Reflect.get(target, prop, receiver);
-      if (typeof prop === 'string' && LOCATOR_MAKERS.has(prop) && typeof value === 'function') {
+      if (typeof prop === 'string' && LOCATOR_MAKERS.has(prop)) {
         return (...args: unknown[]) => wrapLocator((value as (...a: unknown[]) => Locator).apply(target, args));
       }
       return typeof value === 'function' ? (value as (...a: unknown[]) => unknown).bind(target) : value;

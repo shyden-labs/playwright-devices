@@ -9,7 +9,7 @@
  * Chrome's toolbar hides and shows as the page scrolls.
  */
 import type { Box } from './screen-map.ts';
-import type { ScreenPoint, ScreenRect, WdaClock } from './wda-client.ts';
+import { realClock, type ScreenPoint, type ScreenRect, type WdaClock } from './wda-client.ts';
 
 /** The page's visual viewport, as the page reports it. */
 export interface PageViewport {
@@ -40,7 +40,8 @@ export interface PageAreaReader {
   pageArea(): Promise<ScreenRect>;
 }
 
-function readViewport(): PageViewport {
+/** The page's viewport, read inside the page (passed to `page.evaluate`). */
+export function readViewport(): PageViewport {
   const viewport = window.visualViewport;
   return {
     devicePixelRatio: window.devicePixelRatio,
@@ -56,11 +57,6 @@ const SETTLE_CEILING_MS = 5_000;
 
 /** Pause between reads while the page settles. */
 const SETTLE_POLL_MS = 100;
-
-const realClock: WdaClock = {
-  now: () => Date.now(),
-  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-};
 
 /**
  * A `toScreen` for the Android page stand-in: the screen point at the centre

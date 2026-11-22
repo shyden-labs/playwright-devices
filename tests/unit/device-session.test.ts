@@ -106,7 +106,11 @@ function fakeAdb(shown: string[] = []) {
     const call = args.join(' ');
     calls.push(call);
     if (call.startsWith('exec-out uiautomator dump')) {
-      const nodes = shown.map((text, i) => `<node text="${text}" content-desc="" bounds="[0,${i * 100}][100,${i * 100 + 100}]" />`);
+      // A photo in Google's picker has no text, only a description such as "Photo taken on …".
+      const nodes = shown.map((text, i) => {
+        const [label, description] = text.startsWith('Photo taken on') ? ['', text] : [text, ''];
+        return `<node text="${label}" content-desc="${description}" bounds="[0,${i * 100}][100,${i * 100 + 100}]" />`;
+      });
       return Promise.resolve(`<hierarchy>${nodes.join('')}</hierarchy>`);
     }
     if (call === 'shell wm size') return Promise.resolve('Physical size: 1080x2400\n');
@@ -147,6 +151,16 @@ describe('androidSession', () => {
       'shell wm size',
       'shell input swipe 540 1080 540 360 400',
     ]);
+  });
+
+  it("chooses the photo by touching the picker's first photo, then Done", async () => {
+    const device = fakeAdb(['Photo taken on 22 Nov 2026', 'Done']);
+    const session = await androidSession({ page, adb: device.adb, baseURL: 'http://127.0.0.1:4321', files });
+    const before = device.kept().length;
+
+    await session.nativeChoosePhoto();
+
+    expect(device.kept().slice(before)).toEqual(['shell input tap 50 50', 'shell input tap 50 150']);
   });
 
   it("gives the test a page stand-in, so taps and keys go through Android's own input", async () => {

@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { WdaClock } from '../../research/devices/wda-client.ts';
-import { androidPagePoint, androidScreenPointsOf, type PageViewport } from '../../research/devices/android-page-map.ts';
+import { androidPagePoint, androidScreenPointsOf, readViewport, type PageViewport } from '../../research/devices/android-page-map.ts';
 
 /** Chrome's page area on the OnePlus CPH2653 (2026-11-20): its top is under the toolbar. */
 const AREA = { x: 0, y: 160, width: 1440, height: 2854 };
@@ -104,5 +104,25 @@ describe('androidScreenPointsOf', () => {
     expect(reads).toBe(4);
     expect(looks).toBe(4);
     expect(second.y).toBeCloseTo(780, 1);
+  });
+});
+
+describe('readViewport', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("reads the page's visual viewport and density", () => {
+    vi.stubGlobal('window', {
+      devicePixelRatio: 2.625,
+      innerHeight: 790,
+      visualViewport: { offsetLeft: 4, offsetTop: 92, scale: 1.5, height: 430.1 },
+    });
+    expect(readViewport()).toEqual({ devicePixelRatio: 2.625, offsetLeft: 4, offsetTop: 92, scale: 1.5, height: 430.1 });
+  });
+
+  it('falls back to the layout viewport, unscrolled and unzoomed, where the browser has no visual viewport', () => {
+    vi.stubGlobal('window', { devicePixelRatio: 3, innerHeight: 800, visualViewport: null });
+    expect(readViewport()).toEqual({ devicePixelRatio: 3, offsetLeft: 0, offsetTop: 0, scale: 1, height: 800 });
   });
 });

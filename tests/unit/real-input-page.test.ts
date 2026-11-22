@@ -7,7 +7,8 @@ import type { ScreenPoint } from '../../research/devices/wda-client.ts';
 /** A Playwright locator stand-in with a fixed box; records the calls it answers itself. */
 function fakeLocator(name: string, box: Box | null, calls: string[]): Locator {
   const locator: Record<string, unknown> = {
-    name,
+    toString: () => name,
+    selector: name,
     boundingBox: () => Promise.resolve(box),
     textContent: () => Promise.resolve(`text of ${name}`),
     click: () => {
@@ -113,6 +114,12 @@ describe('realInputPage', () => {
 
     expect(await page.title()).toBe('Journey');
     expect(await page.getByTestId('t').textContent()).toBe('text of testid=t');
+  });
+
+  it("passes a locator's plain properties through unchanged", () => {
+    const { page } = build();
+
+    expect((page.getByTestId('t') as unknown as { selector: string }).selector).toBe('testid=t');
   });
 
   it('refuses a tap on a locator with no box, naming it', async () => {

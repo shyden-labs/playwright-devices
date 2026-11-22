@@ -3,7 +3,7 @@
 // screen showed the Name field's edit menu instead. Keeps the device's screen with the keyboard up, just
 // after the tap and three seconds later, and the page's geometry at each, in the report.
 import { adbFor, test } from '../device-fixture.ts';
-import { androidPagePoint, type PageViewport } from '../android-page-map.ts';
+import { androidPagePoint, readViewport } from '../android-page-map.ts';
 import { connectAndroidScreen } from '../android-native.ts';
 
 // Round 11 (Android only): Chrome's page area, the viewport the map reads and the screen point it aims
@@ -29,13 +29,7 @@ test('the Colour tap after typing', async ({ page, session }, testInfo) => {
     if (serial !== undefined && serial !== '' && colour !== null) {
       const adb = adbFor(serial);
       const area = await connectAndroidScreen({ adb }).pageArea();
-      const viewport = await page.evaluate((): PageViewport => ({
-        devicePixelRatio: window.devicePixelRatio,
-        offsetLeft: window.visualViewport?.offsetLeft ?? 0,
-        offsetTop: window.visualViewport?.offsetTop ?? 0,
-        scale: window.visualViewport?.scale ?? 1,
-        height: window.visualViewport?.height ?? window.innerHeight,
-      }));
+      const viewport = await page.evaluate(readViewport);
       const keyboard = (await adb(['shell', 'dumpsys', 'window', 'InputMethod']))
         .split('\n')
         .filter((line) => /mFrame|frame=|mHasSurface|isVisible|mViewVisibility/.test(line))
