@@ -6,7 +6,8 @@ import { defineConfig } from '@playwright/test';
 // DEVICE_ROUTE and start the device side first.
 export default defineConfig({
   testDir: './research/devices',
-  testMatch: 'journey.spec.ts',
+  // DEVICE_SPEC runs a probe spec on the same fixture instead (research/devices/run-journey.zsh).
+  testMatch: process.env.DEVICE_SPEC ?? 'journey.spec.ts',
   workers: 1,
   retries: 0,
   // The slowest native picker took 26 s to open on the simulator; three pickers and their ceilings fit.

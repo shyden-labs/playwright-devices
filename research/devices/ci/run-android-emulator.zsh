@@ -15,6 +15,8 @@ export JOURNEY_HOST_ALIAS=10.0.2.2
 # until notifications are allowed (devices-sim run 44882233599).
 adb -s $serial shell pm grant com.android.chrome android.permission.POST_NOTIFICATIONS
 zsh $repo/research/devices/ci/finish-chrome-first-run.zsh $serial
+# Draws each touch on the screen, so a screenshot shows where a tap landed (shyden-labs/playwright-devices#38).
+adb -s $serial shell settings put system show_touches 1
 evidence=$repo/research/devices/evidence
 result=0
 for route in android-playwright android-cdp; do
@@ -22,5 +24,9 @@ for route in android-playwright android-cdp; do
   # What was in front when the route ended, kept beside its report.
   adb -s $serial exec-out screencap -p >$evidence/android-emulator-after-$route.png
   adb -s $serial shell dumpsys activity activities | grep -m1 ResumedActivity >$evidence/android-emulator-after-$route.txt
+done
+# Where the Colour tap lands after typing (shyden-labs/playwright-devices#38); measures, never fails the job.
+for route in android-playwright android-cdp; do
+  DEVICE_SPEC=colour-tap.probe.ts zsh $repo/research/devices/run-journey.zsh android $serial $route || true
 done
 exit $result
