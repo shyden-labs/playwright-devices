@@ -137,6 +137,32 @@ describe('real input on Android', () => {
     expect(await screen.pageArea()).toEqual({ x: 0, y: 160, width: 1440, height: 2854 });
   });
 
+  it("pageArea ends at the top of Chrome's keyboard accessory bar while it covers the page's bottom", async () => {
+    // pixel_9 emulator with the keyboard up (run 44991089861): the touch put the page's bottom at ~1418,
+    // where the bar's contents start (1415), not at the area's bottom (1541).
+    const device = fakeAdb([
+      [],
+      [
+        { id: 'com.android.chrome:id/compositor_view_holder', bounds: [0, 142, 1080, 1541] },
+        { id: 'com.android.chrome:id/accessory_bar_contents', bounds: [0, 1415, 1080, 1541] },
+      ],
+    ]);
+    const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
+    expect(await screen.pageArea()).toEqual({ x: 0, y: 142, width: 1080, height: 1273 });
+  });
+
+  it('pageArea keeps the whole area when the accessory bar sits at or below its bottom', async () => {
+    const device = fakeAdb([
+      [],
+      [
+        { id: 'com.android.chrome:id/compositor_view_holder', bounds: [0, 142, 1080, 1541] },
+        { id: 'com.android.chrome:id/accessory_bar_contents', bounds: [0, 1541, 1080, 1667] },
+      ],
+    ]);
+    const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
+    expect(await screen.pageArea()).toEqual({ x: 0, y: 142, width: 1080, height: 1399 });
+  });
+
   it("pageArea fails at 5 s when Chrome's page area is not on the screen", async () => {
     const device = fakeAdb([[]]);
     const clock = fakeClock();

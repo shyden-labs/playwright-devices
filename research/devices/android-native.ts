@@ -26,6 +26,20 @@ const NATIVE_CEILING_MS = 60_000;
 /** Chrome's page area, under its toolbar (measured on the OnePlus CPH2653, Chrome 157, 2026-11-20). */
 export const PAGE_AREA_ID = 'com.android.chrome:id/compositor_view_holder';
 
+/**
+ * Chrome's keyboard accessory bar: with the keyboard up it is drawn over the page area's bottom, so the
+ * page ends at its top (pixel_9 emulator, run 44991089861: 126 px over the area's bottom).
+ */
+export const ACCESSORY_BAR_ID = 'com.android.chrome:id/accessory_bar_contents';
+
+/** Chrome's page area in `screen`, cut off at the accessory bar's top when the bar covers its bottom. */
+function pageAreaIn(screen: string): ScreenRect | undefined {
+  const area = rectOfResourceId(screen, PAGE_AREA_ID);
+  const bar = rectOfResourceId(screen, ACCESSORY_BAR_ID);
+  if (area === undefined || bar === undefined || bar.y >= area.y + area.height) return area;
+  return { ...area, height: bar.y - area.y };
+}
+
 /** Chrome is open before any tap, so its page area is listed at once; a short ceiling. */
 const PAGE_AREA_CEILING_MS = 5_000;
 
@@ -94,7 +108,7 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
     /** Where Chrome draws the page on the screen, read afresh: its toolbar moves as the page scrolls. */
     async pageArea(): Promise<ScreenRect> {
       return waitFor(
-        async () => rectOfResourceId(await dump(), PAGE_AREA_ID),
+        async () => pageAreaIn(await dump()),
         `Chrome's page area (${PAGE_AREA_ID}) was not on the screen within ${PAGE_AREA_CEILING_MS} ms`,
         PAGE_AREA_CEILING_MS,
       );
