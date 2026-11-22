@@ -64,15 +64,18 @@ jobs:
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
           xcrun simctl boot "$udid"
           xcrun simctl bootstatus "$udid" -b
-      - run: zsh research/devices/ci/setup-ios-sim.zsh ${{ steps.sim.outputs.udid }}
+      # shyden-labs/playwright-devices#46: cancelled twice with no output; the probes below then ran on a device
+      # that was never set up. They run only after this step succeeded.
+      - id: setup
+        run: zsh research/devices/ci/setup-ios-sim.zsh ${{ steps.sim.outputs.udid }}
       - run: zsh research/devices/run-journey.zsh ios-sim ${{ steps.sim.outputs.udid }}
       # Times each WebDriverAgent call of the photo step and the finger scroll after it (shyden-labs/playwright-devices#38).
-      - if: always()
+      - if: always() && steps.setup.outcome == 'success'
         env:
           PROBE: research/devices/probes/probe-photo-timing.ts
         run: zsh research/devices/run-journey.zsh ios-sim ${{ steps.sim.outputs.udid }}
       # Where the Colour tap lands after typing (shyden-labs/playwright-devices#38).
-      - if: always()
+      - if: always() && steps.setup.outcome == 'success'
         env:
           DEVICE_SPEC: colour-tap.probe.ts
         run: zsh research/devices/run-journey.zsh ios-sim ${{ steps.sim.outputs.udid }}

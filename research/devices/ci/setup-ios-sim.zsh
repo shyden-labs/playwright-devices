@@ -20,6 +20,12 @@ sed -i '' 's/PRODUCT_BUNDLE_IDENTIFIER = com.facebook.WebDriverAgentRunner;/PROD
   $wda/src/WebDriverAgent.xcodeproj/project.pbxproj
 grep -q 'uk.co.shyden.WebDriverAgentRunner;' $wda/src/WebDriverAgent.xcodeproj/project.pbxproj
 
+# Memory and disk every 30 s while the build runs: the setup was cancelled with no output twice
+# (shyden-labs/playwright-devices#46), and these lines are the last evidence before a cancel.
+( while :; do print "resources: $(memory_pressure -Q | tail -1); $(df -h / | awk 'NR==2 {print $4 " free on /"}')"; sleep 30; done ) &
+monitor=$!
+trap 'kill $monitor 2>/dev/null' EXIT
+
 # Ad-hoc signed: unsigned, the runner is refused at launch with "Application failed preflight checks"
 # (measured 2026-11-18, Xcode 27.2).
 xcodebuild build-for-testing -quiet -project $wda/src/WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner \

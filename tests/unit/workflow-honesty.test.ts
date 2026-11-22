@@ -128,3 +128,20 @@ describe('the checks', () => {
     expect(scanWithoutVerdict('w.yml', 'steps:\n      - run: npm ci\n')).toEqual([]);
   });
 });
+
+/** Each `- ` step of a workflow, as its text. */
+const stepsOf = (text: string) => text.split(/\n(?=\s+- (?:if|run|uses|name|id|env):)/).slice(1);
+
+describe('devices-sim.yml', () => {
+  it('runs a journey only after its setup succeeded, never after a cancelled or failed setup', () => {
+    // shyden-labs/playwright-devices#46: round 14 (run 44995686112) ran two journeys on always() after the
+    // iPad mini's setup was cancelled; one failed after 5.6 min as if the device were ready.
+    const journeys = stepsOf(read('devices-sim.yml')).filter((step) => step.includes('run-journey.zsh'));
+    expect(journeys.length).toBeGreaterThan(0);
+    for (const step of journeys) {
+      const condition = /\bif: (.*)/.exec(step)?.[1] ?? '';
+      if (condition === '') continue;
+      expect(condition, step).toMatch(/steps\.(setup|emulator)\.outcome == 'success'|^\$\{\{ success\(\) \}\}$|^success\(\)$/);
+    }
+  });
+});
