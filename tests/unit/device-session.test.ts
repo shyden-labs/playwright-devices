@@ -191,6 +191,7 @@ describe('androidSession', () => {
     expect(await session.moreEvidence()).toEqual([
       { name: 'touches sent', body: expect.stringMatching(/^\d+ ms tap at 50,50$/) as unknown },
       { name: 'device log', body: 'am_crash: com.android.chrome\n' },
+      { name: 'memory killer log', body: 'am_crash: com.android.chrome\n' },
     ]);
   });
 

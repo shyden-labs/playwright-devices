@@ -104,6 +104,7 @@ export async function androidSession({ page, adb, baseURL, files }: AndroidSessi
     moreEvidence: async () => [
       { name: 'touches sent', body: screen.touchesSent().join('\n') },
       { name: 'device log', body: await screen.deviceLog() },
+      { name: 'memory killer log', body: await screen.memoryLog() },
     ],
     close: () =>
       thenAlways(

@@ -120,6 +120,13 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
      */
     deviceLog: () => adb(['logcat', '-d', '-b', 'crash', '-b', 'events', '-t', '2000']),
 
+    /**
+     * What the low-memory killer and the activity manager logged, read once: on the pixel_tablet emulator
+     * Chrome and three other apps died within 0.5 s of a Play services update (run 45027508984), and the
+     * crash and event logs cannot say whether memory ran out.
+     */
+    memoryLog: () => adb(['logcat', '-d', '-b', 'main', '-b', 'system', '-s', 'lmkd', 'lowmemorykiller', 'ActivityManager', '-t', '2000']),
+
     /** Types `text` into the focused field through Android's input service. */
     async typeText(text: string): Promise<void> {
       await adb(['shell', 'input', 'text', inputTextArgument(text)]);

@@ -211,6 +211,14 @@ describe('real input on Android', () => {
     expect(screen.touchesSent()).toEqual(['0 ms tap at 1,2']);
   });
 
+  it('memoryLog reads what the low-memory killer and the activity manager logged, once, without waiting', async () => {
+    // pixel_tablet emulator, run 45027508984: Chrome, the keyboard, Play Store and Wellbeing died within
+    // 0.5 s of a Play services update; the crash and event logs cannot say whether memory ran out.
+    const device = fakeAdb([[]]);
+    await connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).memoryLog();
+    expect(device.calls).toEqual(['logcat -d -b main -b system -s lmkd lowmemorykiller ActivityManager -t 2000']);
+  });
+
   it("deviceLog reads the phone's crash and event logs once, without waiting, to show why an app left the screen", async () => {
     const device = fakeAdb([[]]);
     await connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).deviceLog();
