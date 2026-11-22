@@ -65,8 +65,9 @@ jobs:
               console.log(found.udid);
             });')
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
-          # Memory and disk every 30 s while it boots: the last evidence before any cancel.
-          ( while :; do echo "resources: $(memory_pressure -Q | tail -1); $(df -h / | awk 'NR==2 {print $4 " free on /"}')"; sleep 30; done ) &
+          # Memory and disk every 30 s while it boots, with the five processes holding most memory: run
+          # 45064693169's iPad mini boot hung as free memory fell from 60% to 13% (#46), with nothing else running.
+          ( while :; do echo "resources: $(memory_pressure -Q | tail -1); $(df -h / | awk 'NR==2 {print $4 " free on /"}'); top: $(top -l 1 -o mem -n 5 -stats command,mem | tail -5 | tr -s ' ' | tr '\n' ',')"; sleep 30; done ) &
           monitor=$!
           xcrun simctl boot "$udid"
           xcrun simctl bootstatus "$udid" -b
