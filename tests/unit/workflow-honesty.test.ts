@@ -145,3 +145,16 @@ describe('devices-sim.yml', () => {
     }
   });
 });
+
+describe('devices-sim.yml simulator boot', () => {
+  it('fails a hung simulator boot at its own limit, naming it, rather than leaving it to a silent cancel', () => {
+    // shyden-labs/playwright-devices#46: run 45054025779's iPad Pro boot took 9.1 min (others 1.5-3.6 min),
+    // then GitHub cancelled the job with no reason.
+    const boot = stepsOf(read('devices-sim.yml')).find((step) => step.includes('xcrun simctl bootstatus'));
+    expect(boot).toBeDefined();
+    const minutes = Number(/\btimeout-minutes: (\d+)/.exec(boot ?? '')?.[1]);
+    expect(minutes).toBeGreaterThanOrEqual(4);
+    expect(minutes).toBeLessThanOrEqual(6);
+    expect(boot).toContain('memory_pressure');
+  });
+});
