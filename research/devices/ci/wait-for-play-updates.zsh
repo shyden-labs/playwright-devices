@@ -8,10 +8,13 @@
 # written to <evidence>, with the seconds since this started, to tune both figures.
 #
 #   wait-for-play-updates.zsh <serial> <evidence-file>
+#   wait-for-play-updates.zsh --list <serial>     prints "<package> <lastUpdateTime>" for every package
 set -uo pipefail
 
-serial=${1:?usage: wait-for-play-updates.zsh <serial> <evidence-file>}
-evidence=${2:?usage: wait-for-play-updates.zsh <serial> <evidence-file>}
+list_only=0
+if [[ ${1:-} == --list ]]; then list_only=1; shift; fi
+
+serial=${1:?usage: wait-for-play-updates.zsh [--list] <serial> [<evidence-file>]}
 QUIET_S=120
 CEILING_S=600
 POLL_S=15
@@ -22,6 +25,9 @@ snapshot() {
     awk '/^  Package \[/ { name = substr($2, 2, length($2) - 2) } /lastUpdateTime=/ { sub(/^ *lastUpdateTime=/, ""); print name, $0 }' |
     sort
 }
+
+if (( list_only )); then snapshot; exit; fi
+evidence=${2:?usage: wait-for-play-updates.zsh <serial> <evidence-file>}
 
 start=$SECONDS
 previous=$(snapshot)
