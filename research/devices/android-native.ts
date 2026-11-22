@@ -61,9 +61,15 @@ export interface AndroidScreenOptions {
 
 export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOptions) {
   const dump = () => adb(DUMP_COMMAND);
+  const started = clock.now();
+  /** Every touch sent, with when and where: the pixel_tablet's Colour tap reached nothing on the page and nothing said where it went (run 45020752863). */
+  const sent: string[] = [];
+  const at = ({ x, y }: ScreenPoint) => `${Math.round(x)},${Math.round(y)}`;
+  const record = (what: string) => sent.push(`${clock.now() - started} ms ${what}`);
 
-  async function touch({ x, y }: ScreenPoint): Promise<void> {
-    await adb(['shell', 'input', 'tap', String(Math.round(x)), String(Math.round(y))]);
+  async function touch(point: ScreenPoint): Promise<void> {
+    record(`tap at ${at(point)}`);
+    await adb(['shell', 'input', 'tap', String(Math.round(point.x)), String(Math.round(point.y))]);
   }
 
   /** The first of `texts` the screen lists now, with its centre. */
@@ -101,8 +107,18 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
 
     /** One real finger dragged from `from` to `to`, in the phone's pixels. */
     async swipe(from: ScreenPoint, to: ScreenPoint): Promise<void> {
+      record(`drag from ${at(from)} to ${at(to)}`);
       await adb(androidSwipeArgs(from, to));
     },
+
+    /** Every tap and drag sent so far, in order, with when (ms since connecting) and where, in the phone's pixels. */
+    touchesSent: (): string[] => [...sent],
+
+    /**
+     * The phone's crash and event logs, read once: Chrome left the screen mid-journey on both emulators with
+     * nothing saying why (run 45020752863).
+     */
+    deviceLog: () => adb(['logcat', '-d', '-b', 'crash', '-b', 'events', '-t', '2000']),
 
     /** Types `text` into the focused field through Android's input service. */
     async typeText(text: string): Promise<void> {

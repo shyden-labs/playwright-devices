@@ -99,6 +99,11 @@ describe('iosSession', () => {
     expect(await session.screenSource()).toBe('<ios screen/>');
   });
 
+  it('answers no further failure evidence: WebDriverAgent keeps its own log', async () => {
+    const session = iosSession({ page, wda: fakeWda(), baseURL: 'http://mac.local:4321', file });
+    expect(await session.moreEvidence()).toEqual([]);
+  });
+
   it('gives the test a page stand-in, not the real page', () => {
     const session = iosSession({ page, wda: fakeWda(), baseURL: 'http://mac.local:4321', file });
     expect(session.page).not.toBe(page);
@@ -120,6 +125,7 @@ function fakeAdb(shown: string[] = []) {
       return Promise.resolve(`<hierarchy>${nodes.join('')}</hierarchy>`);
     }
     if (call === 'shell wm size') return Promise.resolve('Physical size: 1080x2400\n');
+    if (call.startsWith('logcat -d')) return Promise.resolve('am_crash: com.android.chrome\n');
     if (call === 'exec-out screencap -p | base64') return Promise.resolve(Buffer.from('android screen').toString('base64'));
     return Promise.resolve('');
   };
@@ -177,6 +183,15 @@ describe('androidSession', () => {
   it('screenshots the phone through adb', async () => {
     const session = await androidSession({ page, adb: fakeAdb().adb, baseURL: 'http://127.0.0.1:4321', files });
     expect(await session.screenshot()).toEqual(Buffer.from('android screen'));
+  });
+
+  it("answers the touches it sent and the phone's crash and event logs, for a failure's evidence", async () => {
+    const session = await androidSession({ page, adb: fakeAdb(['Green']).adb, baseURL: 'http://127.0.0.1:4321', files });
+    await session.nativeChoose('Green');
+    expect(await session.moreEvidence()).toEqual([
+      { name: 'touches sent', body: expect.stringMatching(/^\d+ ms tap at 50,50$/) as unknown },
+      { name: 'device log', body: 'am_crash: com.android.chrome\n' },
+    ]);
   });
 
   it("describes the phone's screen with a uiautomator dump, for a failure's evidence", async () => {

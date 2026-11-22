@@ -139,6 +139,7 @@ export const test = base.extend<JourneyFixtures, { journeyURL: string }>({
             (error: unknown) => `the page could not be read: ${String(error)}`,
           );
         await testInfo.attach('touches the page saw', { body: touches, contentType: 'text/plain' });
+        for (const { name, body } of await session.moreEvidence()) await testInfo.attach(name, { body, contentType: 'text/plain' });
       }
     } finally {
       try {

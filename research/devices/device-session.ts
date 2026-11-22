@@ -31,6 +31,8 @@ export interface DeviceSession {
   screenshot: () => Promise<Buffer>;
   /** The device's own description of its screen (WebDriverAgent's source, or a uiautomator dump). */
   screenSource: () => Promise<string>;
+  /** Further evidence for a failure, each a named text: Android's touches sent and its crash and event logs. */
+  moreEvidence: () => Promise<{ name: string; body: string }[]>;
   /** Shuts a picker a failed step left open, then releases the device; call it in the fixture's teardown. */
   close: () => Promise<void>;
 }
@@ -68,6 +70,7 @@ export function iosSession({ page, wda, baseURL, file }: IosSessionOptions): Dev
     fingerScroll: () => iosFingerScroll(wda),
     screenshot: () => wda.screenshot(),
     screenSource: () => wda.source(),
+    moreEvidence: () => Promise.resolve([]),
     close: () =>
       thenAlways(
         () => iosClosePicker(wda),
@@ -98,6 +101,10 @@ export async function androidSession({ page, adb, baseURL, files }: AndroidSessi
     fingerScroll: () => androidFingerScroll(adb),
     screenshot: () => screen.screenshot(),
     screenSource: () => screen.source(),
+    moreEvidence: async () => [
+      { name: 'touches sent', body: screen.touchesSent().join('\n') },
+      { name: 'device log', body: await screen.deviceLog() },
+    ],
     close: () =>
       thenAlways(
         () => androidClosePicker(screen),

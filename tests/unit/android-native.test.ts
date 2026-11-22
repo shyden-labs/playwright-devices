@@ -189,6 +189,30 @@ describe('real input on Android', () => {
     expect(device.calls).toEqual(['shell input swipe 640 669 640 356 400']);
   });
 
+  it('touchesSent lists every tap and drag sent, in order, with when and where, so a failure shows where a touch landed', async () => {
+    const device = fakeAdb([[], [GREEN]]);
+    const clock = fakeClock();
+    const screen = connectAndroidScreen({ adb: device.adb, clock });
+    await screen.tapAt({ x: 131.6, y: 367.4 });
+    await clock.sleep(250);
+    await screen.swipe({ x: 640.4, y: 668.6 }, { x: 640, y: 356 });
+    await screen.tapFirstShown(['Green']);
+    expect(screen.touchesSent()).toEqual(['0 ms tap at 132,367', '250 ms drag from 640,669 to 640,356', '500 ms tap at 540,970']);
+  });
+
+  it('touchesSent answers a copy: what the caller does with it cannot change the record', async () => {
+    const screen = connectAndroidScreen({ adb: fakeAdb([[]]).adb, clock: fakeClock() });
+    await screen.tapAt({ x: 1, y: 2 });
+    screen.touchesSent().push('not sent');
+    expect(screen.touchesSent()).toEqual(['0 ms tap at 1,2']);
+  });
+
+  it("deviceLog reads the phone's crash and event logs once, without waiting, to show why an app left the screen", async () => {
+    const device = fakeAdb([[]]);
+    await connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).deviceLog();
+    expect(device.calls).toEqual(['logcat -d -b crash -b events -t 2000']);
+  });
+
   it("typeText sends the text through the phone's shell quoted, with spaces as %s", async () => {
     const device = fakeAdb([[]]);
     await connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).typeText("Ana's tea & toast");
