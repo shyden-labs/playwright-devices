@@ -3,6 +3,7 @@
 // the screen's listing after Done and after the scroll, and makes the journey's own finger scroll.
 import { writeFileSync } from 'node:fs';
 import { webkit } from '@playwright/test';
+import { iosSession } from '../device-session.ts';
 import { connectWda } from '../wda-client.ts';
 import { startJourneyServer } from '../serve.ts';
 import { PHOTO_GRID_IMAGE } from '../ios-native.ts';
@@ -49,6 +50,9 @@ const browser = await webkit.connectOverCDP(process.env.IWDP_URL ?? 'http://127.
 const page = browser.contexts().flatMap((c) => c.pages())[0];
 if (page === undefined) throw new Error('Safari has no tab open');
 const wda = await connectWda({ url: wdaUrl, fetchFn: timedFetch });
+// Taps go to the simulator through WebDriverAgent, as in the journey; a bare
+// connectOverCDP page has no touch, so its locator.tap() refuses (round 8).
+const session = iosSession({ page, wda, baseURL: server.baseURL, file: { folder: 'x', label: 'x' } });
 
 async function keepScreen(stage: string): Promise<void> {
   await step(`screenshot ${stage}`, async () => {
@@ -64,7 +68,7 @@ async function keepScreen(stage: string): Promise<void> {
 
 try {
   await step('open the page', () => page.goto(new URL('/journey.html', server.baseURL).href));
-  await step('tap Photo', () => page.getByLabel('Photo').tap());
+  await step('tap Photo', () => session.page.getByLabel('Photo').tap());
   await step('tap Photo Library', () => wda.tapFirstShown(['Photo Library']));
   await step('tap the first photo', () => wda.tapTopLeftOf(PHOTO_GRID_IMAGE));
   await step('tap Done', () => wda.tapFirstShown(['Done']));
