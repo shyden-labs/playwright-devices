@@ -24,9 +24,32 @@ test('the Colour tap after typing', async ({ page, session }, testInfo) => {
   await page.goto('/journey.html');
   await page.getByLabel('Name').tap();
   await page.keyboard.type('Ana');
+  // Round 10: where on the page each touch lands, and on what, so the tap's aim can be read against
+  // the Colour field's box (round 9 showed the tap changed nothing on the Duo and the Android phone).
+  await page.evaluate(() => {
+    const seen: string[] = [];
+    (window as unknown as { touchesSeen: string[] }).touchesSeen = seen;
+    for (const type of ['touchstart', 'pointerdown', 'click', 'focusin']) {
+      document.addEventListener(
+        type,
+        (e) => {
+          const point = e instanceof TouchEvent ? e.touches[0] : e instanceof MouseEvent ? e : undefined;
+          const at = point === undefined ? 'no point' : `${Math.round(point.clientX)},${Math.round(point.clientY)}`;
+          const target =
+            e.target instanceof Element ? (e.target.getAttribute('aria-label') ?? (e.target.id || e.target.tagName)) : 'document';
+          seen.push(`${type} at ${at} on ${target}`);
+        },
+        true,
+      );
+    }
+  });
   await keep('1 keyboard up after typing');
   await page.getByLabel('Colour').tap();
   await keep('2 just after the Colour tap');
   await new Promise((resolve) => setTimeout(resolve, 3000));
   await keep('3 three seconds later');
+  testInfo.annotations.push({
+    type: 'touches seen',
+    description: JSON.stringify(await page.evaluate(() => (window as unknown as { touchesSeen: string[] }).touchesSeen)),
+  });
 });

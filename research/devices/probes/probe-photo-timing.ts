@@ -1,6 +1,7 @@
 // Probe (shyden-labs/playwright-devices#38): where the photo step's ~30 s goes on the CI simulators, and why
 // the iPads' finger scroll after it goes unanswered. Times every WebDriverAgent call, keeps a screenshot and
-// the screen's listing after Done and after the scroll, and makes the journey's own finger scroll.
+// the screen's listing after Done and after the scroll, and makes the journey's own finger scroll
+// with WebDriverAgent's wait for idle turned off (round 10).
 import { writeFileSync } from 'node:fs';
 import { webkit } from '@playwright/test';
 import { iosSession } from '../device-session.ts';
@@ -75,6 +76,19 @@ try {
   await keepScreen('after-done');
   await step('wait for the grid to go', () => wda.waitGone(PHOTO_GRID_IMAGE));
   log(`photo-result: ${(await page.getByTestId('photo-result').textContent()) ?? '(none)'}`);
+  // Round 9: after the iPad picker's Done, the photo reached the page and the scroll landed, but
+  // WebDriverAgent held its answer ~30 s, as if waiting for Safari to go idle. Round 10 asks it
+  // not to wait for idle (appium-webdriveragent's waitForIdleTimeout setting) and times the scroll.
+  await step('turn off the wait for idle', async () => {
+    const status = (await (await timedFetch(new URL('/status', wdaUrl))).json()) as { sessionId?: string };
+    if (status.sessionId === undefined) throw new Error('/status named no session');
+    const response = await timedFetch(new URL(`/session/${status.sessionId}/appium/settings`, wdaUrl), {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ settings: { waitForIdleTimeout: 0 } }),
+    });
+    log(`  settings now ${JSON.stringify(((await response.json()) as { value: unknown }).value)}`);
+  });
   await step('finger scroll', () => iosFingerScroll(wda));
   log(`scroll-result: ${(await page.getByTestId('scroll-result').textContent()) ?? '(none)'}`);
   await keepScreen('after-scroll');
