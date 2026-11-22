@@ -1,0 +1,59 @@
+0.47s   wda POST /session -> 200 in 250 ms
+0.48s step open the page
+4.88s step open the page done in 4401 ms
+4.88s step tap Photo
+5.80s   wda POST /session/:id/elements -> 200 in 383 ms
+5.93s   wda GET /session/:id/element/16000000-0000-0000-B1A2-000000000000/rect -> 200 in 128 ms
+6.26s   wda POST /session/:id/elements -> 200 in 321 ms
+6.34s   wda GET /session/:id/element/16000000-0000-0000-B1A2-000000000000/rect -> 200 in 83 ms
+8.75s   wda POST /session/:id/actions -> 200 in 2389 ms
+8.75s step tap Photo done in 3869 ms
+8.75s step tap Photo Library
+9.03s   wda POST /session/:id/elements -> 200 in 275 ms
+10.38s   wda POST /session/:id/element/D4010000-0000-0000-FA88-000000000000/click -> 200 in 1344 ms
+10.38s step tap Photo Library done in 1635 ms
+10.38s step tap the first photo
+14.26s   wda POST /session/:id/elements -> 200 in 3879 ms
+14.69s   wda GET /session/:id/element/B4010000-0000-0000-D896-000000000000/rect -> 200 in 424 ms
+15.12s   wda GET /session/:id/element/B5010000-0000-0000-D896-000000000000/rect -> 200 in 433 ms
+15.55s   wda GET /session/:id/element/B6010000-0000-0000-D896-000000000000/rect -> 200 in 432 ms
+15.96s   wda GET /session/:id/element/B7010000-0000-0000-D896-000000000000/rect -> 200 in 407 ms
+16.35s   wda GET /session/:id/element/B8010000-0000-0000-D896-000000000000/rect -> 200 in 387 ms
+16.73s   wda GET /session/:id/element/B9010000-0000-0000-D896-000000000000/rect -> 200 in 379 ms
+17.24s   wda GET /session/:id/element/BA010000-0000-0000-D896-000000000000/rect -> 200 in 511 ms
+17.63s   wda GET /session/:id/element/BB010000-0000-0000-D896-000000000000/rect -> 200 in 391 ms
+18.34s   wda POST /session/:id/actions -> 200 in 704 ms
+18.73s step tap the first photo done in 8351 ms
+18.74s step tap Done
+19.52s   wda POST /session/:id/elements -> 200 in 666 ms
+20.65s   wda POST /session/:id/element/C9010000-0000-0000-D896-000000000000/click -> 200 in 1131 ms
+21.31s step tap Done done in 2558 ms
+21.31s step screenshot after-done
+22.17s   wda GET /session/:id/screenshot -> 200 in 818 ms
+22.21s step screenshot after-done done in 900 ms
+22.21s step source after-done
+23.60s   wda GET /source -> 200 in 1387 ms
+23.60s   /source is 31183 chars
+23.60s step source after-done done in 1389 ms
+23.60s step wait for the grid to go
+23.72s   wda POST /session/:id/elements -> 200 in 117 ms
+23.72s step wait for the grid to go done in 118 ms
+23.74s photo-result: image/png
+23.74s step finger drag through /wda/dragfromtoforduration
+23.74s   wda GET /status -> 200 in 2 ms
+23.86s   wda GET /session/:id/window/size -> 200 in 120 ms
+25.71s   wda POST /session/:id/wda/dragfromtoforduration -> 200 in 1850 ms
+25.72s step finger drag through /wda/dragfromtoforduration done in 1975 ms
+25.74s scroll-result after the drag: Scrolled
+25.74s step finger scroll
+25.84s   wda GET /session/:id/window/size -> 200 in 109 ms
+27.51s   wda POST /session/:id/wda/dragfromtoforduration -> 200 in 1665 ms
+27.51s step finger scroll done in 1774 ms
+27.51s scroll-result: Scrolled
+27.51s step screenshot after-scroll
+27.88s   wda GET /session/:id/screenshot -> 200 in 363 ms
+27.88s step screenshot after-scroll done in 366 ms
+27.88s step source after-scroll
+29.12s   wda GET /source -> 200 in 1244 ms
+29.13s   /source is 23899 chars
+29.13s step source after-scroll done in 1250 ms
