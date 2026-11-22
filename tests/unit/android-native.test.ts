@@ -34,10 +34,13 @@ interface Node {
   bounds: [number, number, number, number];
 }
 
+/** Escapes as uiautomator does: Photos & videos is dumped as Photos &amp; videos. */
+const xml = (text: string) => text.replaceAll('&', '&amp;');
+
 function dumpOf(nodes: Node[]): string {
   const lines = nodes.map(
     ({ id = '', text = '', desc = '', bounds: [l, t, r, b] }) =>
-      `<node text="${text}" resource-id="${id}" content-desc="${desc}" bounds="[${l},${t}][${r},${b}]" />`,
+      `<node text="${xml(text)}" resource-id="${id}" content-desc="${xml(desc)}" bounds="[${l},${t}][${r},${b}]" />`,
   );
   return `<hierarchy rotation="0">${lines.join('')}</hierarchy>UI hierchary dumped to: /dev/tty`;
 }
@@ -61,6 +64,7 @@ function fakeAdb(screens: Node[][]) {
 const GREEN: Node = { text: 'Green', bounds: [100, 900, 980, 1040] };
 const FILES: Node = { text: 'Files', bounds: [0, 2000, 200, 2100] };
 const MEDIA_PICKER: Node = { text: 'Media picker', bounds: [0, 1600, 1080, 1700] };
+const PHOTOS_AND_VIDEOS: Node = { text: 'Photos & videos', bounds: [0, 1800, 1080, 1900] };
 const WHILE_USING: Node = { text: 'While using the app', bounds: [134, 1178, 945, 1322] };
 const FILE: Node = { text: 'device-journey.txt', bounds: [0, 400, 1080, 600] };
 const PHOTO: Node = { desc: 'Photo taken on 20 Nov 2026, 10:01', bounds: [100, 500, 400, 800] };
@@ -271,6 +275,14 @@ describe('the steps a person takes on Android', () => {
     expect(device.taps()).toEqual(['shell input tap 540 1650', 'shell input tap 540 500']);
   });
 
+  it('file: Photos & videos when the chooser names the file browser that way, then the file', async () => {
+    // pixel_9 emulator, run 45027508984: once Android's photo picker took file choosing (cdp route), the
+    // chooser offered Camera, Camcorder and Photos & videos; Photos & videos opened the same Recent browser.
+    const device = fakeAdb([[PHOTOS_AND_VIDEOS], [FILE]]);
+    await androidChooseFile(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }), 'device-journey.txt');
+    expect(device.taps()).toEqual(['shell input tap 540 1850', 'shell input tap 540 500']);
+  });
+
   it("file: answers a fresh phone's camera prompt While using the app, then Files, then the file", async () => {
     // pixel_9 emulator, run 44993134413: Chrome asked to take pictures before its chooser showed. Run
     // 44995686112 answered Only this time, and Chrome was gone behind the chooser: Android withdraws a
@@ -284,6 +296,29 @@ describe('the steps a person takes on Android', () => {
     const device = fakeAdb([[PHOTO], [DONE]]);
     await androidChoosePhoto(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }));
     expect(device.taps()).toEqual(['shell input tap 250 650', 'shell input tap 900 2250']);
+  });
+
+  it('photo: the newest photo alone when the picker closes on the tap, with no Done to wait for', async () => {
+    // pixel_9 emulator, run 45027508984: the page had 18.png, the picker was gone, and waiting for Done failed.
+    const device = fakeAdb([[PHOTO], []]);
+    const clock = fakeClock();
+    await androidChoosePhoto(connectAndroidScreen({ adb: device.adb, clock }));
+    expect(device.taps()).toEqual(['shell input tap 250 650']);
+    expect(clock.now()).toBe(0);
+  });
+
+  it('photo: waits while the picker is still open without Done, then Done', async () => {
+    const device = fakeAdb([[PHOTO], [PHOTO], [PHOTO, DONE]]);
+    await androidChoosePhoto(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }));
+    expect(device.taps()).toEqual(['shell input tap 250 650', 'shell input tap 900 2250']);
+  });
+
+  it('photo: fails at the ceiling naming Done when the picker stays open and Done never shows', async () => {
+    const device = fakeAdb([[PHOTO]]);
+    await expect(androidChoosePhoto(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }))).rejects.toThrow(
+      'the photo picker neither closed nor showed "Done" within 60000 ms',
+    );
+    expect(device.taps()).toEqual(['shell input tap 250 650']);
   });
 
   it('teardown: Cancel, then Done, whichever shows, without waiting', async () => {

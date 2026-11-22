@@ -150,6 +150,23 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
       return hit.text;
     },
 
+    /**
+     * Touches `text` once it shows, or answers undefined once no node described `openPrefix` is left: a picker that
+     * closed itself. Waits while the picker is open without `text`; fails at the ceiling naming both.
+     */
+    async tapUnlessClosed(text: string, openPrefix: string, picker: string): Promise<string | undefined> {
+      const seen = await waitFor(async () => {
+        const screen = await dump();
+        const at = centreOfText(screen, text);
+        if (at !== undefined) return { at };
+        if (centreOfFirstDescribed(screen, openPrefix) === undefined) return { at: undefined };
+        return undefined;
+      }, `the ${picker} neither closed nor showed "${text}" within ${NATIVE_CEILING_MS} ms`);
+      if (seen.at === undefined) return undefined;
+      await touch(seen.at);
+      return text;
+    },
+
     /** Touches the topmost, then leftmost, node whose description starts with `prefix`, waiting for it. */
     async tapFirstDescribed(prefix: string): Promise<void> {
       const at = await waitFor(
@@ -179,7 +196,9 @@ const CAMERA_PROMPT_ANSWER = 'While using the app';
  * The chooser's file browser: Files on the OnePlus CPH2653; Media picker on the pixel_9 emulator, which
  * opens the same file browser (run 45007095925).
  */
-const FILE_BROWSER = ['Files', 'Media picker'];
+// Once Android's own photo picker took file choosing, the chooser named it Photos & videos, and it opened the
+// same Recent browser (pixel_9 emulator, cdp route, run 45027508984).
+const FILE_BROWSER = ['Files', 'Media picker', 'Photos & videos'];
 
 /**
  * The chooser's file browser, then the file (staged first with `stageAndroidFile`). On a fresh phone Chrome
@@ -192,10 +211,16 @@ export async function androidChooseFile(screen: AndroidScreen, name: string): Pr
   await screen.tapFirstShown([name]);
 }
 
-/** Google's photo picker: the newest photo (the staged one), then Done; it selects on tap and returns only on Done. */
+/** How Google's photo picker describes each photo in its grid. */
+const PHOTO_DESCRIPTION = 'Photo taken on';
+
+/**
+ * Google's photo picker: the newest photo (the staged one), then Done when it asks. On a real phone it selects on
+ * tap and returns only on Done; on the pixel_9 emulator it returned on the tap itself (run 45027508984).
+ */
 export async function androidChoosePhoto(screen: AndroidScreen): Promise<void> {
-  await screen.tapFirstDescribed('Photo taken on');
-  await screen.tapFirstShown(['Done']);
+  await screen.tapFirstDescribed(PHOTO_DESCRIPTION);
+  await screen.tapUnlessClosed('Done', PHOTO_DESCRIPTION, 'photo picker');
 }
 
 /**
