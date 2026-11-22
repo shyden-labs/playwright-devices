@@ -143,3 +143,43 @@ test('the Colour tap after typing', async ({ page, session }, testInfo) => {
     description: JSON.stringify(await page.evaluate(() => (window as unknown as { touchesSeen: string[] }).touchesSeen)),
   });
 });
+
+// Round 17: in round 16 the journey's Colour tap on the pixel_tablet opened nothing (keyboard still up,
+// Name still focused), while the test above, which pauses to measure before tapping, opened the list.
+// This one does exactly what the journey does, with no pause, and logs every touch from the start.
+test('the Colour tap straight after typing, as the journey does', async ({ page, session }, testInfo) => {
+  await page.goto('/journey.html');
+  await page.evaluate(() => {
+    const seen: string[] = [];
+    (window as unknown as { touchesSeen: string[] }).touchesSeen = seen;
+    for (const type of ['touchstart', 'pointerdown', 'click', 'focusin', 'scroll']) {
+      document.addEventListener(
+        type,
+        (e) => {
+          let point: { clientX: number; clientY: number } | undefined;
+          if (e instanceof TouchEvent) point = e.touches[0];
+          else if (e instanceof MouseEvent) point = e;
+          const at =
+            point === undefined ? `scrollY ${Math.round(window.scrollY)}` : `${Math.round(point.clientX)},${Math.round(point.clientY)}`;
+          const target =
+            e.target instanceof Element ? (e.target.getAttribute('aria-label') ?? (e.target.id || e.target.tagName)) : 'document';
+          seen.push(`${Math.round(performance.now())} ms ${type} at ${at} on ${target}`);
+        },
+        true,
+      );
+    }
+  });
+  await page.getByRole('button', { name: 'Tap me' }).tap();
+  await page.getByLabel('Name').tap();
+  await page.keyboard.type('Ana');
+  const before = await page.getByLabel('Colour').boundingBox();
+  await page.getByLabel('Colour').tap();
+  const after = await page.getByLabel('Colour').boundingBox();
+  await new Promise((resolve) => setTimeout(resolve, 3000));
+  await testInfo.attach('screen three seconds after the Colour tap', { body: await session.screenshot(), contentType: 'image/png' });
+  testInfo.annotations.push({ type: 'Colour box before and after the tap', description: JSON.stringify({ before, after }) });
+  testInfo.annotations.push({
+    type: 'touches seen',
+    description: JSON.stringify(await page.evaluate(() => (window as unknown as { touchesSeen: string[] }).touchesSeen)),
+  });
+});
