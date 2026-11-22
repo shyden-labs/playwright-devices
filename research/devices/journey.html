@@ -82,11 +82,15 @@
       // Every touch the page sees, for the device screen at failure (run 45007095925: the pixel_tablet's Colour tap
       // opened nothing, and nothing said where it landed).
       window.touchesSeen = [];
-      for (const type of ['touchstart', 'pointerdown', 'click', 'focusin', 'scroll']) {
+      // touchend, touchcancel and pointercancel say whether Chrome cancelled a touch the page began to see; the
+      // visual viewport's resize and scroll say when the keyboard moved the page (run 45023335822: the
+      // pixel_tablet's Colour tap reached Chrome but the page saw nothing, and the pixel_9's viewport height
+      // changed from 742 to 430 inside the 5 s settle wait).
+      for (const type of ['touchstart', 'touchend', 'touchcancel', 'pointerdown', 'pointercancel', 'click', 'focusin', 'scroll']) {
         document.addEventListener(
           type,
           (event) => {
-            const point = event.touches?.[0] ?? (event instanceof MouseEvent ? event : undefined);
+            const point = event.changedTouches?.[0] ?? (event instanceof MouseEvent ? event : undefined);
             const at = point === undefined ? `scrollY ${Math.round(scrollY)}` : `${Math.round(point.clientX)},${Math.round(point.clientY)}`;
             const target = event.target instanceof Element ? event.target.id || event.target.tagName : 'document';
             const view = visualViewport === null ? '' : ` view ${Math.round(visualViewport.height)}`;
@@ -94,6 +98,14 @@
           },
           true,
         );
+      }
+      for (const type of ['resize', 'scroll']) {
+        visualViewport?.addEventListener(type, () => {
+          const { height, offsetTop, pageTop } = visualViewport;
+          window.touchesSeen.push(
+            `${Math.round(performance.now())} ms viewport ${type} height ${Math.round(height)} offsetTop ${Math.round(offsetTop)} pageTop ${Math.round(pageTop)}`,
+          );
+        });
       }
     </script>
   </body>

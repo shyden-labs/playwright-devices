@@ -21,6 +21,9 @@ evidence=$repo/research/devices/evidence
 zsh $repo/research/devices/ci/measure-android-pickers.zsh $serial $evidence/android-emulator-pickers.txt
 result=0
 for route in android-playwright android-cdp; do
+  # Round 19: the first route's chooser named its browser Media picker, the second's Photos & videos;
+  # the resolvers before each route say whether the second route faced different pickers.
+  zsh $repo/research/devices/ci/measure-android-pickers.zsh $serial $evidence/android-emulator-pickers-before-$route.txt
   zsh $repo/research/devices/run-journey.zsh android $serial $route || result=1
   # What was in front when the route ended, kept beside its report.
   adb -s $serial exec-out screencap -p >$evidence/android-emulator-after-$route.png
@@ -29,7 +32,8 @@ for route in android-playwright android-cdp; do
   adb -s $serial exec-out uiautomator dump --windows /dev/tty >$evidence/android-emulator-after-$route-windows.xml 2>&1 || true
   # Round 16: the pixel_9's file chooser offered Camcorder, Camera and Media picker, no Files. What a
   # person finds behind Media picker, when the chooser is still open (measures, never fails the job).
-  bounds=$(grep -o 'text="Media picker"[^>]*bounds="[^"]*"' $evidence/android-emulator-after-$route-windows.xml | grep -o '\[[0-9]*,[0-9]*\]\[[0-9]*,[0-9]*\]' | head -1)
+  # Round 19 (run 45023335822): the cdp route's chooser offered Photos & videos in its place.
+  bounds=$(grep -oE 'text="(Media picker|Photos &amp; videos)"[^>]*bounds="[^"]*"' $evidence/android-emulator-after-$route-windows.xml | grep -o '\[[0-9]*,[0-9]*\]\[[0-9]*,[0-9]*\]' | head -1)
   if [[ -n $bounds ]]; then
     nums=(${(s:,:)${${bounds//\]\[/,}//[\[\]]/}})
     adb -s $serial shell input tap $(( (nums[1] + nums[3]) / 2 )) $(( (nums[2] + nums[4]) / 2 ))
