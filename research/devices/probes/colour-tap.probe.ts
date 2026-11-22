@@ -2,7 +2,14 @@
 // emulators and the iPhone Duo simulator the colour list never showed (round 7, 2026-11-21); the Duo's
 // screen showed the Name field's edit menu instead. Keeps the device's screen with the keyboard up, just
 // after the tap and three seconds later, and the page's geometry at each, in the report.
-import { test } from '../device-fixture.ts';
+import { adbFor, test } from '../device-fixture.ts';
+import { androidPagePoint, type PageViewport } from '../android-page-map.ts';
+import { connectAndroidScreen } from '../android-native.ts';
+
+// Round 11 (Android only): Chrome's page area, the viewport the map reads and the screen point it aims
+// at, plus the keyboard window's frame, so round 10's misses (pixel_9 landed 47 CSS px below Colour;
+// pixel_tablet's touch never reached the page) can be read against what the map was given.
+const serial = process.env.ANDROID_SERIAL;
 
 test('the Colour tap after typing', async ({ page, session }, testInfo) => {
   const keep = async (stage: string): Promise<void> => {
@@ -19,6 +26,27 @@ test('the Colour tap after typing', async ({ page, session }, testInfo) => {
     const colour = await page.getByLabel('Colour').boundingBox();
     const name = await page.getByLabel('Name').boundingBox();
     testInfo.annotations.push({ type: stage, description: JSON.stringify({ geometry, colour, name }) });
+    if (serial !== undefined && serial !== '' && colour !== null) {
+      const adb = adbFor(serial);
+      const area = await connectAndroidScreen({ adb }).pageArea();
+      const viewport = await page.evaluate((): PageViewport => ({
+        devicePixelRatio: window.devicePixelRatio,
+        offsetLeft: window.visualViewport?.offsetLeft ?? 0,
+        offsetTop: window.visualViewport?.offsetTop ?? 0,
+        scale: window.visualViewport?.scale ?? 1,
+        height: window.visualViewport?.height ?? window.innerHeight,
+      }));
+      const keyboard = (await adb(['shell', 'dumpsys', 'window', 'InputMethod']))
+        .split('\n')
+        .filter((line) => /mFrame|frame=|mHasSurface|isVisible|mViewVisibility/.test(line))
+        .map((line) => line.trim())
+        .slice(0, 12);
+      const size = (await adb(['shell', 'wm', 'size'])).trim();
+      testInfo.annotations.push({
+        type: `${stage}: android map`,
+        description: JSON.stringify({ area, viewport, aim: androidPagePoint(colour, viewport, area), size, keyboard }),
+      });
+    }
   };
 
   await page.goto('/journey.html');

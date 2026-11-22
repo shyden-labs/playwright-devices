@@ -24,7 +24,7 @@ function required(name: string): string {
   return value;
 }
 
-function adbFor(serial: string): Adb {
+export function adbFor(serial: string): Adb {
   return (args) =>
     new Promise((resolve, reject) => {
       execFile('adb', ['-s', serial, ...args], { timeout: ADB_CEILING_MS, maxBuffer: 16 * 1024 * 1024 }, (error, stdout, stderr) => {
