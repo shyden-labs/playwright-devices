@@ -18,12 +18,15 @@ zsh $repo/research/devices/ci/finish-chrome-first-run.zsh $serial
 # Draws each touch on the screen, so a screenshot shows where a tap landed (shyden-labs/playwright-devices#38).
 adb -s $serial shell settings put system show_touches 1
 evidence=$repo/research/devices/evidence
+zsh $repo/research/devices/ci/measure-android-pickers.zsh $serial $evidence/android-emulator-pickers.txt
 result=0
 for route in android-playwright android-cdp; do
   zsh $repo/research/devices/run-journey.zsh android $serial $route || result=1
   # What was in front when the route ended, kept beside its report.
   adb -s $serial exec-out screencap -p >$evidence/android-emulator-after-$route.png
   adb -s $serial shell dumpsys activity activities | grep -m1 ResumedActivity >$evidence/android-emulator-after-$route.txt
+  # Every window, popups included: the tablet's drop-down list was missing from the plain dump (round 15).
+  adb -s $serial exec-out uiautomator dump --windows /dev/tty >$evidence/android-emulator-after-$route-windows.xml 2>&1 || true
 done
 # Where the Colour tap lands after typing (shyden-labs/playwright-devices#38); measures, never fails the job.
 for route in android-playwright android-cdp; do
