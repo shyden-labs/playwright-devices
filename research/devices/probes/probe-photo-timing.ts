@@ -77,18 +77,24 @@ try {
   await step('wait for the grid to go', () => wda.waitGone(PHOTO_GRID_IMAGE));
   log(`photo-result: ${(await page.getByTestId('photo-result').textContent()) ?? '(none)'}`);
   // Round 9: after the iPad picker's Done, the photo reached the page and the scroll landed, but
-  // WebDriverAgent held its answer ~30 s, as if waiting for Safari to go idle. Round 10 asks it
-  // not to wait for idle (appium-webdriveragent's waitForIdleTimeout setting) and times the scroll.
-  await step('turn off the wait for idle', async () => {
+  // WebDriverAgent held its answer ~30 s. Round 10: turning off its wait for idle (waitForIdleTimeout 0,
+  // echoed back) changed nothing on the iPad mini (/actions still unanswered at 30 s). Round 11 times
+  // a finger drag through WebDriverAgent's other touch path, /wda/dragfromtoforduration, before /actions.
+  await step('finger drag through /wda/dragfromtoforduration', async () => {
     const status = (await (await timedFetch(new URL('/status', wdaUrl))).json()) as { sessionId?: string };
     if (status.sessionId === undefined) throw new Error('/status named no session');
-    const response = await timedFetch(new URL(`/session/${status.sessionId}/appium/settings`, wdaUrl), {
+    const size = (await (await timedFetch(new URL(`/session/${status.sessionId}/window/size`, wdaUrl))).json()) as {
+      value: { width: number; height: number };
+    };
+    const { width, height } = size.value;
+    await timedFetch(new URL(`/session/${status.sessionId}/wda/dragfromtoforduration`, wdaUrl), {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ settings: { waitForIdleTimeout: 0 } }),
+      body: JSON.stringify({ fromX: width / 2, fromY: height * 0.6, toX: width / 2, toY: height * 0.3, duration: 0.4 }),
+      signal: AbortSignal.timeout(40_000),
     });
-    log(`  settings now ${JSON.stringify(((await response.json()) as { value: unknown }).value)}`);
   });
+  log(`scroll-result after the drag: ${(await page.getByTestId('scroll-result').textContent()) ?? '(none)'}`);
   await step('finger scroll', () => iosFingerScroll(wda));
   log(`scroll-result: ${(await page.getByTestId('scroll-result').textContent()) ?? '(none)'}`);
   await keepScreen('after-scroll');
