@@ -45,6 +45,29 @@ async function look(fetchFn: typeof fetch, url: string): Promise<{ ready: boolea
   }
 }
 
+/**
+ * What the phone shows when Chrome's endpoint never names the browser: the DevTools sockets open, Chrome's
+ * pid, any command-line file (which renames the socket) and the app on screen. On the pixel_tablet emulator
+ * (run 45067365988) the endpoint answered UND_ERR_SOCKET for 30 s twice, with nothing saying why.
+ */
+async function phoneState(adb: Adb): Promise<string> {
+  const sockets = (await adb(['shell', 'grep', '-a', 'devtools', '/proc/net/unix']))
+    .split('\n')
+    .map((line) => line.trim().split(/\s+/).at(-1) ?? '')
+    .filter((name) => name !== '');
+  const pid = (await adb(['shell', 'pidof', CHROME])).trim();
+  const commandLine = (await adb(['shell', 'ls', COMMAND_LINE])).trim();
+  const screen = (await adb(['shell', 'dumpsys', 'activity', 'activities']))
+    .split('\n')
+    .find((line) => line.includes('topResumedActivity'));
+  return [
+    `devtools sockets: ${sockets.join(', ') || 'none'};`,
+    `Chrome pid: ${pid || 'none'};`,
+    `command line file: ${commandLine || 'none'};`,
+    `on screen: ${screen?.trim() ?? 'unknown'}`,
+  ].join(' ');
+}
+
 /** Starts Chrome cold, without a leftover command-line file, and waits until its DevTools endpoint names the browser. */
 export async function startChromeCold({
   adb,
@@ -69,7 +92,9 @@ export async function startChromeCold({
     const waited = clock.now() - started;
     if (ready) return { readyAfterMs: waited, stop };
     if (waited >= ceilingMs) {
-      throw new Error(`Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}`);
+      throw new Error(
+        `Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}. The phone showed: ${await phoneState(adb)}`,
+      );
     }
     await clock.sleep(POLL_MS);
   }

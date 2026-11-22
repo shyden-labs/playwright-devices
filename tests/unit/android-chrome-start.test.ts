@@ -68,9 +68,32 @@ describe('startChromeCold', () => {
     const { fetchFn } = fakeFetch([new Error('ECONNREFUSED')]);
 
     await expect(startChromeCold({ adb, fetchFn, clock: fakeClock(), port: 9230, ceilingMs: 2_000 })).rejects.toThrow(
-      "Chrome's DevTools endpoint http://127.0.0.1:9230/json/version did not name a browser within 2000 ms; it last answered: ECONNREFUSED",
+      "Chrome's DevTools endpoint http://127.0.0.1:9230/json/version did not name a browser within 2000 ms; it last answered: ECONNREFUSED.",
     );
     expect(calls.filter((call) => call.startsWith('shell am start'))).toHaveLength(1);
+  });
+
+  it('names what the phone showed when the endpoint never named the browser: sockets, Chrome, command line, screen', async () => {
+    // pixel_tablet emulator, run 45067365988: the cdp route's endpoint answered UND_ERR_SOCKET for 30 s twice,
+    // with no Play update, and nothing said whether Chrome ran or under which socket name.
+    const { adb } = fakeAdb({
+      'shell grep -a devtools /proc/net/unix': '00000000: 00000002 0 10000 0001 01 12345 @webview_devtools_remote_4242',
+      'shell pidof com.android.chrome': '4242',
+      'shell ls /data/local/tmp/chrome-command-line': 'ls: /data/local/tmp/chrome-command-line: No such file or directory',
+      'shell dumpsys activity activities': 'junk\n  topResumedActivity=ActivityRecord{1 u0 com.android.chrome/.Main t9}\nmore',
+    });
+    const { fetchFn } = fakeFetch([new Error('UND_ERR_SOCKET')]);
+
+    const failure = startChromeCold({ adb, fetchFn, clock: fakeClock(), port: 9230, ceilingMs: 2_000 });
+
+    await expect(failure).rejects.toThrow(
+      [
+        "Chrome's DevTools endpoint http://127.0.0.1:9230/json/version did not name a browser within 2000 ms; it last answered: UND_ERR_SOCKET.",
+        'The phone showed: devtools sockets: @webview_devtools_remote_4242; Chrome pid: 4242;',
+        'command line file: ls: /data/local/tmp/chrome-command-line: No such file or directory;',
+        'on screen: topResumedActivity=ActivityRecord{1 u0 com.android.chrome/.Main t9}',
+      ].join(' '),
+    );
   });
 
   it('stop removes the forward, stops Chrome and removes the command-line file', async () => {
