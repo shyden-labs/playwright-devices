@@ -15,8 +15,11 @@ list_only=0
 if [[ ${1:-} == --list ]]; then list_only=1; shift; fi
 
 serial=${1:?usage: wait-for-play-updates.zsh [--list] <serial> [<evidence-file>]}
-QUIET_S=120
-CEILING_S=600
+# Run 45050084580 (pixel_9): 120 s of quiet passed before Play began; Play Store then updated about
+# 130 s and Play services about 225 s after this started, the second as the cdp route opened Chrome,
+# which never answered. 300 s covers every update seen so far (rounds 24-26: 78-225 s).
+QUIET_S=300
+CEILING_S=900
 POLL_S=15
 
 # "<package> <lastUpdateTime>" for every package, sorted.
