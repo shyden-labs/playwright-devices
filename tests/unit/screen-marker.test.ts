@@ -4,7 +4,7 @@ import { MARKER_LABEL, screenPointsOf, type MarkerPage } from '../../research/de
 import { MARKER_CSS_SIZE, type Box } from '../../research/devices/screen-map.ts';
 
 /** A page stand-in: runs each evaluated function against a tiny fake DOM and records what it did. */
-function fakePage(log: string[]): MarkerPage {
+function fakePage(log: string[], visualViewport: { offsetLeft: number; offsetTop: number } | null = null): MarkerPage {
   const body = {
     children: [] as Record<string, unknown>[],
     append(el: Record<string, unknown>) {
@@ -30,12 +30,14 @@ function fakePage(log: string[]): MarkerPage {
   return {
     evaluate: <R, A>(fn: (arg: A) => R, arg: A) => {
       const g = globalThis as Record<string, unknown>;
-      const before = g.document;
+      const before = { document: g.document, window: g.window };
       g.document = document;
+      g.window = { visualViewport };
       try {
         return Promise.resolve(fn(arg));
       } finally {
-        g.document = before;
+        g.document = before.document;
+        g.window = before.window;
       }
     },
   };
@@ -85,6 +87,20 @@ describe('screenPointsOf', () => {
       `read ${MARKER_LABEL}`,
       `removed ${MARKER_LABEL}`,
     ]);
+  });
+
+  it('draws the marker at the top left of what shows, when the keyboard has moved the visual viewport down the page', async () => {
+    // iPhone Duo simulator, CI round 10 (2026-11-22): with the keyboard up the visual viewport sat 92 px down
+    // the page. A marker fixed at top 0 was read where it shows, so the Colour tap landed 92 px too high.
+    const log: string[] = [];
+    const reader = { rectOf: () => Promise.resolve({ x: 0, y: 147, width: 100, height: 100 }) };
+    const colour: Box = { x: 16, y: 257.23, width: 245, height: 42 };
+
+    const point = await screenPointsOf(fakePage(log, { offsetLeft: 4, offsetTop: 92 }), reader)(colour);
+
+    expect(log[0]).toContain('"left":"4px","top":"92px"');
+    expect(point.x).toBeCloseTo(0 + (16 + 122.5 - 4), 5);
+    expect(point.y).toBeCloseTo(147 + (257.23 + 21 - 92), 5);
   });
 
   it('measures again on every call, so a Safari toolbar that moved after a scroll is followed', async () => {

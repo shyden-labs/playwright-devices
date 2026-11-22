@@ -7,7 +7,7 @@
  * a uiautomator dump on Android), and the marker is removed again. Measuring
  * on every call follows the browser's toolbar, which can move after a scroll.
  */
-import { MARKER_CSS_SIZE, screenMap, type Box } from './screen-map.ts';
+import { MARKER_CSS_SIZE, screenMap, type Box, type MarkerPlace } from './screen-map.ts';
 import { realClock, type ScreenPoint, type WdaClock } from './wda-client.ts';
 
 /** The marker's accessibility label: the name the phone lists it by. */
@@ -28,14 +28,22 @@ interface MarkerSpec {
   size: number;
 }
 
-function drawMarker({ label, size }: MarkerSpec): void {
+/**
+ * Draws the marker at the top left of what shows (the visual viewport) and answers where that is on the
+ * page. With the keyboard up the visual viewport moves down the page (92 px on the iPhone Duo simulator,
+ * 2026-11-22) and Safari reports a fixed element where it shows, so a marker at the page's top 0 put
+ * every tap that far too high.
+ */
+function drawMarker({ label, size }: MarkerSpec): MarkerPlace {
+  const cssLeft = window.visualViewport?.offsetLeft ?? 0;
+  const cssTop = window.visualViewport?.offsetTop ?? 0;
   const marker = document.createElement('div');
   marker.setAttribute('role', 'img');
   marker.setAttribute('aria-label', label);
   Object.assign(marker.style, {
     position: 'fixed',
-    left: '0px',
-    top: '0px',
+    left: `${cssLeft}px`,
+    top: `${cssTop}px`,
     width: `${size}px`,
     height: `${size}px`,
     zIndex: '2147483647',
@@ -43,6 +51,7 @@ function drawMarker({ label, size }: MarkerSpec): void {
     background: 'rgb(255, 0, 255)',
   });
   document.body.append(marker);
+  return { cssLeft, cssTop };
 }
 
 function removeMarker({ label }: MarkerSpec): void {
@@ -81,9 +90,9 @@ async function settledRect(reader: MarkerReader, clock: WdaClock): Promise<Box> 
 export function screenPointsOf(page: MarkerPage, reader: MarkerReader, clock: WdaClock = realClock): (box: Box) => Promise<ScreenPoint> {
   const spec: MarkerSpec = { label: MARKER_LABEL, size: MARKER_CSS_SIZE };
   return async (box) => {
-    await page.evaluate(drawMarker, spec);
+    const place = await page.evaluate(drawMarker, spec);
     try {
-      return screenMap({ cssLeft: 0, cssTop: 0 }, await settledRect(reader, clock)).centreOf(box);
+      return screenMap(place, await settledRect(reader, clock)).centreOf(box);
     } finally {
       await page.evaluate(removeMarker, spec);
     }
