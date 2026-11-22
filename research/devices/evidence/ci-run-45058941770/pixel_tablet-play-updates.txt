@@ -1,0 +1,5 @@
+waiting for Play updates: quiet 300 s, ceiling 900 s
++77 s updated: com.android.vending 2026-11-22 19:11:08
++108 s updated: com.google.android.gms 2026-11-22 19:11:40
++198 s updated: com.google.android.gms 2026-11-22 19:13:14
+quiet for 300 s after 499 s
