@@ -113,25 +113,34 @@ function refuseAll(prefix: string): object {
 }
 
 export function realInputPage(page: Page, { input, toScreen, baseURL, clock = realClock }: RealInputPageOptions): Page {
-  /** The target's box once two reads in a row agree: a keyboard or a finger drag moves the page. */
+  /**
+   * The target's box once two reads in a row agree, both the box and where what shows sits: a keyboard or a
+   * finger drag moves the page, and a drag can pan what shows on, as a fling, while the box stays put
+   * (pixel_tablet emulator, run 45027508984: aimed mid-fling, the finger landed on Chrome's bar above the keyboard).
+   */
   async function settledBox(locator: Locator): Promise<Box> {
-    const read = async (): Promise<Box> => {
+    const read = async (): Promise<Box & { viewTop: number; viewLeft: number }> => {
       const box = await locator.boundingBox();
       if (box === null) throw new Error(`cannot tap ${locator.toString()}: it has no box on the page (hidden or detached)`);
-      return box;
+      const { view } = await locator.evaluate(readPlace);
+      return { ...box, viewTop: view.top, viewLeft: view.left };
     };
     const deadline = clock.now() + SETTLE_CEILING_MS;
     let previous = await read();
     for (;;) {
+      // Reads a poll apart: two back to back agree even mid-fling.
+      await clock.sleep(SETTLE_POLL_MS);
       const current = await read();
-      if (JSON.stringify(current) === JSON.stringify(previous)) return current;
+      if (JSON.stringify(current) === JSON.stringify(previous)) {
+        const { x, y, width, height } = current;
+        return { x, y, width, height };
+      }
       if (clock.now() >= deadline) {
         throw new Error(
           `cannot tap ${locator.toString()}: it did not stop moving within ${SETTLE_CEILING_MS} ms; last two boxes: ${JSON.stringify(previous)} then ${JSON.stringify(current)}`,
         );
       }
       previous = current;
-      await clock.sleep(SETTLE_POLL_MS);
     }
   }
 

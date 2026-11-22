@@ -26,15 +26,18 @@ function fakeClock(): WdaClock {
 const WHOLE_VIEW = { left: 0, top: 0, width: 400, height: 800 };
 
 /** A Playwright locator stand-in with a fixed box; records the calls it answers itself. */
-function fakeLocator(name: string, box: Box | null | (() => Box | null), calls: string[], view = WHOLE_VIEW): Locator {
+type View = typeof WHOLE_VIEW;
+
+function fakeLocator(name: string, box: Box | null | (() => Box | null), calls: string[], view: View | (() => View) = WHOLE_VIEW): Locator {
   const boxNow = typeof box === 'function' ? box : () => box;
+  const viewNow = typeof view === 'function' ? view : () => view;
   let last: Box | null = null;
   const locator: Record<string, unknown> = {
     toString: () => name,
     selector: name,
     boundingBox: () => Promise.resolve((last = boxNow())),
     // The place is read in the page; here it is the box last read, seen against `view`.
-    evaluate: () => Promise.resolve({ centreY: (last?.y ?? 0) + (last?.height ?? 0) / 2, view } satisfies Place),
+    evaluate: () => Promise.resolve({ centreY: (last?.y ?? 0) + (last?.height ?? 0) / 2, view: viewNow() } satisfies Place),
     textContent: () => Promise.resolve(`text of ${name}`),
     click: () => {
       calls.push(`playwright click ${name}`);
@@ -55,7 +58,7 @@ function fakeLocator(name: string, box: Box | null | (() => Box | null), calls: 
 function fakePage(
   calls: string[],
   box: Box | null | (() => Box | null) = { x: 10, y: 20, width: 30, height: 40 },
-  view = WHOLE_VIEW,
+  view: View | (() => View) = WHOLE_VIEW,
 ): Page {
   const page: Record<string, unknown> = {
     goto: (url: string) => {
@@ -221,9 +224,29 @@ describe('realInputPage', () => {
     const { calls, page } = build(() => ({ x: 0, y: (y += 10), width: 40, height: 20 }));
 
     await expect(page.getByRole('button').tap()).rejects.toThrow(
-      /^cannot tap role=button: it did not stop moving within 5000 ms; last two boxes: \{"x":0,"y":\d+0,"width":40,"height":20\} then \{"x":0,"y":\d+0,"width":40,"height":20\}$/,
+      /^cannot tap role=button: it did not stop moving within 5000 ms; last two boxes: \{"x":0,"y":\d+0,"width":40,"height":20,"viewTop":0,"viewLeft":0\} then \{"x":0,"y":\d+0,"width":40,"height":20,"viewTop":0,"viewLeft":0\}$/,
     );
     expect(calls).toEqual([]);
+  });
+
+  it('aims only once what shows stops moving, though the target’s own box never moves', async () => {
+    // pixel_tablet emulator, run 45027508984: a drag panned what shows (visualViewport.offsetTop) on for
+    // about 400 ms, as a fling, while the Colour box stayed put; the aim read offsetTop about 20 mid-fling,
+    // the pan ended at 117, and the finger landed about 194 px low, on Chrome's bar above the keyboard.
+    const calls: string[] = [];
+    const clock = fakeClock();
+    const view = () => ({ ...TABLET_VIEW, top: Math.min(117, Math.floor(clock.now() / 100) * 20) });
+    const page = realInputPage(fakePage(calls, SHOWING, view), {
+      input: fakeInput(calls),
+      // As on Android: the screen point is read against what shows now.
+      toScreen: (box: Box) => Promise.resolve({ x: box.x + box.width / 2, y: 100 + box.y - view().top + box.height / 2 }),
+      baseURL: 'http://127.0.0.1:4173/',
+      clock,
+    });
+
+    await page.getByLabel('Colour').tap();
+
+    expect(calls).toEqual(['wda tap 452.5,155.5']);
   });
 
   it('refuses a target that loses its box while the page settles, naming it', async () => {
