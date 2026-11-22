@@ -159,6 +159,21 @@ describe('real input on Android', () => {
     expect(await screen.pageArea()).toEqual({ x: 0, y: 142, width: 1080, height: 1273 });
   });
 
+  it("pageArea gives where Chrome's keyboard accessory view starts covering the page, above its bar's contents", async () => {
+    // pixel_tablet emulator, run 45040015654: the view starts 16 px above its contents (848 vs 864); the
+    // Colour tap at y 753, 1 px inside the view (752), reached Chrome and never the page.
+    const device = fakeAdb([
+      [],
+      [
+        { id: 'com.android.chrome:id/compositor_view_holder', bounds: [0, 48, 2560, 960] },
+        { id: 'com.android.chrome:id/keyboard_accessory', bounds: [0, 848, 2560, 960] },
+        { id: 'com.android.chrome:id/accessory_bar_contents', bounds: [0, 864, 2560, 960] },
+      ],
+    ]);
+    const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
+    expect(await screen.pageArea()).toEqual({ x: 0, y: 48, width: 2560, height: 816, coveredFrom: 848 });
+  });
+
   it('pageArea keeps the whole area when the accessory bar sits at or below its bottom', async () => {
     const device = fakeAdb([
       [],

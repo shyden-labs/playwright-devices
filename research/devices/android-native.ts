@@ -9,7 +9,8 @@
 import { basename } from 'node:path';
 import { centreOfFirstDescribed, centreOfText, rectOfResourceId } from './android-screen.ts';
 import { androidSwipeArgs, type Adb } from './finger-scroll.ts';
-import { realClock, type ScreenPoint, type ScreenRect, type WdaClock } from './wda-client.ts';
+import type { PageArea } from './android-page-map.ts';
+import { realClock, type ScreenPoint, type WdaClock } from './wda-client.ts';
 
 /**
  * Prints the dump of every window to adb's output instead of a file on the phone. Chrome's
@@ -34,11 +35,20 @@ export const PAGE_AREA_ID = 'com.android.chrome:id/compositor_view_holder';
 export const ACCESSORY_BAR_ID = 'com.android.chrome:id/accessory_bar_contents';
 
 /** Chrome's page area in `screen`, cut off at the accessory bar's top when the bar covers its bottom. */
-function pageAreaIn(screen: string): ScreenRect | undefined {
-  const area = rectOfResourceId(screen, PAGE_AREA_ID);
+/**
+ * Chrome's keyboard accessory view: it starts 16 px above its bar's contents and takes the touches there,
+ * so a tap in that strip reaches Chrome, not the page (pixel_tablet emulator, run 45040015654).
+ */
+export const ACCESSORY_VIEW_ID = 'com.android.chrome:id/keyboard_accessory';
+
+function pageAreaIn(screen: string): PageArea | undefined {
+  const whole = rectOfResourceId(screen, PAGE_AREA_ID);
+  if (whole === undefined) return undefined;
   const bar = rectOfResourceId(screen, ACCESSORY_BAR_ID);
-  if (area === undefined || bar === undefined || bar.y >= area.y + area.height) return area;
-  return { ...area, height: bar.y - area.y };
+  const area = bar === undefined || bar.y >= whole.y + whole.height ? whole : { ...whole, height: bar.y - whole.y };
+  const view = rectOfResourceId(screen, ACCESSORY_VIEW_ID);
+  if (view === undefined || view.y >= area.y + area.height) return area;
+  return { ...area, coveredFrom: view.y };
 }
 
 /** Chrome is open before any tap, so its page area is listed at once; a short ceiling. */
@@ -134,7 +144,7 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
     },
 
     /** Where Chrome draws the page on the screen, read afresh: its toolbar moves as the page scrolls. */
-    async pageArea(): Promise<ScreenRect> {
+    async pageArea(): Promise<PageArea> {
       return waitFor(
         async () => pageAreaIn(await dump()),
         `Chrome's page area (${PAGE_AREA_ID}) was not on the screen within ${PAGE_AREA_CEILING_MS} ms`,

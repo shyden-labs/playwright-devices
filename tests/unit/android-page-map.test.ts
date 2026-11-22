@@ -30,6 +30,27 @@ describe('androidPagePoint', () => {
     expect(point).toEqual({ x: 50 * 2 * 2, y: 2000 - 400 * 2 * 2 + 60 * 2 * 2 });
   });
 
+  it("aims at the part of a box above where Chrome's keyboard accessory covers the page", () => {
+    // pixel_tablet emulator, run 45040015654: Colour ran 709.5 to 795.5 on the screen, the accessory view
+    // covered from 752, and the box's centre (752.5) went to Chrome; the uncovered part's centre is 730.8.
+    const point = androidPagePoint(
+      { x: 16, y: 234.765625, width: 873.59375, height: 43 },
+      { devicePixelRatio: 2, offsetLeft: 0, offsetTop: 116.5, scale: 1, height: 264 },
+      { x: 0, y: 48, width: 2560, height: 720, coveredFrom: 752 },
+    );
+    expect(point.x).toBeCloseTo(905.59, 2);
+    expect(point.y).toBeCloseTo((240 + 234.765625 * 2 + 752) / 2, 6);
+  });
+
+  it('aims at the centre when the covered part starts below the box', () => {
+    const point = androidPagePoint(
+      { x: 16, y: 100, width: 200, height: 40 },
+      { devicePixelRatio: 2, offsetLeft: 0, offsetTop: 0, scale: 1, height: 264 },
+      { x: 0, y: 48, width: 2560, height: 720, coveredFrom: 752 },
+    );
+    expect(point.y).toBeCloseTo(240 + 120 * 2, 6);
+  });
+
   it('aims at Colour on the pixel_tablet emulator after a finger drag panned the page 176.5 px', () => {
     // Run 44993134413: the box read centre y 196.25 with offsetTop 176.5; subtracting the pan again aimed
     // at screen y 279.5 and the touch landed on the label at client y 197, 175 px above Colour.

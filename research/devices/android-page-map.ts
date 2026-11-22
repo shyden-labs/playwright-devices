@@ -25,13 +25,22 @@ export interface PageViewport {
  * viewport): after a finger drag panned the pixel_tablet emulator's page 176.5 px, subtracting the pan again
  * put the touch 175 px above its target (run 44993134413).
  */
-export function androidPagePoint(box: Box, viewport: PageViewport, area: ScreenRect): ScreenPoint {
+export function androidPagePoint(box: Box, viewport: PageViewport, area: PageArea): ScreenPoint {
   const pixels = viewport.scale * viewport.devicePixelRatio;
   const contentTop = area.y + area.height - viewport.height * pixels;
+  const top = contentTop + box.y * pixels;
+  const bottom = top + box.height * pixels;
+  // Only the part above Chrome's keyboard accessory view takes a touch for the page.
+  const reachable = area.coveredFrom !== undefined && area.coveredFrom > top ? Math.min(bottom, area.coveredFrom) : bottom;
   return {
     x: area.x + (box.x + box.width / 2) * pixels,
-    y: contentTop + (box.y + box.height / 2) * pixels,
+    y: (top + reachable) / 2,
   };
+}
+
+/** Where Chrome draws the page, and where on the screen its keyboard accessory view starts covering it, if it does. */
+export interface PageArea extends ScreenRect {
+  coveredFrom?: number;
 }
 
 /** The part of Playwright's `Page` the map needs. */
@@ -41,7 +50,7 @@ export interface ViewportPage {
 
 /** The part of the Android screen the map needs. */
 export interface PageAreaReader {
-  pageArea(): Promise<ScreenRect>;
+  pageArea(): Promise<PageArea>;
   /** Kept beside the touches sent, when the screen keeps them. */
   note?(what: string): void;
 }
@@ -83,7 +92,7 @@ export function androidScreenPointsOf(
     for (;;) {
       const current = await read();
       if (current === previous) {
-        const { viewport, area } = JSON.parse(current) as { viewport: PageViewport; area: ScreenRect };
+        const { viewport, area } = JSON.parse(current) as { viewport: PageViewport; area: PageArea };
         screen.note?.(`aim at box ${JSON.stringify(box)} from viewport ${JSON.stringify(viewport)} and page area ${JSON.stringify(area)}`);
         return androidPagePoint(box, viewport, area);
       }
