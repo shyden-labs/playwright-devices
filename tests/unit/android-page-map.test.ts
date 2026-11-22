@@ -74,6 +74,20 @@ describe('androidScreenPointsOf', () => {
     expect(point.y).toBeCloseTo(160 + 1727 - 437.43 * 3.5 + (355 + 22.15) * 3.5, 1);
   });
 
+  it('notes the box, viewport and page area each aim used, so a failed tap shows what it was aimed from', async () => {
+    // pixel_tablet emulator, run 45035234085: the Colour tap went to 906,753 and the page saw nothing; the
+    // failure's dump came 60 s later, after the viewport changed, so the aim could not be rebuilt.
+    const notes: string[] = [];
+    const page = { evaluate: inTurn([VIEWPORT]) };
+    const screen = { pageArea: inTurn([AREA]), note: (what: string) => notes.push(what) };
+
+    await androidScreenPointsOf(page, screen, fakeClock())({ x: 16, y: 355, width: 265.6, height: 44.3 });
+
+    expect(notes).toEqual([
+      `aim at box ${JSON.stringify({ x: 16, y: 355, width: 265.6, height: 44.3 })} from viewport ${JSON.stringify(VIEWPORT)} and page area ${JSON.stringify(AREA)}`,
+    ]);
+  });
+
   it('fails at 5 s when the page never settles, naming the last two reads', async () => {
     let height = 400;
     const page = {

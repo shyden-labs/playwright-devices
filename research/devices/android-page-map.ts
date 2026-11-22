@@ -42,6 +42,8 @@ export interface ViewportPage {
 /** The part of the Android screen the map needs. */
 export interface PageAreaReader {
   pageArea(): Promise<ScreenRect>;
+  /** Kept beside the touches sent, when the screen keeps them. */
+  note?(what: string): void;
 }
 
 /** The page's viewport, read inside the page (passed to `page.evaluate`). */
@@ -82,6 +84,7 @@ export function androidScreenPointsOf(
       const current = await read();
       if (current === previous) {
         const { viewport, area } = JSON.parse(current) as { viewport: PageViewport; area: ScreenRect };
+        screen.note?.(`aim at box ${JSON.stringify(box)} from viewport ${JSON.stringify(viewport)} and page area ${JSON.stringify(area)}`);
         return androidPagePoint(box, viewport, area);
       }
       if (clock.now() >= deadline) {

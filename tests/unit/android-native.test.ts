@@ -14,13 +14,13 @@ import type { WdaClock } from '../../research/devices/wda-client.ts';
 const LONGEST_CEILING_MS = 60_000;
 
 /** A clock that only moves when the code sleeps. */
-function fakeClock(): WdaClock {
+function fakeClock(longest = LONGEST_CEILING_MS): WdaClock {
   let t = 0;
   return {
     now: () => t,
     sleep: (ms: number) => {
       t += ms;
-      if (t > LONGEST_CEILING_MS) return Promise.reject(new Error(`waited past ${LONGEST_CEILING_MS} ms: a wait has no ceiling`));
+      if (t > longest) return Promise.reject(new Error(`waited past ${longest} ms: a wait has no ceiling`));
       return Promise.resolve();
     },
   };
@@ -131,7 +131,7 @@ describe('connectAndroidScreen', () => {
     const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
 
     await expect(screen.tapFirstDescribed('Photo taken on')).rejects.toThrow(
-      'nothing described "Photo taken on…" showed within 60000 ms; nothing was touched',
+      'nothing described "Photo taken on…" showed and held still within 60000 ms; nothing was touched',
     );
   });
 });
@@ -209,6 +209,14 @@ describe('real input on Android', () => {
     await screen.tapAt({ x: 1, y: 2 });
     screen.touchesSent().push('not sent');
     expect(screen.touchesSent()).toEqual(['0 ms tap at 1,2']);
+  });
+
+  it('lists a note among the touches sent, with when', async () => {
+    const device = fakeAdb([[]]);
+    const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
+    screen.note('aim at box');
+    await screen.tapAt({ x: 1, y: 2 });
+    expect(screen.touchesSent()).toEqual(['0 ms aim at box', '0 ms tap at 1,2']);
   });
 
   it('memoryLog reads what the low-memory killer and the activity manager logged, once, without waiting', async () => {
@@ -301,18 +309,27 @@ describe('the steps a person takes on Android', () => {
   });
 
   it('photo: the newest photo, then Done', async () => {
-    const device = fakeAdb([[PHOTO], [DONE]]);
+    const device = fakeAdb([[PHOTO], [PHOTO], [DONE]]);
     await androidChoosePhoto(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }));
     expect(device.taps()).toEqual(['shell input tap 250 650', 'shell input tap 900 2250']);
   });
 
+  it('photo: waits for the photo to stop moving before touching it', async () => {
+    // pixel_9 emulator, run 45035234085: the tap went to 179,1063 as the picker's sheet opened; a banner
+    // ("Chrome will only have access to the photos you select") then pushed the photo to 1232-1590.
+    const moving: Node = { ...PHOTO, bounds: [100, 900, 400, 1200] };
+    const device = fakeAdb([[PHOTO], [moving], [moving], [DONE]]);
+    await androidChoosePhoto(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }));
+    expect(device.taps()).toEqual(['shell input tap 250 1050', 'shell input tap 900 2250']);
+  });
+
   it('photo: the newest photo alone when the picker closes on the tap, with no Done to wait for', async () => {
     // pixel_9 emulator, run 45027508984: the page had 18.png, the picker was gone, and waiting for Done failed.
-    const device = fakeAdb([[PHOTO], []]);
-    const clock = fakeClock();
-    await androidChoosePhoto(connectAndroidScreen({ adb: device.adb, clock }));
+    const device = fakeAdb([[PHOTO], [PHOTO], []]);
+    await androidChoosePhoto(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }));
     expect(device.taps()).toEqual(['shell input tap 250 650']);
-    expect(clock.now()).toBe(0);
+    // Two looks agree where the photo is, and one finds the picker gone: no wait for Done.
+    expect(device.calls.filter((call) => call.startsWith('exec-out uiautomator'))).toHaveLength(3);
   });
 
   it('photo: waits while the picker is still open without Done, then Done', async () => {
@@ -323,7 +340,9 @@ describe('the steps a person takes on Android', () => {
 
   it('photo: fails at the ceiling naming Done when the picker stays open and Done never shows', async () => {
     const device = fakeAdb([[PHOTO]]);
-    await expect(androidChoosePhoto(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }))).rejects.toThrow(
+    // One poll goes on seeing the photo hold still before the 60 s wait for Done starts.
+    const clock = fakeClock(LONGEST_CEILING_MS + 1_000);
+    await expect(androidChoosePhoto(connectAndroidScreen({ adb: device.adb, clock }))).rejects.toThrow(
       'the photo picker neither closed nor showed "Done" within 60000 ms',
     );
     expect(device.taps()).toEqual(['shell input tap 250 650']);

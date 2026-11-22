@@ -174,14 +174,24 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
       return text;
     },
 
-    /** Touches the topmost, then leftmost, node whose description starts with `prefix`, waiting for it. */
+    /**
+     * Touches the topmost, then leftmost, node whose description starts with `prefix`, once two dumps in a
+     * row agree where it is: a picker's sheet still opening moved the photo 169 px down after the touch was
+     * aimed (pixel_9 emulator, run 45035234085).
+     */
     async tapFirstDescribed(prefix: string): Promise<void> {
-      const at = await waitFor(
-        async () => centreOfFirstDescribed(await dump(), prefix),
-        `nothing described "${prefix}…" showed within ${NATIVE_CEILING_MS} ms; nothing was touched`,
-      );
+      let previous: ScreenPoint | undefined;
+      const at = await waitFor(async () => {
+        const now = centreOfFirstDescribed(await dump(), prefix);
+        const still = now !== undefined && previous !== undefined && now.x === previous.x && now.y === previous.y;
+        previous = now;
+        return still ? now : undefined;
+      }, `nothing described "${prefix}…" showed and held still within ${NATIVE_CEILING_MS} ms; nothing was touched`);
       await touch(at);
     },
+
+    /** Adds a line to the touches sent, with when: what an aim was computed from. */
+    note: record,
   };
 }
 
