@@ -8,7 +8,7 @@
  */
 import { basename } from 'node:path';
 import { centreOfFirstDescribed, centreOfText, rectOfResourceId } from './android-screen.ts';
-import type { Adb } from './finger-scroll.ts';
+import { androidSwipeArgs, type Adb } from './finger-scroll.ts';
 import { realClock, type ScreenPoint, type ScreenRect, type WdaClock } from './wda-client.ts';
 
 /**
@@ -80,6 +80,11 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
 
     /** A real touch at a screen point, in the phone's pixels. */
     tapAt: touch,
+
+    /** One real finger dragged from `from` to `to`, in the phone's pixels. */
+    async swipe(from: ScreenPoint, to: ScreenPoint): Promise<void> {
+      await adb(androidSwipeArgs(from, to));
+    },
 
     /** Types `text` into the focused field through Android's input service. */
     async typeText(text: string): Promise<void> {

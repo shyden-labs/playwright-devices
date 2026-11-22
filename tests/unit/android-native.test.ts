@@ -153,6 +153,12 @@ describe('real input on Android', () => {
     expect(device.taps()).toEqual(['shell input tap 132 367']);
   });
 
+  it('swipe drags one finger between the points over 400 ms, rounded to whole pixels, as the measured scroll did', async () => {
+    const device = fakeAdb([[]]);
+    await connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).swipe({ x: 640.4, y: 668.6 }, { x: 640, y: 356 });
+    expect(device.calls).toEqual(['shell input swipe 640 669 640 356 400']);
+  });
+
   it("typeText sends the text through the phone's shell quoted, with spaces as %s", async () => {
     const device = fakeAdb([[]]);
     await connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).typeText("Ana's tea & toast");
