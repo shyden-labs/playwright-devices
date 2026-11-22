@@ -20,13 +20,17 @@ export interface PageViewport {
   height: number;
 }
 
-/** The centre of `box` (CSS pixels in the page's viewport) in the phone's pixels. */
+/**
+ * The centre of `box` in the phone's pixels. Chrome's boxes are already relative to what shows (the visual
+ * viewport): after a finger drag panned the pixel_tablet emulator's page 176.5 px, subtracting the pan again
+ * put the touch 175 px above its target (run 44993134413).
+ */
 export function androidPagePoint(box: Box, viewport: PageViewport, area: ScreenRect): ScreenPoint {
   const pixels = viewport.scale * viewport.devicePixelRatio;
   const contentTop = area.y + area.height - viewport.height * pixels;
   return {
-    x: area.x + (box.x + box.width / 2 - viewport.offsetLeft) * pixels,
-    y: contentTop + (box.y + box.height / 2 - viewport.offsetTop) * pixels,
+    x: area.x + (box.x + box.width / 2) * pixels,
+    y: contentTop + (box.y + box.height / 2) * pixels,
   };
 }
 

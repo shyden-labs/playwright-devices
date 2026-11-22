@@ -21,13 +21,24 @@ describe('androidPagePoint', () => {
     expect(point.y).toBeCloseTo(3014 - 815.43 * 3.5, 6);
   });
 
-  it('allows for pinch zoom and the visual viewport’s offset', () => {
+  it("allows for pinch zoom, and takes the box as already relative to what shows: Chrome's boxes follow a pan", () => {
     const point = androidPagePoint(
       { x: 50, y: 60, width: 0, height: 0 },
       { devicePixelRatio: 2, offsetLeft: 10, offsetTop: 20, scale: 2, height: 400 },
       { x: 0, y: 200, width: 1600, height: 1800 },
     );
-    expect(point).toEqual({ x: (50 - 10) * 2 * 2, y: 2000 - 400 * 2 * 2 + (60 - 20) * 2 * 2 });
+    expect(point).toEqual({ x: 50 * 2 * 2, y: 2000 - 400 * 2 * 2 + 60 * 2 * 2 });
+  });
+
+  it('aims at Colour on the pixel_tablet emulator after a finger drag panned the page 176.5 px', () => {
+    // Run 44993134413: the box read centre y 196.25 with offsetTop 176.5; subtracting the pan again aimed
+    // at screen y 279.5 and the touch landed on the label at client y 197, 175 px above Colour.
+    const point = androidPagePoint(
+      { x: 16, y: 174.75, width: 873.59, height: 43 },
+      { devicePixelRatio: 2, offsetLeft: 0, offsetTop: 176.5, scale: 1, height: 312 },
+      { x: 0, y: 48, width: 2560, height: 816 },
+    );
+    expect(point.y).toBeCloseTo(240 + 196.25 * 2, 6);
   });
 });
 

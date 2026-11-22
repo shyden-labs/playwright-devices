@@ -83,7 +83,14 @@ test('the Colour tap after typing', async ({ page, session }, testInfo) => {
     }
     if (onAndroid && colour !== null) {
       const adb = adbFor(serial);
-      const area = await connectAndroidScreen({ adb }).pageArea();
+      // Round 13: once Colour opens Chrome's option list, the page area is off the screen; say so and go on.
+      const area = await connectAndroidScreen({ adb })
+        .pageArea()
+        .catch((error: unknown) => String(error));
+      if (typeof area === 'string') {
+        testInfo.annotations.push({ type: `${stage}: android map`, description: area });
+        return;
+      }
       const viewport = await page.evaluate(readViewport);
       const keyboard = (await adb(['shell', 'dumpsys', 'window', 'InputMethod']))
         .split('\n')

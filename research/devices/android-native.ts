@@ -148,9 +148,17 @@ export async function androidChooseOption(screen: AndroidScreen, option: string)
   await screen.tapFirstShown([option]);
 }
 
-/** The chooser's Files, then the file (staged first with `stageAndroidFile`). */
+/** The answer a person gives Android's camera prompt: allowed now, nothing kept. */
+const CAMERA_PROMPT_ANSWER = 'Only this time';
+
+/**
+ * The chooser's Files, then the file (staged first with `stageAndroidFile`). On a fresh phone Chrome first
+ * asks to take pictures (pixel_9 emulator, run 44993134413); a person answers Only this time and goes on.
+ */
 export async function androidChooseFile(screen: AndroidScreen, name: string): Promise<void> {
-  await screen.tapFirstShown(['Files']);
+  if ((await screen.tapFirstShown(['Files', CAMERA_PROMPT_ANSWER])) === CAMERA_PROMPT_ANSWER) {
+    await screen.tapFirstShown(['Files']);
+  }
   await screen.tapFirstShown([name]);
 }
 
