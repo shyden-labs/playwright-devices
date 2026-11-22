@@ -29,6 +29,8 @@ export interface DeviceSession {
   fingerScroll: () => Promise<void>;
   /** The device's screen as PNG bytes, kept as evidence when a test fails. */
   screenshot: () => Promise<Buffer>;
+  /** The device's own description of its screen (WebDriverAgent's source, or a uiautomator dump). */
+  screenSource: () => Promise<string>;
   /** Shuts a picker a failed step left open, then releases the device; call it in the fixture's teardown. */
   close: () => Promise<void>;
 }
@@ -43,7 +45,10 @@ async function thenAlways(first: () => Promise<void>, last: () => Promise<void>)
 }
 
 /** The WebDriverAgent client, as the iOS session uses it. */
-export type IosDevice = RealInput & MarkerReader & IosSwiper & NativeScreen & { screenshot(): Promise<Buffer>; close(): Promise<void> };
+export type IosDevice = RealInput &
+  MarkerReader &
+  IosSwiper &
+  NativeScreen & { screenshot(): Promise<Buffer>; source(): Promise<string>; close(): Promise<void> };
 
 export interface IosSessionOptions {
   /** Safari's one tab, reached through ios_webkit_debug_proxy. */
@@ -62,6 +67,7 @@ export function iosSession({ page, wda, baseURL, file }: IosSessionOptions): Dev
     nativeChoosePhoto: () => iosChoosePhoto(wda),
     fingerScroll: () => iosFingerScroll(wda),
     screenshot: () => wda.screenshot(),
+    screenSource: () => wda.source(),
     close: () =>
       thenAlways(
         () => iosClosePicker(wda),
@@ -91,6 +97,7 @@ export async function androidSession({ page, adb, baseURL, files }: AndroidSessi
     nativeChoosePhoto: () => androidChoosePhoto(screen),
     fingerScroll: () => androidFingerScroll(adb),
     screenshot: () => screen.screenshot(),
+    screenSource: () => screen.source(),
     close: () =>
       thenAlways(
         () => androidClosePicker(screen),

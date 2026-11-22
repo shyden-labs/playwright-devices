@@ -514,6 +514,15 @@ describe('screenshot', () => {
   });
 });
 
+describe('source', () => {
+  it("answers WebDriverAgent's description of the whole screen", async () => {
+    const wda = fakeWda({ ...session, 'GET /session/s1/source': () => '<XCUIElementTypeApplication/>' });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    expect(await client.source()).toBe('<XCUIElementTypeApplication/>');
+  });
+});
+
 describe('waitGone', () => {
   it('waits until nothing matches the predicate: a picker still closing swallows the next swipe', async () => {
     let looks = 0;

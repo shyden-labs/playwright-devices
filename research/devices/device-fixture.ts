@@ -131,6 +131,7 @@ export const test = base.extend<JourneyFixtures, { journeyURL: string }>({
       // The device's own screen, before teardown closes anything: Playwright's screenshot shows only the page.
       if (testInfo.status !== testInfo.expectedStatus) {
         await testInfo.attach('device screen at failure', { body: await session.screenshot(), contentType: 'image/png' });
+        await testInfo.attach('device screen source at failure', { body: await session.screenSource(), contentType: 'text/xml' });
       }
     } finally {
       try {

@@ -191,6 +191,11 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
       return Buffer.from((await call('GET', `${base}/screenshot`)) as string, 'base64');
     },
 
+    /** WebDriverAgent's description of the whole screen: kept with the screenshot when a test fails. */
+    async source(): Promise<string> {
+      return (await call('GET', `${base}/source`)) as string;
+    },
+
     /** Types `text` once the on-screen keyboard is listed: keys sent before it shows are lost. */
     async typeText(text: string): Promise<void> {
       await waitFor(

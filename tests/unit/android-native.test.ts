@@ -60,7 +60,7 @@ function fakeAdb(screens: Node[][]) {
 
 const GREEN: Node = { text: 'Green', bounds: [100, 900, 980, 1040] };
 const FILES: Node = { text: 'Files', bounds: [0, 2000, 200, 2100] };
-const ONLY_THIS_TIME: Node = { text: 'Only this time', bounds: [134, 1335, 945, 1479] };
+const WHILE_USING: Node = { text: 'While using the app', bounds: [134, 1178, 945, 1322] };
 const FILE: Node = { text: 'device-journey.txt', bounds: [0, 400, 1080, 600] };
 const PHOTO: Node = { desc: 'Photo taken on 20 Nov 2026, 10:01', bounds: [100, 500, 400, 800] };
 const DONE: Node = { text: 'Done', bounds: [800, 2200, 1000, 2300] };
@@ -214,6 +214,15 @@ describe('screenshot', () => {
   });
 });
 
+describe('source', () => {
+  it('answers the whole uiautomator dump of the screen', async () => {
+    const device = fakeAdb([[FILES]]);
+    const dump = await connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).source();
+    expect(dump).toContain('text="Files"');
+    expect(device.calls).toEqual([DUMP_COMMAND.join(' ')]);
+  });
+});
+
 describe('the steps a person takes on Android', () => {
   it('<select>: touches the option in Chrome’s native list', async () => {
     const device = fakeAdb([[GREEN]]);
@@ -227,11 +236,13 @@ describe('the steps a person takes on Android', () => {
     expect(device.taps()).toEqual(['shell input tap 100 2050', 'shell input tap 540 500']);
   });
 
-  it("file: answers a fresh phone's camera prompt Only this time, then Files, then the file", async () => {
-    // pixel_9 emulator, run 44993134413: Chrome asked to take pictures before its chooser showed.
-    const device = fakeAdb([[ONLY_THIS_TIME], [FILES], [FILE]]);
+  it("file: answers a fresh phone's camera prompt While using the app, then Files, then the file", async () => {
+    // pixel_9 emulator, run 44993134413: Chrome asked to take pictures before its chooser showed. Run
+    // 44995686112 answered Only this time, and Chrome was gone behind the chooser: Android withdraws a
+    // one-time permission, ending the app, once it leaves the screen.
+    const device = fakeAdb([[WHILE_USING], [FILES], [FILE]]);
     await androidChooseFile(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }), 'device-journey.txt');
-    expect(device.taps()).toEqual(['shell input tap 540 1407', 'shell input tap 100 2050', 'shell input tap 540 500']);
+    expect(device.taps()).toEqual(['shell input tap 540 1250', 'shell input tap 100 2050', 'shell input tap 540 500']);
   });
 
   it('photo: the newest photo, then Done', async () => {

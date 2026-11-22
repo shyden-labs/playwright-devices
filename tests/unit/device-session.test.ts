@@ -39,6 +39,7 @@ function fakeWda(shown: string[] = []) {
       return Promise.resolve();
     },
     screenshot: () => Promise.resolve(Buffer.from('ios screen')),
+    source: () => Promise.resolve('<ios screen/>'),
     close: () => {
       steps.push('close');
       return Promise.resolve();
@@ -91,6 +92,11 @@ describe('iosSession', () => {
   it('screenshots the device through WebDriverAgent', async () => {
     const session = iosSession({ page, wda: fakeWda(), baseURL: 'http://mac.local:4321', file });
     expect(await session.screenshot()).toEqual(Buffer.from('ios screen'));
+  });
+
+  it("describes the device's screen through WebDriverAgent, for a failure's evidence", async () => {
+    const session = iosSession({ page, wda: fakeWda(), baseURL: 'http://mac.local:4321', file });
+    expect(await session.screenSource()).toBe('<ios screen/>');
   });
 
   it('gives the test a page stand-in, not the real page', () => {
@@ -171,6 +177,11 @@ describe('androidSession', () => {
   it('screenshots the phone through adb', async () => {
     const session = await androidSession({ page, adb: fakeAdb().adb, baseURL: 'http://127.0.0.1:4321', files });
     expect(await session.screenshot()).toEqual(Buffer.from('android screen'));
+  });
+
+  it("describes the phone's screen with a uiautomator dump, for a failure's evidence", async () => {
+    const session = await androidSession({ page, adb: fakeAdb(['Green']).adb, baseURL: 'http://127.0.0.1:4321', files });
+    expect(await session.screenSource()).toContain('text="Green"');
   });
 
   it('close shuts a picker left open, then removes both staged files', async () => {

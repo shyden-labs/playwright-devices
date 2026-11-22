@@ -87,6 +87,9 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
   }
 
   return {
+    /** The whole uiautomator dump of the screen: kept with the screenshot when a test fails. */
+    source: dump,
+
     /** The screen as PNG bytes, sent base64 so adb's text output keeps them whole: the evidence kept when a test fails. */
     async screenshot(): Promise<Buffer> {
       return Buffer.from((await adb(['exec-out', 'screencap -p | base64'])).trim(), 'base64');
@@ -148,12 +151,16 @@ export async function androidChooseOption(screen: AndroidScreen, option: string)
   await screen.tapFirstShown([option]);
 }
 
-/** The answer a person gives Android's camera prompt: allowed now, nothing kept. */
-const CAMERA_PROMPT_ANSWER = 'Only this time';
+/**
+ * The answer a person gives Android's camera prompt. Not Only this time: Android withdraws a one-time
+ * permission once the app leaves the screen, ending it, and Chrome was gone behind the chooser (pixel_9
+ * emulator, run 44995686112).
+ */
+const CAMERA_PROMPT_ANSWER = 'While using the app';
 
 /**
  * The chooser's Files, then the file (staged first with `stageAndroidFile`). On a fresh phone Chrome first
- * asks to take pictures (pixel_9 emulator, run 44993134413); a person answers Only this time and goes on.
+ * asks to take pictures (pixel_9 emulator, run 44993134413); a person answers it and goes on.
  */
 export async function androidChooseFile(screen: AndroidScreen, name: string): Promise<void> {
   if ((await screen.tapFirstShown(['Files', CAMERA_PROMPT_ANSWER])) === CAMERA_PROMPT_ANSWER) {
