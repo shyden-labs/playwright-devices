@@ -18,6 +18,10 @@ zsh $repo/research/devices/ci/finish-chrome-first-run.zsh $serial
 # Draws each touch on the screen, so a screenshot shows where a tap landed (shyden-labs/playwright-devices#38).
 adb -s $serial shell settings put system show_touches 1
 evidence=$repo/research/devices/evidence
+# No route starts while Google Play is still updating apps: Chrome died just after a Play services
+# update twice (shyden-labs/playwright-devices#45).
+zsh $repo/research/devices/ci/wait-for-play-updates.zsh $serial $evidence/android-emulator-play-updates.txt || exit 1
+adb -s $serial shell dumpsys package packages | grep -E '^  Package \[|lastUpdateTime=' >$evidence/android-emulator-packages-before-routes.txt
 zsh $repo/research/devices/ci/measure-android-pickers.zsh $serial $evidence/android-emulator-pickers.txt
 result=0
 for route in android-playwright android-cdp; do
@@ -47,4 +51,7 @@ done
 for route in android-playwright android-cdp; do
   DEVICE_SPEC=colour-tap.probe.ts zsh $repo/research/devices/run-journey.zsh android $serial $route || true
 done
+# Any update that still landed during the routes (shyden-labs/playwright-devices#45).
+adb -s $serial shell dumpsys package packages | grep -E '^  Package \[|lastUpdateTime=' >$evidence/android-emulator-packages-after-routes.txt
+diff $evidence/android-emulator-packages-before-routes.txt $evidence/android-emulator-packages-after-routes.txt >$evidence/android-emulator-packages-changed-during-routes.txt || true
 exit $result

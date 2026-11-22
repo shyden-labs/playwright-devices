@@ -135,4 +135,6 @@ jobs:
             research/devices/evidence/android-*-emulator-5554-*
             research/devices/evidence/android-emulator-after-*
             research/devices/evidence/android-emulator-pickers*.txt
+            research/devices/evidence/android-emulator-play-updates.txt
+            research/devices/evidence/android-emulator-packages-*.txt
           if-no-files-found: warn
