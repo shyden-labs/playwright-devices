@@ -129,6 +129,7 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
 
     /** Types `text` into the focused field through Android's input service. */
     async typeText(text: string): Promise<void> {
+      record(`type ${JSON.stringify(text)}`);
       await adb(['shell', 'input', 'text', inputTextArgument(text)]);
     },
 

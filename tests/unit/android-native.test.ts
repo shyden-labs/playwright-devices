@@ -211,6 +211,14 @@ describe('real input on Android', () => {
     expect(screen.touchesSent()).toEqual(['0 ms tap at 1,2']);
   });
 
+  it('lists the text typed among the touches sent, with when', async () => {
+    // pixel_tablet emulator, run 45037655845: "Ana" arrived as "AAna"; when it was typed was not recorded.
+    const device = fakeAdb([[]]);
+    const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
+    await screen.typeText('Ana');
+    expect(screen.touchesSent()).toEqual(['0 ms type "Ana"']);
+  });
+
   it('lists a note among the touches sent, with when', async () => {
     const device = fakeAdb([[]]);
     const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
