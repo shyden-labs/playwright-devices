@@ -2,7 +2,7 @@
  * Page boxes to screen points, measured afresh for every tap
  * (shyden-labs/playwright-devices#7).
  *
- * The page draws a fixed 100x100 marker at the viewport's top left,
+ * The page draws a 100x100 marker at the box's top left,
  * the phone's accessibility tree says where it landed (WebDriverAgent on iOS,
  * a uiautomator dump on Android), and the marker is removed again. Measuring
  * on every call follows the browser's toolbar, which can move after a scroll.
@@ -29,21 +29,19 @@ interface MarkerSpec {
 }
 
 /**
- * Draws the marker at the top left of what shows (the visual viewport) and answers where that is on the
- * page. With the keyboard up the visual viewport moves down the page (92 px on the iPhone Duo simulator,
- * 2026-11-22) and Safari reports a fixed element where it shows, so a marker at the page's top 0 put
- * every tap that far too high.
+ * Draws the marker on the page itself (not fixed to the screen) at the box's top left, and answers that
+ * place in the box's own (client) coordinates. On the iOS simulators WebDriverAgent read a fixed marker at
+ * the same screen point however far down it was drawn (iPhone 18 Pro: y 62 at top 0 and at top 42; iPhone
+ * Duo: y 0 at top 92; run 44991089861), while what scrolls with the page it lists where it shows.
  */
-function drawMarker({ label, size }: MarkerSpec): MarkerPlace {
-  const cssLeft = window.visualViewport?.offsetLeft ?? 0;
-  const cssTop = window.visualViewport?.offsetTop ?? 0;
+function drawMarker({ label, size, box }: MarkerSpec & { box: Box }): MarkerPlace {
   const marker = document.createElement('div');
   marker.setAttribute('role', 'img');
   marker.setAttribute('aria-label', label);
   Object.assign(marker.style, {
-    position: 'fixed',
-    left: `${cssLeft}px`,
-    top: `${cssTop}px`,
+    position: 'absolute',
+    left: `${box.x + window.scrollX}px`,
+    top: `${box.y + window.scrollY}px`,
     width: `${size}px`,
     height: `${size}px`,
     zIndex: '2147483647',
@@ -51,7 +49,7 @@ function drawMarker({ label, size }: MarkerSpec): MarkerPlace {
     background: 'rgb(255, 0, 255)',
   });
   document.body.append(marker);
-  return { cssLeft, cssTop };
+  return { cssLeft: box.x, cssTop: box.y };
 }
 
 function removeMarker({ label }: MarkerSpec): void {
@@ -90,7 +88,7 @@ async function settledRect(reader: MarkerReader, clock: WdaClock): Promise<Box> 
 export function screenPointsOf(page: MarkerPage, reader: MarkerReader, clock: WdaClock = realClock): (box: Box) => Promise<ScreenPoint> {
   const spec: MarkerSpec = { label: MARKER_LABEL, size: MARKER_CSS_SIZE };
   return async (box) => {
-    const place = await page.evaluate(drawMarker, spec);
+    const place = await page.evaluate(drawMarker, { ...spec, box });
     try {
       return screenMap(place, await settledRect(reader, clock)).centreOf(box);
     } finally {
