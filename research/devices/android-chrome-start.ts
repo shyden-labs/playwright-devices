@@ -53,7 +53,7 @@ async function look(fetchFn: typeof fetch, url: string): Promise<{ ready: boolea
 async function phoneState(adb: Adb): Promise<string> {
   const sockets = (await adb(['shell', 'grep', '-a', 'devtools', '/proc/net/unix']))
     .split('\n')
-    .map((line) => line.trim().split(/\s+/).at(-1) ?? '')
+    .map((line) => line.trim().replace(/^.*\s/, ''))
     .filter((name) => name !== '');
   const pid = (await adb(['shell', 'pidof', CHROME])).trim();
   const commandLine = (await adb(['shell', 'ls', COMMAND_LINE])).trim();
