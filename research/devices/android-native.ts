@@ -269,6 +269,9 @@ function indexCommand(path: string): string[] {
 export async function stageAndroidFile(adb: Adb, localPath: string, folder: string): Promise<() => Promise<void>> {
   const onPhone = `${folder}/${basename(localPath)}`;
   await adb(['push', localPath, onPhone]);
+  // adb push keeps the checkout's time, and the Files picker's Recent list shows newer files only: on the
+  // OnePlus (2026-11-24) a 3-day-old copy never showed. Dated now, it is the newest.
+  await adb(['shell', 'touch', onPhone]);
   await adb(indexCommand(onPhone));
   return async () => {
     await adb(['shell', 'rm', '-f', onPhone]);

@@ -141,8 +141,10 @@ describe('androidSession', () => {
     await androidSession({ page, adb: device.adb, baseURL: 'http://127.0.0.1:4321', files });
     expect(device.kept()).toEqual([
       'push /repo/fixtures/device-journey.txt /sdcard/Download/device-journey.txt',
+      'shell touch /sdcard/Download/device-journey.txt',
       `${BROADCAST}/sdcard/Download/device-journey.txt`,
       'push /repo/fixtures/device-journey.png /sdcard/Pictures/device-journey.png',
+      'shell touch /sdcard/Pictures/device-journey.png',
       `${BROADCAST}/sdcard/Pictures/device-journey.png`,
     ]);
   });

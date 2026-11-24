@@ -1,0 +1,19 @@
+iPhone Air 00008150-000954D90A20401C, commit 3ebb878 + staging fix, 2026-11-25 00:05-00:08 WIB
+lockState before/after: passcodeRequired false (xcrun devicectl device info lockState)
+run-journey: WebDriverAgent did not answer at http://127.0.0.1:8100/status within 180 s
+--- wda.log (tail)
+Partial devicectl diagnose bundle located here: /Users/shyden/Library/Caches/playwright-devices/wda/derived/Logs/Test/Test-WebDriverAgentRunner-2026.11.25_00-05-32-+0700.xcresult/Staging/1_Test/Diagnostics/devicectl_diagnostics.zip
+
+2026-11-25 00:06:35.200 xcodebuild[94811:1354838] [MT] IDETestOperationsObserverDebug: 62.280 elapsed -- Testing started completed.
+2026-11-25 00:06:35.201 xcodebuild[94811:1354838] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-11-25 00:06:35.201 xcodebuild[94811:1354838] [MT] IDETestOperationsObserverDebug: 62.280 sec, +62.280 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/shyden/Library/Caches/playwright-devices/wda/derived/Logs/Test/Test-WebDriverAgentRunner-2026.11.25_00-05-32-+0700.xcresult
+
+Testing failed:
+	WebDriverAgentRunner-Runner (5497) encountered an error (The test runner failed to initialize for UI testing. (Underlying Error: Timed out while enabling automation mode.))
+
+** TEST EXECUTE FAILED **
+
+Testing started

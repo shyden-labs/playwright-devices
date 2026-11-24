@@ -381,16 +381,19 @@ describe('the steps a person takes on Android', () => {
 });
 
 describe('stageAndroidFile', () => {
-  it('pushes the file, has it indexed so pickers list it, and removes both on cleanup', async () => {
+  it('pushes the file, dates it now, has it indexed so pickers list it, and removes both on cleanup', async () => {
+    // OnePlus, 2026-11-24 23:53: adb push kept the checkout's 3-day-old time, the Files picker's Recent list
+    // showed newer files only, and "device-journey.txt" never showed; with the time set to now the journey passed.
     const device = fakeAdb([[]]);
     const remove = await stageAndroidFile(device.adb, '/repo/fixtures/device-journey.png', '/sdcard/Pictures');
 
     expect(device.calls).toEqual([
       'push /repo/fixtures/device-journey.png /sdcard/Pictures/device-journey.png',
+      'shell touch /sdcard/Pictures/device-journey.png',
       'shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/device-journey.png',
     ]);
     await remove();
-    expect(device.calls.slice(2)).toEqual([
+    expect(device.calls.slice(3)).toEqual([
       'shell rm -f /sdcard/Pictures/device-journey.png',
       'shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file:///sdcard/Pictures/device-journey.png',
     ]);
