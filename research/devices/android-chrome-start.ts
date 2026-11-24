@@ -51,13 +51,16 @@ async function look(fetchFn: typeof fetch, url: string): Promise<{ ready: boolea
  * (run 45067365988) the endpoint answered UND_ERR_SOCKET for 30 s twice, with nothing saying why.
  */
 async function phoneState(adb: Adb): Promise<string> {
-  const sockets = (await adb(['shell', 'grep', '-a', 'devtools', '/proc/net/unix']))
+  // pidof, grep and ls exit non-zero when nothing is there, and adb then rejects (run 45353878042): that
+  // answer means none, and must not replace the endpoint's failure.
+  const lookUp = (args: string[]) => adb(args).catch(() => '');
+  const sockets = (await lookUp(['shell', 'grep', '-a', 'devtools', '/proc/net/unix']))
     .split('\n')
     .map((line) => line.trim().replace(/^.*\s/, ''))
     .filter((name) => name !== '');
-  const pid = (await adb(['shell', 'pidof', CHROME])).trim();
-  const commandLine = (await adb(['shell', 'ls', COMMAND_LINE])).trim();
-  const screen = (await adb(['shell', 'dumpsys', 'activity', 'activities']))
+  const pid = (await lookUp(['shell', 'pidof', CHROME])).trim();
+  const commandLine = (await lookUp(['shell', 'ls', COMMAND_LINE])).trim();
+  const screen = (await lookUp(['shell', 'dumpsys', 'activity', 'activities']))
     .split('\n')
     .find((line) => line.includes('topResumedActivity'));
   return [

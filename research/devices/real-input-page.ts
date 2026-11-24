@@ -45,6 +45,9 @@ export function readPlace(element: Element): Place {
  */
 const MAX_DRAGS = 5;
 
+/** Aims allowed while what shows keeps moving between the check that the target shows and the aim. */
+const MAX_AIMS = 5;
+
 /** How long a target may keep moving after a drag or a keyboard change. */
 const SETTLE_CEILING_MS = 5_000;
 
@@ -153,10 +156,26 @@ export function realInputPage(page: Page, { input, toScreen, baseURL, clock = re
    */
   async function tap(locator: Locator): Promise<void> {
     let box = await settledBox(locator);
-    for (let drags = 0; ; drags++) {
-      const { centreY, view } = await locator.evaluate(readPlace);
+    let aims = 0;
+    for (let drags = 0; ;) {
+      const place = await locator.evaluate(readPlace);
+      const { centreY, view } = place;
       const bottom = view.top + view.height;
-      if (centreY >= view.top && centreY <= bottom) break;
+      if (centreY >= view.top && centreY <= bottom) {
+        const point = await toScreen(box);
+        // The aim reads the screen afresh: if what shows moved meanwhile, as a keyboard rising in two steps
+        // does (pixel_tablet emulator, run 45353878042), the check above no longer holds, so it is made again.
+        if (JSON.stringify(await locator.evaluate(readPlace)) === JSON.stringify(place)) {
+          await input.tapAt(point);
+          return;
+        }
+        aims += 1;
+        if (aims === MAX_AIMS) {
+          throw new Error(`cannot tap ${locator.toString()}: what shows moved while each of ${MAX_AIMS} taps was aimed`);
+        }
+        box = await settledBox(locator);
+        continue;
+      }
       if (drags === MAX_DRAGS) {
         throw new Error(
           `cannot tap ${locator.toString()}: its centre stayed at page y ${centreY}, outside what shows (${view.top} to ${bottom}), after ${MAX_DRAGS} finger drags`,
@@ -168,9 +187,9 @@ export function realInputPage(page: Page, { input, toScreen, baseURL, clock = re
       // Below what shows: the finger pushes the page up; above: down.
       const [fromY, toY] = centreY > bottom ? [far, near] : [near, far];
       await input.swipe(await screenAt(x, fromY), await screenAt(x, toY));
+      drags += 1;
       box = await settledBox(locator);
     }
-    await input.tapAt(await toScreen(box));
   }
 
   function wrapLocator(locator: Locator): Locator {

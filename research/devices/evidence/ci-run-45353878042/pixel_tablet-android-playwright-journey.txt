@@ -1,0 +1,60 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (1.5m)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input › choose a colour › native: choose "Green" 
+
+    Error: none of "Green" showed within 60000 ms; nothing was touched
+
+       at android-native.ts:101
+
+       99 |       const found = await look();
+      100 |       if (found !== undefined) return found;
+    > 101 |       if (clock.now() >= deadline) throw new Error(failure);
+          |                                          ^
+      102 |       await clock.sleep(POLL_MS);
+      103 |     }
+      104 |   }
+        at waitFor (/home/runner/work/playwright-devices/playwright-devices/research/devices/android-native.ts:101:42)
+        at Object.tapFirstShown (/home/runner/work/playwright-devices/playwright-devices/research/devices/android-native.ts:158:19)
+        at androidChooseOption (/home/runner/work/playwright-devices/playwright-devices/research/devices/android-native.ts:213:3)
+        at /home/runner/work/playwright-devices/playwright-devices/research/devices/journey.spec.ts:33:5
+        at /home/runner/work/playwright-devices/playwright-devices/research/devices/journey.spec.ts:31:3
+
+    attachment #2: device screen source at failure (text/xml) ──────────────────────────────────────
+    <?xml version='1.0' encoding='UTF-8' standalone='yes' ?><displays><display id="0"><window index="0" title="" bounds="[0,0][2560,48]" active="false" focused="false" accessibility-focused="false" id="359" layer="2" type="TYPE_SYSTEM"><hierarchy rotation="0"><node index="0" text="" resource-id="" class...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: touches the page saw (text/plain) ───────────────────────────────────────────────
+    5575 ms pointerdown at 453,125 on tap view 648
+    5575 ms touchstart at 453,125 on tap view 648
+    5575 ms touchend at 453,125 on tap view 648
+    5577 ms focusin at scrollY 0 on tap view 648
+    5577 ms click at 453,125 on tap view 648
+    9978 ms pointerdown at 465,249 on name view 648
+    9978 ms touchstart at 465,249...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: touches sent (text/plain) ───────────────────────────────────────────────────────
+    5939 ms aim at box {"x":16,"y":103.671875,"width":873.59375,"height":43} from viewport {"devicePixelRatio":2,"offsetLeft":0,"offsetTop":0,"scale":1,"height":648} and page area {"x":0,"y":48,"width":2560,"height":1488}
+    5940 ms tap at 906,490
+    10345 ms aim at box {"x":16,"y":227.46875,"width":897.59375...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: device log (text/plain) ─────────────────────────────────────────────────────────
+    --------- beginning of events
+    11-24 08:12:40.485   639   674 I am_proc_start: [0,1670,10149,com.google.android.googlequicksearchbox:interactor,service,{com.google.android.googlequicksearchbox/com.google.android.voiceinteraction.GsaVoiceInteractionService}]
+    11-24 08:12:40.490  1648  1648 I service_ma...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #6: memory killer log (text/plain) ──────────────────────────────────────────────────
+    
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-playwright-emulator-5554 exit=1

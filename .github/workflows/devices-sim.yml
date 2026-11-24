@@ -26,10 +26,10 @@ jobs:
         # The runtimes the laptop measured each device on (xcrun simctl list, 2026-11-21): iOS 27.0, and
         # iPhone Duo on 27.1. On this image's iOS 27.2 simulators the Files picker's folder opened by no
         # press at all (run 44887028405), while 27.1 opened it at the first tap.
+        # No iPads (Shyden, 2026-11-24, shyden-labs/playwright-devices#38): 5 of 22 iPad boots froze as
+        # SimRenderServer reached about 6.3 GB of the runner's 7 GB (shyden-labs/playwright-devices#46); the laptop's simulator runs them.
         include:
           - { device: 'iPhone 18 Pro', runtime: 'iOS-27-0' }
-          - { device: 'iPad Pro 13-inch (M5)', runtime: 'iOS-27-0' }
-          - { device: 'iPad mini (A17 Pro)', runtime: 'iOS-27-0' }
           - { device: 'iPhone Duo', runtime: 'iOS-27-1' }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -66,7 +66,7 @@ jobs:
             });')
           echo "udid=$udid" >> "$GITHUB_OUTPUT"
           # Memory and disk every 30 s while it boots, with the five processes holding most memory: run
-          # 45064693169's iPad mini boot hung as free memory fell from 60% to 13% (#46), with nothing else running.
+          # 45064693169's iPad mini boot hung as free memory fell from 60% to 13% (shyden-labs/playwright-devices#46), with nothing else running.
           ( while :; do echo "resources: $(memory_pressure -Q | tail -1); $(df -h / | awk 'NR==2 {print $4 " free on /"}'); top: $(top -l 1 -o mem -n 5 -stats command,mem | tail -5 | tr -s ' ' | tr '\n' ',')"; sleep 30; done ) &
           monitor=$!
           xcrun simctl boot "$udid"

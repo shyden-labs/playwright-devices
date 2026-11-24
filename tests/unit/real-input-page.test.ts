@@ -249,6 +249,52 @@ describe('realInputPage', () => {
     expect(calls).toEqual(['wda tap 452.5,155.5']);
   });
 
+  it('checks again, and drags, when what shows shrinks while the tap is aimed, so the finger never lands below the page', async () => {
+    // pixel_tablet emulator, run 45353878042: the keyboard rose in two steps, what shows going to 600 CSS px
+    // and 1.8 s later to 312. Colour (centre 372.5) was checked against 600, the aim was read against 312,
+    // and the finger landed on the keyboard, typing an "l", so the colour list never opened.
+    const calls: string[] = [];
+    let keyboardUp = false;
+    let dragged = false;
+    const input = fakeInput(calls);
+    const page = realInputPage(
+      fakePage(
+        calls,
+        () => (dragged ? SHOWING : UNDER_KEYBOARD),
+        () => ({ ...TABLET_VIEW, height: keyboardUp ? 312 : 600 }),
+      ),
+      {
+        input: { ...input, swipe: (from, to) => ((dragged = true), input.swipe(from, to)) },
+        toScreen: (box: Box) => ((keyboardUp = true), toScreen(box)),
+        baseURL: 'http://127.0.0.1:4173/',
+        clock: fakeClock(),
+      },
+    );
+
+    await page.getByLabel('Colour').tap();
+
+    expect(calls).toEqual(['finger drag 640,334 to 640,178', 'wda tap 452.5,272.5']);
+  });
+
+  it('refuses, naming the target, when what shows moves during each of five aims, and taps nothing', async () => {
+    const calls: string[] = [];
+    let height = 600;
+    const page = realInputPage(
+      fakePage(calls, SHOWING, () => ({ ...TABLET_VIEW, height })),
+      {
+        input: fakeInput(calls),
+        toScreen: (box: Box) => ((height += 1), toScreen(box)),
+        baseURL: 'http://127.0.0.1:4173/',
+        clock: fakeClock(),
+      },
+    );
+
+    await expect(page.getByLabel('Colour').tap()).rejects.toThrow(
+      'cannot tap label=Colour: what shows moved while each of 5 taps was aimed',
+    );
+    expect(calls).toEqual([]);
+  });
+
   it('refuses a target that loses its box while the page settles, naming it', async () => {
     const { calls, page } = build(inTurn<Box | null>([UNDER_KEYBOARD, UNDER_KEYBOARD, null]), TABLET_VIEW);
 

@@ -146,6 +146,16 @@ describe('devices-sim.yml', () => {
   });
 });
 
+describe('devices-sim.yml simulators', () => {
+  it('runs the iPhone simulators only, with no iPad, which hosted runners cannot boot reliably', () => {
+    // Shyden, 2026-11-24 (shyden-labs/playwright-devices#38, comment 7126358945): the iPads leave CI. 5 of 22
+    // iPad boots froze as SimRenderServer reached about 6.3 GB on the runner's 7 GB (shyden-labs/playwright-devices#46); the laptop's
+    // simulator runs them instead.
+    const devices = [...read('devices-sim.yml').matchAll(/- \{ device: '([^']+)'/g)].map((match) => match[1]);
+    expect(devices).toEqual(['iPhone 18 Pro', 'iPhone Duo']);
+  });
+});
+
 describe('devices-sim.yml simulator boot', () => {
   it('fails a hung simulator boot at its own limit, naming it, rather than leaving it to a silent cancel', () => {
     // shyden-labs/playwright-devices#46: run 45054025779's iPad Pro boot took 9.1 min (others 1.5-3.6 min),
