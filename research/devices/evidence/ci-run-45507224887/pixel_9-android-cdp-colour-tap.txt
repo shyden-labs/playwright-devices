@@ -1,0 +1,8 @@
+
+Running 2 tests using 1 worker
+
+  ✓  1 research/devices/probes/colour-tap.probe.ts:66:1 › the Colour tap after typing (41.2s)
+  ✓  2 research/devices/probes/colour-tap.probe.ts:150:1 › the Colour tap straight after typing, as the journey does (28.6s)
+
+  2 passed (1.2m)
+run-journey: android-cdp-emulator-5554-colour-tap exit=0
