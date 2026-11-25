@@ -3,6 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { auditProblems, check, EXCEPTIONS, main, type AuditException } from '../../scripts/audit.ts';
 
 vi.mock('node:child_process', () => ({ spawnSync: vi.fn() }));
+// Each command runs from the path trustedBin finds, never a bare name on PATH (issue shyden-labs/playwright-devices#50).
+vi.mock('../../scripts/trusted-bin.ts', () => ({ trustedBin: (name: string) => `/trusted/${name}` }));
 const spawn = vi.mocked(spawnSync);
 
 const PICOMATCH = 'https://github.com/advisories/GHSA-fc5q-39xc-vjpf';
@@ -88,7 +90,7 @@ describe('main', () => {
     const log = vi.spyOn(console, 'log').mockImplementation(() => undefined);
     const error = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     expect(main()).toBe(0);
-    expect(spawn).toHaveBeenCalledExactlyOnceWith('npm', ['audit', '--json'], { encoding: 'utf8' });
+    expect(spawn).toHaveBeenCalledExactlyOnceWith('/trusted/npm', ['audit', '--json'], { encoding: 'utf8' });
     expect(log).not.toHaveBeenCalled();
     expect(error).not.toHaveBeenCalled();
     log.mockRestore();

@@ -13,6 +13,8 @@ import { boardFields, main, parseStory, type Story } from '../../scripts/file-st
  */
 
 vi.mock('node:child_process', () => ({ execFileSync: vi.fn() }));
+// Each command runs from the path trustedBin finds, never a bare name on PATH (issue shyden-labs/playwright-devices#50).
+vi.mock('../../scripts/trusted-bin.ts', () => ({ trustedBin: (name: string) => `/trusted/${name}` }));
 const gh = vi.mocked(execFileSync);
 
 const BODY = ['## Story', 'x', '## Context', 'x', '## Acceptance criteria', '1. x', '## Announce', 'x', '## Definition of done', 'x'].join(
@@ -211,6 +213,7 @@ describe('main', () => {
   it('files the story, sets every field, links it, reads it all back and exits 0', () => {
     reply(...filing());
     expect(main(['PVT_1', 'App Stories', write(STORY)])).toBe(0);
+    expect(gh.mock.calls.every((c) => c[0] === '/trusted/gh')).toBe(true);
     const args = gh.mock.calls.map((c) => (c[1] as string[]).filter((a) => !a.startsWith('query=')));
     expect(args).toEqual([
       ['api', 'graphql', '-f', '-f', 'id=PVT_1'],

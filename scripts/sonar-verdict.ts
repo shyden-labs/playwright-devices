@@ -66,6 +66,14 @@ export function verdict(status: ProjectStatus): { ok: boolean; lines: string[] }
   };
 }
 
+/** A SonarCloud background task, as `api/ce/task` reports it. */
+interface CeTask {
+  status: string;
+  analysisId?: string;
+  pullRequest?: string;
+  errorMessage?: string;
+}
+
 async function get(url: string, token: string): Promise<unknown> {
   const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
   if (!response.ok) fail(`GET ${url} answered ${response.status}; no verdict to read`);
@@ -104,15 +112,18 @@ async function judge(path: string): Promise<{ ok: boolean; lines: string[]; dash
   if (!existsSync(path)) fail(`no report-task.txt at ${path}: the scan did not run`);
   const report = parseReportTask(readFileSync(path, 'utf8'));
   const ceiling = Number(process.env.SONAR_CEILING_SECONDS || 300);
-  let task: { status: string; analysisId?: string; pullRequest?: string; errorMessage?: string };
-  for (let waited = 0; ; waited += STEP_MS / 1000) {
-    task = ((await get(`${report.serverUrl}/api/ce/task?id=${report.ceTaskId}`, token)) as { task: typeof task }).task;
-    if (task.status !== 'PENDING' && task.status !== 'IN_PROGRESS') break;
+  // One read, then a wait and the next read only while the task is queued or running, up to the ceiling.
+  const settled = async (waited: number): Promise<CeTask> => {
+    const { task } = (await get(`${report.serverUrl}/api/ce/task?id=${report.ceTaskId}`, token)) as { task: CeTask };
+    if (task.status !== 'PENDING' && task.status !== 'IN_PROGRESS') return task;
     if (waited >= ceiling) fail(`task ${report.ceTaskId} is still ${task.status} after ${ceiling} s; no verdict to read`);
     await sleep(STEP_MS);
-  }
+    return settled(waited + STEP_MS / 1000);
+  };
+  const task = await settled(0);
   if (task.status !== 'SUCCESS') {
-    fail(`task ${report.ceTaskId} ended ${task.status}${task.errorMessage ? ` (${task.errorMessage})` : ''}; no verdict to read`);
+    const reason = task.errorMessage ? ` (${task.errorMessage})` : '';
+    fail(`task ${report.ceTaskId} ended ${task.status}${reason}; no verdict to read`);
   }
   if (task.analysisId === undefined) fail(`task ${report.ceTaskId} made no analysis; no verdict to read`);
   const pullRequest = process.env.SONAR_PULL_REQUEST || '';
