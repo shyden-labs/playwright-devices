@@ -5,6 +5,8 @@ import { inProgressIssues, findOrphanIssues, isDeadBranch, main, QUERY, type Ope
 
 // `gh` is stood in: a unit test starts no process. Each test queues gh's replies in call order.
 vi.mock('node:child_process', () => ({ execFileSync: vi.fn() }));
+// Each command runs from the path trustedBin finds, never a bare name on PATH (issue shyden-labs/playwright-devices#50).
+vi.mock('../../scripts/trusted-bin.ts', () => ({ trustedBin: (name: string) => `/trusted/${name}` }));
 const gh = vi.mocked(execFileSync);
 const reply = (...values: unknown[]) => {
   for (const value of values) gh.mockReturnValueOnce(JSON.stringify(value));
@@ -192,9 +194,9 @@ describe('main', () => {
     reply([board], [], [[{ name: 'main' }]]);
     main(ARGS);
     expect(gh.mock.calls.map((c) => [c[0], (c[1] as string[]).filter((a) => !a.startsWith('query='))])).toEqual([
-      ['gh', ['api', 'graphql', '--paginate', '--slurp', '-f', '-f', 'id=PVT_1']],
+      ['/trusted/gh', ['api', 'graphql', '--paginate', '--slurp', '-f', '-f', 'id=PVT_1']],
       [
-        'gh',
+        '/trusted/gh',
         [
           'pr',
           'list',
@@ -208,7 +210,7 @@ describe('main', () => {
           'title,body,headRefName,closingIssuesReferences',
         ],
       ],
-      ['gh', ['api', '--paginate', '--slurp', 'repos/shyden-labs/repo/branches?per_page=100']],
+      ['/trusted/gh', ['api', '--paginate', '--slurp', 'repos/shyden-labs/repo/branches?per_page=100']],
     ]);
   });
 

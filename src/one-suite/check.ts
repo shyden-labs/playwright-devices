@@ -162,7 +162,8 @@ function testsWithGroups(
 
 /** One test's group-only problems. */
 function groupOnlyProblemsOf(id: string, test: ReportedTest, inGroups: Set<string>, all: string[]): string[] {
-  const tagged = all.filter((group) => test.tags.includes(`@${group}`));
+  // Playwright's JSON report writes tags without their '@' (shyden-labs/playwright-devices#39).
+  const tagged = all.filter((group) => test.tags.includes(group));
   if (tagged.length === 0) {
     if (inGroups.size === all.length) return [];
     return [...inGroups].map((group) => `"${id}" runs in the ${group} group only but has no @${group} tag with a group-only reason`);

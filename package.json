@@ -1,6 +1,6 @@
 {
   "name": "@shyden-labs/playwright-devices",
-  "version": "0.1.3",
+  "version": "0.1.5",
   "description": "Shared Playwright checks that one test suite ran unchanged on every phone, tablet and desktop browser, and the shared desktop browser projects.",
   "license": "Apache-2.0",
   "repository": {
