@@ -51,7 +51,8 @@ export function testsByTarget(report: JSONReport, unnamedTarget: string): Map<st
         targets.set(target, entry);
       }
     }
-    for (const child of suite.suites ?? []) visit(child, [...path, child.title]);
+    // An untitled describe adds nothing to the id, as in Playwright's titlePath, which the assertion counter reads.
+    for (const child of suite.suites ?? []) visit(child, child.title === '' ? path : [...path, child.title]);
   };
   for (const file of report.suites) visit(file, [file.file]);
   return targets;
