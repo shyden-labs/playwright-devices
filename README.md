@@ -46,6 +46,66 @@ export default defineConfig({
 
 `playwright.desktop.config.ts` is this sample, run by CI's `desktop-e2e` job on all five browsers. The same names form the desktop group of the one-suite checks: `desktopGroup()` (or `desktopGroup(['chromium', 'chrome', 'msedge'])` for a declared few) is the `groups` value `checkOneSuite` takes, and on the CLI it is `--group desktop=chromium,chrome,firefox,webkit,msedge`. An unknown or repeated browser name is refused, naming it. A browser that cannot start fails the run, naming it and why (Playwright's launch error), and is never dropped from the group: the checks report it as having run no tests. Install the browsers with `npx playwright install --with-deps chromium chrome firefox webkit msedge`.
 
+## Real phones
+
+`@shyden-labs/playwright-devices/phones` runs a project's own Playwright tests on a real iPhone (Safari) and a real Android phone (Chrome, by two routes), with every tap and key sent by the phone itself (shyden-labs/playwright-devices#54). The simulators and emulators are still being measured (shyden-labs/playwright-devices#7, shyden-labs/playwright-devices#38) and are not part of this entry point yet.
+
+The phone opens the project's pages over the Wi-Fi, so the project serves them on this Mac's LAN address: `lanBaseURL(port)` gives that address. A `playwright.config.ts`:
+
+```ts
+import { defineConfig } from '@playwright/test';
+import { lanBaseURL, phoneProjects } from '@shyden-labs/playwright-devices/phones';
+
+export default defineConfig({
+  workers: 1, // one phone, one test at a time
+  retries: 0,
+  use: { baseURL: lanBaseURL(4173) },
+  webServer: { command: 'npm run preview -- --host 0.0.0.0 --port 4173', port: 4173 },
+  projects: phoneProjects(), // iphone, android-cdp, android-playwright; or a declared few
+});
+```
+
+A test takes `test` and `expect` from the same entry point:
+
+```ts
+import { expect, test } from '@shyden-labs/playwright-devices/phones';
+
+test('a brief is attached', async ({ page, nativeChooseFile }) => {
+  await page.goto('/contact');
+  await page.getByRole('button', { name: 'Attach a file' }).click(); // a real tap
+  await nativeChooseFile(); // the phone's own file picker
+  await expect(page.getByText('device-journey.txt')).toBeVisible();
+});
+```
+
+`click` and `tap` on a locator become a real tap at its place on the screen, and `page.keyboard.type` becomes real keys. `nativeChoose(option)`, `nativeChooseFile()` and `nativeChoosePhoto()` work the phone's own pickers, and `fingerScroll()` swipes with one finger. Every read and assertion goes to the real page. Input that is not routed yet (`fill`, `press`, `hover`, `selectOption`, `setInputFiles` and the like) fails with `not routed to real input yet: <method>` and never falls back to synthetic events. The pickers offer the files in `phoneFiles` (`test.use({ phoneFiles: { document, photo } })`, absolute paths), by default a small text file and photo shipped with the package. On the iPhone, `nativeChoosePhoto` picks the Photo Library's first photo, so `photo` is used on Android only. The one-suite group for these projects is `phoneGroup()`.
+
+Run the tests through `playwright-devices start`, which starts the phone's side, runs the command, and stops everything it started, whether the tests pass, fail or are stopped with Ctrl-C:
+
+```sh
+npx playwright-devices start iphone <udid> -- npx playwright test --project iphone
+npx playwright-devices start android <serial> -- npx playwright test --project android-cdp
+```
+
+A phone project run without `start`, or under `start` for the other phone, fails at once, naming both.
+
+### Setting up the Mac once
+
+- Xcode, and from Homebrew `libimobiledevice` (`iproxy`, `idevice_id`) and `ios-webkit-debug-proxy`.
+- The port rule in `mac-setup/`: `ios_webkit_debug_proxy` listens on every network address, and the rule keeps its ports to this Mac. Copy `mac-setup/pf.shyden.conf` to `/etc/` and `mac-setup/uk.co.shyden.pf.plist` to `/Library/LaunchDaemons/`, then load it with `sudo launchctl bootstrap system /Library/LaunchDaemons/uk.co.shyden.pf.plist`. `start iphone` refuses to run without it.
+- WebDriverAgent, built and signed once for the iPhone from a WebDriverAgent checkout (Appium's `appium-webdriveragent`), with an Apple development team and a provisioning profile that covers the bundle id given:
+
+  ```sh
+  npx playwright-devices setup iphone <udid> --team <team id> --profile "<profile name>" --bundle <bundle id> --wda-source <checkout>
+  ```
+
+  The build lives in `~/Library/Caches/playwright-devices/wda` (or `PLAYWRIGHT_DEVICES_WDA_DIR`), with one log per launch in its `logs/` folder.
+
+### Setting up the phones
+
+- iPhone: Developer Mode on, this Mac trusted, Settings > Developer > Enable UI Automation on, and the phone unlocked for the run.
+- Android phone: developer options and USB debugging on, this Mac allowed, and for the `android-playwright` route, Chrome chosen in developer options > Select debug app with "Wait for debugger" off.
+
 ## Installing it in a project
 
 The one-suite checks (shyden-labs/playwright-devices#16) and the desktop browsers are published to npm as `@shyden-labs/playwright-devices`, compiled to JavaScript with their types.
