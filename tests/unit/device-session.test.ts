@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { describe, expect, it } from 'vitest';
-import { androidSession, iosSession, routeFrom, withNamedSteps } from '../../src/devices/device-session.ts';
+import { androidSession, iosSession, withNamedSteps } from '../../src/devices/device-session.ts';
 import { PHOTO_GRID_IMAGE } from '../../src/devices/ios-native.ts';
 
 /** A WebDriverAgent stand-in recording each step; `shown` is what the screen lists. */
@@ -199,18 +199,6 @@ describe('androidSession', () => {
 
     await expect(session.close()).rejects.toThrow('device offline');
     expect(device.calls.filter((c) => c.startsWith('shell rm -f'))).toHaveLength(2);
-  });
-});
-
-describe('routeFrom', () => {
-  it.each(['ios-webkit', 'android-cdp', 'android-playwright'])('accepts DEVICE_ROUTE=%s', (route) => {
-    expect(routeFrom({ DEVICE_ROUTE: route })).toBe(route);
-  });
-
-  it('refuses a missing or unknown route, naming the three it knows', () => {
-    const known = 'DEVICE_ROUTE must be one of ios-webkit, android-cdp, android-playwright';
-    expect(() => routeFrom({})).toThrow(`${known}; it is unset`);
-    expect(() => routeFrom({ DEVICE_ROUTE: 'ios' })).toThrow(`${known}; it is "ios"`);
   });
 });
 

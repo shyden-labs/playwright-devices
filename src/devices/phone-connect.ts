@@ -34,6 +34,8 @@ export interface ConnectEffects {
   adbFor(serial: string): Adb;
   /** Puts `file` in the WebDriverAgent runner's Documents, where Safari's Files picker lists it. */
   copyToIphone(udid: string, runnerId: string, file: string): Promise<void>;
+  /** The same for an iOS Simulator, which devicectl cannot reach. */
+  copyToSimulator(udid: string, runnerId: string, file: string): Promise<void>;
   startChrome(adb: Adb, port: number): Promise<{ stop: () => Promise<void> }>;
   requireChromeDebugApp(adb: Adb): Promise<void>;
   stopChromeAfterPlaywright(adb: Adb): Promise<void>;
@@ -78,7 +80,8 @@ async function thenAlways(first: () => Promise<void>, last: () => Promise<void>)
 async function connectIphone(env: NodeJS.ProcessEnv, baseURL: string, files: PhoneFiles, effects: ConnectEffects): Promise<Connection> {
   const udid = required(env, 'IOS_UDID', 'iphone');
   const runnerId = required(env, 'IOS_RUNNER_ID', 'iphone');
-  await effects.copyToIphone(udid, runnerId, files.document);
+  if (env.IOS_SIMULATOR === '1') await effects.copyToSimulator(udid, runnerId, files.document);
+  else await effects.copyToIphone(udid, runnerId, files.document);
   const browser = await effects.webkitOverCDP(env.IWDP_URL ?? DEFAULTS.IWDP_URL);
   const page = await onlyTab(browser);
   const wda = await effects.connectWda(env.WDA_URL ?? DEFAULTS.WDA_URL);

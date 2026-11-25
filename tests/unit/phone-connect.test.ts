@@ -59,6 +59,10 @@ function fakeEffects(calls: string[], over: Partial<ConnectEffects> = {}) {
       calls.push(`copy ${file} to ${udid} ${runnerId}`);
       return Promise.resolve();
     },
+    copyToSimulator: (udid, runnerId, file) => {
+      calls.push(`copy ${file} to simulator ${udid} ${runnerId}`);
+      return Promise.resolve();
+    },
     startChrome: (_adb, port) => {
       calls.push(`start chrome on ${port}`);
       return Promise.resolve({
@@ -114,6 +118,13 @@ describe('connectPhone on the iPhone', () => {
 
     await expect(connectPhone('iphone', env, BASE, files, effects)).rejects.toThrow('Safari must have exactly one tab open; it has 2');
     expect(closeTwoTabs).toHaveBeenCalledOnce();
+  });
+
+  it("puts the document into a simulator's runner, not through devicectl, when IOS_SIMULATOR is 1", async () => {
+    const calls: string[] = [];
+    const { effects } = fakeEffects(calls);
+    await connectPhone('iphone', { ...env, IOS_SIMULATOR: '1' }, BASE, files, effects);
+    expect(calls[0]).toBe('copy /project/files/brief.txt to simulator U org.example.WebDriverAgentRunner.xctrunner');
   });
 
   it('fails naming IOS_UDID when the run did not set it', async () => {

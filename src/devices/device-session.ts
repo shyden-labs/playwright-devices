@@ -117,13 +117,5 @@ export function withNamedSteps(session: DeviceSession, step: NamedStep): DeviceS
 }
 
 /** The ways the journey reaches a phone's browser. */
-export const ROUTES = ['ios-webkit', 'android-cdp', 'android-playwright'] as const;
-export type Route = (typeof ROUTES)[number];
-
-/** The route `DEVICE_ROUTE` names; refuses anything else. */
-export function routeFrom(env: NodeJS.ProcessEnv): Route {
-  const route = env.DEVICE_ROUTE;
-  if ((ROUTES as readonly (string | undefined)[]).includes(route)) return route as Route;
-  const it = route === undefined ? 'it is unset' : `it is "${route}"`;
-  throw new Error(`DEVICE_ROUTE must be one of ${ROUTES.join(', ')}; ${it}`);
-}
+/** How a phone is driven: Safari through WebDriverAgent, or Chrome over CDP or Playwright's Android support. */
+export type Route = 'ios-webkit' | 'android-cdp' | 'android-playwright';

@@ -93,6 +93,23 @@ describe('REAL_EFFECTS', () => {
     );
   });
 
+  it("copies a file into a simulator's runner container with simctl", async () => {
+    answerNext(null, '/sim/Containers/Data/Application/ABC\n');
+    answerNext(null);
+    await REAL_EFFECTS.copyToSimulator('SIM', 'org.example.WebDriverAgentRunner.xctrunner', '/project/files/brief.txt');
+    expect(execFile.mock.calls.map((call) => [call[0], ...(call[1] as string[])].join(' '))).toEqual([
+      'xcrun simctl get_app_container SIM org.example.WebDriverAgentRunner.xctrunner data',
+      'cp /project/files/brief.txt /sim/Containers/Data/Application/ABC/Documents/brief.txt',
+    ]);
+  });
+
+  it('fails naming the file when the simulator has no such runner', async () => {
+    answerNext(new Error('exit 2'), '', 'No such file or directory');
+    await expect(REAL_EFFECTS.copyToSimulator('SIM', 'r', '/project/files/brief.txt')).rejects.toThrow(
+      'could not put /project/files/brief.txt on the simulator SIM: No such file or directory',
+    );
+  });
+
   it('fails naming the file and devicectl’s stderr when the copy fails', async () => {
     answerNext(new Error('exit 1'), '', 'The device is locked.');
     await expect(REAL_EFFECTS.copyToIphone('U', 'r', '/project/files/brief.txt')).rejects.toThrow(

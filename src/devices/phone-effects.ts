@@ -34,6 +34,12 @@ async function copyToIphone(udid: string, runnerId: string, file: string): Promi
   await run('xcrun', args, () => `could not put ${file} on the iPhone ${udid}`);
 }
 
+async function copyToSimulator(udid: string, runnerId: string, file: string): Promise<void> {
+  const why = () => `could not put ${file} on the simulator ${udid}`;
+  const container = (await run('xcrun', ['simctl', 'get_app_container', udid, runnerId, 'data'], why)).trim();
+  await run('cp', [file, `${container}/Documents/${basename(file)}`], why);
+}
+
 export const REAL_EFFECTS: ConnectEffects = {
   webkitOverCDP: (url) => webkit.connectOverCDP(url),
   chromiumOverCDP: (url) => chromium.connectOverCDP(url),
@@ -41,6 +47,7 @@ export const REAL_EFFECTS: ConnectEffects = {
   connectWda: (url) => connectWda({ url }),
   adbFor,
   copyToIphone,
+  copyToSimulator,
   startChrome: (adb, port) => startChromeCold({ adb, port }),
   requireChromeDebugApp: (adb) => requireChromeDebugApp(adb),
   stopChromeAfterPlaywright: (adb) => stopChromeAfterPlaywright(adb),
