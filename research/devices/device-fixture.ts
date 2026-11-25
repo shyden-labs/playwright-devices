@@ -49,7 +49,10 @@ interface Connection {
 }
 
 async function connect(baseURL: string): Promise<Connection> {
-  const files = { document: here('./fixtures/device-journey.txt'), photo: here('./fixtures/device-journey.png') };
+  const files = {
+    document: here('../../src/devices/phone-files/device-journey.txt'),
+    photo: here('../../src/devices/phone-files/device-journey.png'),
+  };
   switch (routeFrom(process.env)) {
     case 'ios-webkit': {
       const browser = await webkit.connectOverCDP(process.env.IWDP_URL ?? 'http://127.0.0.1:9222');

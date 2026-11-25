@@ -18,7 +18,7 @@ set -euo pipefail
 repo=${0:A:h:h:h}
 wda=$HOME/Library/Caches/playwright-devices/wda
 runner_id=uk.co.shyden.WebDriverAgentRunner.xctrunner
-fixtures=$repo/research/devices/fixtures
+fixtures=$repo/src/devices/phone-files
 evidence=$repo/research/devices/evidence
 stamp=$(date +%F-%H%M)
 pids=()
