@@ -41,13 +41,13 @@ wait_for() {
 }
 
 # ios_webkit_debug_proxy listens on every address and has no option to stop that;
-# the pf rule in research/devices/mac-setup/ (shyden-labs/playwright-devices#19)
+# the pf rule in mac-setup/ (shyden-labs/playwright-devices#19)
 # keeps its ports to this Mac. Refuse to start it unless that rule was loaded.
 require_pf_rule() {
   grep -q 'port 9221:9322' /etc/pf.shyden.conf 2>/dev/null ||
-    die "/etc/pf.shyden.conf does not block ports 9221-9322; install research/devices/mac-setup/ first"
+    die "/etc/pf.shyden.conf does not block ports 9221-9322; install mac-setup/ first"
   launchctl print system/uk.co.shyden.pf 2>/dev/null | grep -q 'last exit code = 0' ||
-    die "the pf rule's launchd job (uk.co.shyden.pf) has not loaded it; install research/devices/mac-setup/ first"
+    die "the pf rule's launchd job (uk.co.shyden.pf) has not loaded it; install mac-setup/ first"
 }
 
 # Starts WebDriverAgent with the cached build in `derived`, logging to `logs`.
