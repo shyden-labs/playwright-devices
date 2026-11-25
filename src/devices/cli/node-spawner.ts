@@ -4,7 +4,7 @@
  */
 import { execFile, spawn, type ChildProcess, type StdioOptions } from 'node:child_process';
 import { closeSync, openSync } from 'node:fs';
-import { readFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import { constants } from 'node:os';
 import { realClock } from '../clock.ts';
 import type { Spawner } from './spawner.ts';
@@ -39,9 +39,9 @@ export const NODE_SPAWNER: Spawner = {
   },
   run: (command, args) =>
     new Promise((resolve) => {
-      execFile(command, args, { maxBuffer: 16 * 1024 * 1024 }, (error, stdout) => {
-        if (error === null) resolve({ code: 0, stdout });
-        else resolve({ code: typeof error.code === 'number' ? error.code : NOT_FOUND, stdout });
+      execFile(command, args, { maxBuffer: 16 * 1024 * 1024 }, (error, stdout, stderr) => {
+        if (error === null) resolve({ code: 0, stdout, stderr });
+        else resolve({ code: typeof error.code === 'number' ? error.code : NOT_FOUND, stdout, stderr });
       });
     }),
   async request(method, url, body) {
@@ -53,6 +53,7 @@ export const NODE_SPAWNER: Spawner = {
     }
   },
   readFile: (path) => readFile(path, 'utf8'),
+  writeFile: (path, text) => writeFile(path, text, 'utf8'),
   sleep: (ms) => realClock.sleep(ms),
   now: () => realClock.now(),
   print: (line) => {

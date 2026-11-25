@@ -8,7 +8,8 @@ const openSync = vi.fn(() => 7);
 const closeSync = vi.fn();
 vi.mock('node:fs', () => ({ openSync, closeSync }));
 const readFile = vi.fn(() => Promise.resolve('file text'));
-vi.mock('node:fs/promises', () => ({ readFile }));
+const writeFile = vi.fn(() => Promise.resolve());
+vi.mock('node:fs/promises', () => ({ readFile, writeFile }));
 
 const { NODE_SPAWNER } = await import('../../src/devices/cli/node-spawner.ts');
 
@@ -79,27 +80,27 @@ describe('NODE_SPAWNER.spawn', () => {
 });
 
 describe('NODE_SPAWNER.run', () => {
-  type Callback = (error: (Error & { code?: number | string }) | null, stdout: string) => void;
+  type Callback = (error: (Error & { code?: number | string }) | null, stdout: string, stderr: string) => void;
 
   it('answers exit code 0 and stdout', async () => {
     execFile.mockImplementationOnce((_c: string, _a: string[], _o: object, callback: Callback) => {
-      callback(null, 'out');
+      callback(null, 'out', 'err');
     });
-    expect(await NODE_SPAWNER.run('adb', ['devices'])).toEqual({ code: 0, stdout: 'out' });
+    expect(await NODE_SPAWNER.run('adb', ['devices'])).toEqual({ code: 0, stdout: 'out', stderr: 'err' });
   });
 
   it("answers the command's own exit code when it fails", async () => {
     execFile.mockImplementationOnce((_c: string, _a: string[], _o: object, callback: Callback) => {
-      callback(Object.assign(new Error('failed'), { code: 1 }), '');
+      callback(Object.assign(new Error('failed'), { code: 1 }), '', 'why');
     });
-    expect(await NODE_SPAWNER.run('lsof', [])).toEqual({ code: 1, stdout: '' });
+    expect(await NODE_SPAWNER.run('lsof', [])).toEqual({ code: 1, stdout: '', stderr: 'why' });
   });
 
   it('answers 127 when the command is missing', async () => {
     execFile.mockImplementationOnce((_c: string, _a: string[], _o: object, callback: Callback) => {
-      callback(Object.assign(new Error('spawn lsof ENOENT'), { code: 'ENOENT' }), '');
+      callback(Object.assign(new Error('spawn lsof ENOENT'), { code: 'ENOENT' }), '', '');
     });
-    expect(await NODE_SPAWNER.run('lsof', [])).toEqual({ code: 127, stdout: '' });
+    expect(await NODE_SPAWNER.run('lsof', [])).toEqual({ code: 127, stdout: '', stderr: '' });
   });
 });
 
@@ -137,6 +138,11 @@ describe('NODE_SPAWNER, the rest', () => {
   it('reads a file as UTF-8', async () => {
     expect(await NODE_SPAWNER.readFile('/etc/pf.shyden.conf')).toBe('file text');
     expect(readFile).toHaveBeenCalledWith('/etc/pf.shyden.conf', 'utf8');
+  });
+
+  it('writes a file as UTF-8', async () => {
+    await NODE_SPAWNER.writeFile('/wda/setup.json', '{}');
+    expect(writeFile).toHaveBeenCalledWith('/wda/setup.json', '{}', 'utf8');
   });
 
   it('keeps time with the real clock', async () => {

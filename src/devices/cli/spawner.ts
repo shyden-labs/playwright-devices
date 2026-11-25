@@ -22,11 +22,12 @@ export interface SpawnOptions {
 
 export interface Spawner {
   spawn(command: string, args: string[], options: SpawnOptions): Spawned;
-  /** Runs a command to its end, answering its exit code and stdout. */
-  run(command: string, args: string[]): Promise<{ code: number; stdout: string }>;
+  /** Runs a command to its end, answering its exit code and output. */
+  run(command: string, args: string[]): Promise<{ code: number; stdout: string; stderr: string }>;
   /** One HTTP request with a short ceiling; the body, or null when nothing answered. */
   request(method: 'GET' | 'POST' | 'DELETE', url: string, body?: unknown): Promise<string | null>;
   readFile(path: string): Promise<string>;
+  writeFile(path: string, text: string): Promise<void>;
   sleep(ms: number): Promise<void>;
   now(): number;
   /** A line for the person running the command (stderr). */

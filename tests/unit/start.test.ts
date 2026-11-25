@@ -59,11 +59,17 @@ function fakeSpawner(script: Script) {
       if (command === 'lsof') {
         const port = Number(/-iTCP:(\d+)/.exec(args.join(' '))?.[1]);
         const holder = script.held?.[port];
-        return Promise.resolve({ code: holder === undefined ? 1 : 0, stdout: holder === undefined ? '' : `COMMAND PID\n${holder}\n` });
+        return Promise.resolve({
+          code: holder === undefined ? 1 : 0,
+          stdout: holder === undefined ? '' : `COMMAND PID\n${holder}\n`,
+          stderr: '',
+        });
       }
-      if (command === 'launchctl') return Promise.resolve({ code: 0, stdout: script.launchctl ?? 'state = running\nlast exit code = 0\n' });
-      if (command === 'adb') return Promise.resolve({ code: 0, stdout: script.adbDevices ?? 'List of devices attached\nS\tdevice\n\n' });
-      return Promise.resolve({ code: 0, stdout: '' });
+      if (command === 'launchctl')
+        return Promise.resolve({ code: 0, stdout: script.launchctl ?? 'state = running\nlast exit code = 0\n', stderr: '' });
+      if (command === 'adb')
+        return Promise.resolve({ code: 0, stdout: script.adbDevices ?? 'List of devices attached\nS\tdevice\n\n', stderr: '' });
+      return Promise.resolve({ code: 0, stdout: '', stderr: '' });
     },
     request(method, url, body) {
       calls.push(`${method} ${url}${body === undefined ? '' : ` ${JSON.stringify(body)}`}`);
@@ -87,6 +93,7 @@ function fakeSpawner(script: Script) {
       }
       return Promise.resolve(script.wdaLog ?? '');
     },
+    writeFile: () => Promise.resolve(),
     sleep(ms) {
       now += ms;
       if (script.wdaExits !== undefined && now >= script.wdaExits.atMs)
