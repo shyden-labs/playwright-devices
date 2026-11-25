@@ -168,3 +168,20 @@ describe('devices-sim.yml simulator boot', () => {
     expect(boot).toContain('memory_pressure');
   });
 });
+
+describe('devices-sim.yml emulator SDK', () => {
+  it('restores the system image and emulator from a cache before the emulator action can download them', () => {
+    // shyden-labs/playwright-devices#52: round 42 (run 45515452121) lost the pixel_tablet job 20 s in, before
+    // the journey, when Google's emulator download ended in "Premature EOF". Shyden, 2026-11-25: cache the
+    // downloads; with no cache, a failed download fails fast (the action runs each sdkmanager install once).
+    const steps = stepsOf(read('devices-sim.yml'));
+    const cacheAt = steps.findIndex((step) => /uses: actions\/cache@[0-9a-f]{40} # v\d/.test(step));
+    const emulatorAt = steps.findIndex((step) => step.includes('reactivecircus/android-emulator-runner@'));
+    expect(cacheAt).toBeGreaterThan(-1);
+    expect(cacheAt).toBeLessThan(emulatorAt);
+    const cache = steps[cacheAt];
+    expect(cache).toContain('/usr/local/lib/android/sdk/system-images/android-36/playstore/x86_64');
+    expect(cache).toContain('/usr/local/lib/android/sdk/emulator');
+    expect(cache).toMatch(/key: android-sdk-36-playstore-x86_64-/);
+  });
+});
