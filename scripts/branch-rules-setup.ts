@@ -24,6 +24,7 @@
  */
 import { execFileSync } from 'node:child_process';
 import { runIfEntry } from './cli.ts';
+import { trustedBin } from './trusted-bin.ts';
 
 export interface Rule {
   type: string;
@@ -134,7 +135,7 @@ export function planRulesets(existing: ExistingRuleset[], checks: string[]): Rul
     if (shape(found) === shape(body)) return { action: 'keep' as const, id: found.id, body };
     // Unmeasured whether a PUT leaving bypass_actors out keeps them, so the update carries them, and is never sent unseen.
     if (!Array.isArray(found.bypass_actors)) {
-      throw new Error(
+      throw new TypeError(
         `ruleset ${found.id} "${found.name}" differs, but its bypass list is hidden (read it with admin rights), so an update could drop a bypass`,
       );
     }
@@ -148,6 +149,48 @@ interface ChecksParameters {
   do_not_enforce_on_create?: boolean;
 }
 
+/** Every way a branch's pull-request rules fall short: none at all, or a merge method other than the branch's one. */
+function pullRequestProblems(branch: Branch, rules: Rule[]): string[] {
+  const pullRequests = rules.filter((r) => r.type === 'pull_request');
+  if (pullRequests.length === 0) return [`${branch}: no rule requires a pull request`];
+  return pullRequests.flatMap((r) => {
+    const methods = (r.parameters as { allowed_merge_methods?: string[] } | undefined)?.allowed_merge_methods;
+    if (methods?.length === 1 && methods[0] === MERGE_METHOD[branch]) return [];
+    const named = methods === undefined ? 'an unstated method' : methods.join(', ');
+    return [`${branch}: pull requests may merge by ${named}, not ${MERGE_METHOD[branch]} alone`];
+  });
+}
+
+/** develop's required checks: strict, never release-cut, enforced when develop is created. */
+function developChecksProblems(checks: ChecksParameters[], requiresReleaseCut: boolean): string[] {
+  const problems: string[] = [];
+  if (checks.some((c) => c.strict_required_status_checks_policy !== true)) {
+    problems.push('develop: a required-checks rule is not strict');
+  }
+  if (requiresReleaseCut) {
+    problems.push(`develop: a rule requires ${RELEASE_CUT}, which runs only on pull requests into main`);
+  }
+  if (checks.some((c) => c.do_not_enforce_on_create === true)) {
+    problems.push('develop: a required-checks rule is not enforced when develop is created');
+  }
+  return problems;
+}
+
+/** main's required checks: not strict, release-cut required, not enforced when main is created. */
+function mainChecksProblems(checks: ChecksParameters[], requiresReleaseCut: boolean): string[] {
+  const problems: string[] = [];
+  if (checks.some((c) => c.strict_required_status_checks_policy !== false)) {
+    problems.push('main: a required-checks rule is strict, so a second release cut could never merge');
+  }
+  if (!requiresReleaseCut) {
+    problems.push(`main: no rule requires ${RELEASE_CUT}`);
+  }
+  if (checks.some((c) => c.do_not_enforce_on_create !== true)) {
+    problems.push('main: a required-checks rule is enforced when main is created, so a new main can never be made');
+  }
+  return problems;
+}
+
 /** Every way a branch's rules (as `rules/branches/<branch>` reports them) fall short; empty when none. */
 export function auditBranchRules(branch: Branch, rules: Rule[]): string[] {
   const problems: string[] = [];
@@ -156,41 +199,15 @@ export function auditBranchRules(branch: Branch, rules: Rule[]): string[] {
   if (!rules.some((r) => r.type === 'deletion')) {
     problems.push(`${branch}: no rule forbids deleting it`);
   }
-  const pullRequests = rules.filter((r) => r.type === 'pull_request');
-  if (pullRequests.length === 0) {
-    problems.push(`${branch}: no rule requires a pull request`);
-  }
-  for (const r of pullRequests) {
-    const methods = (r.parameters as { allowed_merge_methods?: string[] } | undefined)?.allowed_merge_methods;
-    if (methods?.length !== 1 || methods[0] !== MERGE_METHOD[branch]) {
-      const named = methods === undefined ? 'an unstated method' : methods.join(', ');
-      problems.push(`${branch}: pull requests may merge by ${named}, not ${MERGE_METHOD[branch]} alone`);
-    }
-  }
+  problems.push(...pullRequestProblems(branch, rules));
   const checks = rules.filter((r) => r.type === 'required_status_checks').map((r) => (r.parameters ?? {}) as ChecksParameters);
   const requiresReleaseCut = checks.some((c) => c.required_status_checks?.some((s) => s.context === RELEASE_CUT) === true);
   if (checks.length === 0) {
     problems.push(`${branch}: no rule requires status checks`);
   } else if (branch === 'develop') {
-    if (checks.some((c) => c.strict_required_status_checks_policy !== true)) {
-      problems.push(`${branch}: a required-checks rule is not strict`);
-    }
-    if (requiresReleaseCut) {
-      problems.push(`${branch}: a rule requires ${RELEASE_CUT}, which runs only on pull requests into main`);
-    }
-    if (checks.some((c) => c.do_not_enforce_on_create === true)) {
-      problems.push(`${branch}: a required-checks rule is not enforced when develop is created`);
-    }
+    problems.push(...developChecksProblems(checks, requiresReleaseCut));
   } else {
-    if (checks.some((c) => c.strict_required_status_checks_policy !== false)) {
-      problems.push(`${branch}: a required-checks rule is strict, so a second release cut could never merge`);
-    }
-    if (!requiresReleaseCut) {
-      problems.push(`${branch}: no rule requires ${RELEASE_CUT}`);
-    }
-    if (checks.some((c) => c.do_not_enforce_on_create !== true)) {
-      problems.push(`${branch}: a required-checks rule is enforced when main is created, so a new main can never be made`);
-    }
+    problems.push(...mainChecksProblems(checks, requiresReleaseCut));
   }
   return problems;
 }
@@ -235,7 +252,7 @@ export function auditDevEnvironment(env: DevEnvironment | undefined): string[] {
 
 /** gh's JSON answer. */
 function gh(args: string[], input?: string): unknown {
-  return JSON.parse(execFileSync('gh', args, { encoding: 'utf8', input })); // NOSONAR: gh is found on PATH by design, its folder differs on the Mac and on CI (shyden-labs/playwright-devices#12)
+  return JSON.parse(execFileSync(trustedBin('gh'), args, { encoding: 'utf8', input }));
 }
 
 type ListedEnvironment = DevEnvironment & { name: string; protection_rules?: { type: string }[] };

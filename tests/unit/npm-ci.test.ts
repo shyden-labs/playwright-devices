@@ -6,6 +6,8 @@ import { withoutYamlComments } from './source-text.ts';
 
 // npm is stood in: a unit test starts no process.
 vi.mock('node:child_process', () => ({ spawnSync: vi.fn() }));
+// Each command runs from the path trustedBin finds, never a bare name on PATH (issue shyden-labs/playwright-devices#50).
+vi.mock('../../scripts/trusted-bin.ts', () => ({ trustedBin: (name: string) => `/trusted/${name}` }));
 const spawn = vi.mocked(spawnSync);
 
 /**
@@ -62,7 +64,7 @@ describe('main', () => {
   it('runs npm ci with its output captured, and passes a clean install', () => {
     spawn.mockReturnValue(result({ stdout: 'added 212 packages\n' }));
     expect(main()).toBe(0);
-    expect(spawn).toHaveBeenCalledWith('npm', ['ci'], { encoding: 'utf8', stdio: ['inherit', 'pipe', 'pipe'] });
+    expect(spawn).toHaveBeenCalledWith('/trusted/npm', ['ci'], { encoding: 'utf8', stdio: ['inherit', 'pipe', 'pipe'] });
     expect(out).toHaveBeenCalledWith('added 212 packages\n');
   });
 

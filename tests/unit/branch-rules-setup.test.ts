@@ -13,6 +13,8 @@ import {
 
 // `gh` is stood in: a unit test starts no process. Each test queues gh's replies in call order.
 vi.mock('node:child_process', () => ({ execFileSync: vi.fn() }));
+// Each command runs from the path trustedBin finds, never a bare name on PATH (issue shyden-labs/playwright-devices#50).
+vi.mock('../../scripts/trusted-bin.ts', () => ({ trustedBin: (name: string) => `/trusted/${name}` }));
 const gh = vi.mocked(execFileSync);
 
 /**
@@ -156,7 +158,9 @@ describe('planRulesets', () => {
   it.each([null, undefined])('refuses to update a ruleset whose bypass list reads %s, naming it', (bypass) => {
     const hidden = { ...existing(11, 'develop', ['refs/heads/develop'], false), bypass_actors: bypass };
     expect(() => planRulesets([hidden], CHECKS)).toThrow(
-      'ruleset 11 "develop" differs, but its bypass list is hidden (read it with admin rights), so an update could drop a bypass',
+      new TypeError(
+        'ruleset 11 "develop" differs, but its bypass list is hidden (read it with admin rights), so an update could drop a bypass',
+      ),
     );
   });
 
@@ -428,6 +432,7 @@ describe('main', () => {
   it('creates both rulesets and dev where there are none, reads them all back and exits 0', () => {
     reply(...RULE_REPLIES, { total_count: 0, environments: [] }, {}, ALL_BRANCHES);
     expect(main([REPO, ...CHECKS])).toBe(0);
+    expect(gh.mock.calls.every((c) => c[0] === '/trusted/gh')).toBe(true);
     expect(calls()).toEqual([
       [['api', `repos/${REPO}/rulesets`], undefined],
       [['api', '-X', 'POST', `repos/${REPO}/rulesets`, '--input', '-'], JSON.stringify(desiredRuleset('develop', CHECKS))],

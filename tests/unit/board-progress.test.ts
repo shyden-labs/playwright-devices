@@ -18,6 +18,8 @@ import {
 
 // `gh` is stood in: a unit test starts no process.
 vi.mock('node:child_process', () => ({ execFileSync: vi.fn() }));
+// Each command runs from the path trustedBin finds, never a bare name on PATH (issue shyden-labs/playwright-devices#50).
+vi.mock('../../scripts/trusted-bin.ts', () => ({ trustedBin: (name: string) => `/trusted/${name}` }));
 const gh = vi.mocked(execFileSync);
 
 /**
@@ -514,7 +516,7 @@ describe('main', () => {
   it('reads the board by its node id', () => {
     gh.mockReturnValueOnce(JSON.stringify([boardPage('Example Stories', [card(1)])]));
     main(['PVT_1', 'Example Stories']);
-    expect(gh).toHaveBeenCalledWith('gh', ['api', 'graphql', '--paginate', '--slurp', '-f', `query=${QUERY}`, '-f', 'id=PVT_1'], {
+    expect(gh).toHaveBeenCalledWith('/trusted/gh', ['api', 'graphql', '--paginate', '--slurp', '-f', `query=${QUERY}`, '-f', 'id=PVT_1'], {
       encoding: 'utf8',
     });
   });
