@@ -180,8 +180,14 @@ describe('devices-sim.yml emulator SDK', () => {
     expect(cacheAt).toBeGreaterThan(-1);
     expect(cacheAt).toBeLessThan(emulatorAt);
     const cache = steps[cacheAt];
-    expect(cache).toContain('/usr/local/lib/android/sdk/system-images/android-36/playstore/x86_64');
+    // Round 43 (run 45571245564): target "playstore" installs system-images;android-36;google_apis_playstore;x86_64
+    // ("Found systemPath .../google_apis_playstore/x86_64/"), so a playstore/x86_64 path cached nothing.
+    const image = '/usr/local/lib/android/sdk/system-images/android-36/google_apis_playstore/x86_64';
+    expect(cache).toContain(image);
+    expect(cache).not.toContain('/android-36/playstore/');
     expect(cache).toContain('/usr/local/lib/android/sdk/emulator');
-    expect(cache).toMatch(/key: android-sdk-36-playstore-x86_64-/);
+    expect(cache).toMatch(/key: android-sdk-36-google_apis_playstore-x86_64-/);
+    const evidence = steps.find((step) => step.includes('cache-hit=$CACHE_HIT'));
+    expect(evidence).toContain(`${image}/package.xml`);
   });
 });
