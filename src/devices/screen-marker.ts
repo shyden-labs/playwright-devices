@@ -59,8 +59,8 @@ const SETTLE_POLL_MS = 100;
 /** Reads the marker until two reads in a row agree, failing at the ceiling naming the last two. */
 async function settledRect(reader: MarkerReader, clock: WdaClock): Promise<Box> {
   const deadline = clock.now() + SETTLE_CEILING_MS;
-  let previous = await reader.rectOf(MARKER_LABEL);
-  for (;;) {
+  // Each read waits for the one before: a recursive wait, not a loop.
+  const settle = async (previous: Box): Promise<Box> => {
     const current = await reader.rectOf(MARKER_LABEL);
     if (JSON.stringify(current) === JSON.stringify(previous)) return current;
     if (clock.now() >= deadline) {
@@ -68,9 +68,10 @@ async function settledRect(reader: MarkerReader, clock: WdaClock): Promise<Box> 
         `the marker did not settle within ${SETTLE_CEILING_MS} ms; last two reads: ${JSON.stringify(previous)} then ${JSON.stringify(current)}`,
       );
     }
-    previous = current;
     await clock.sleep(SETTLE_POLL_MS);
-  }
+    return settle(current);
+  };
+  return settle(await reader.rectOf(MARKER_LABEL));
 }
 
 /**

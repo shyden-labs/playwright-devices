@@ -17,7 +17,9 @@ const NOT_FOUND = 127;
 export const NODE_SPAWNER: Spawner = {
   spawn(command, args, { logFile, env = process.env, inherit = false }) {
     const log = logFile === undefined ? undefined : openSync(logFile, 'a');
-    const stdio: StdioOptions = inherit ? 'inherit' : log === undefined ? 'ignore' : ['ignore', log, log];
+    let stdio: StdioOptions = ['ignore', log, log];
+    if (log === undefined) stdio = 'ignore';
+    if (inherit) stdio = 'inherit';
     const child: ChildProcess = spawn(command, args, { env, stdio });
     // The child holds its own copy of the log; this process's is no longer needed.
     if (log !== undefined) closeSync(log);

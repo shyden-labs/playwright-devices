@@ -65,7 +65,8 @@ export async function startChromeCold({
   };
   const url = `http://127.0.0.1:${port}/json/version`;
   const started = clock.now();
-  for (;;) {
+  // Each look waits for the one before: a recursive wait, not a loop.
+  const attempt = async (): Promise<StartedChrome> => {
     const { ready, seen } = await look(fetchFn, url);
     const waited = clock.now() - started;
     if (ready) return { readyAfterMs: waited, stop };
@@ -73,7 +74,9 @@ export async function startChromeCold({
       throw new Error(`Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}`);
     }
     await clock.sleep(POLL_MS);
-  }
+    return attempt();
+  };
+  return attempt();
 }
 
 /** Stops Chrome and removes the command-line file Playwright leaves behind when a launch does not finish. */

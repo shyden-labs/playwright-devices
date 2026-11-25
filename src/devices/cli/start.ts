@@ -46,9 +46,11 @@ function failureLine(log: string): string | undefined {
 }
 
 async function checkPorts(spawner: Spawner): Promise<void> {
-  for (const port of [8100, 9222]) {
-    const { stdout } = await spawner.run('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN']);
-    const [holder] = stdout.split('\n').slice(1).filter(Boolean);
+  const listings = await Promise.all(
+    [8100, 9222].map(async (port) => ({ port, ...(await spawner.run('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN'])) })),
+  );
+  for (const { port, stdout } of listings) {
+    const holder = stdout.split('\n').slice(1).find(Boolean);
     if (holder !== undefined) throw new NotStarted(`port ${port} is already held: ${holder}`);
   }
 }
@@ -87,13 +89,16 @@ function session(options: StartOptions, spawner: Spawner) {
   /** Waits for `url` to answer with `pattern`, failing at `ceilingS` naming `what`; `stopped` fails it sooner. */
   async function waitFor(url: string, pattern: string, ceilingS: number, what: string, stopped?: () => Promise<void>): Promise<void> {
     const deadline = spawner.now() + ceilingS * 1_000;
-    for (;;) {
+    // Each look waits for the one before: a recursive wait, not a loop.
+    const look = async (): Promise<void> => {
       if (options.signal.aborted) throw new Interrupted();
       await stopped?.();
       if ((await spawner.request('GET', url))?.includes(pattern) === true) return;
       if (spawner.now() >= deadline) throw new NotStarted(`${what} did not answer at ${url} within ${ceilingS} s`);
       await spawner.sleep(POLL_MS);
-    }
+      await look();
+    };
+    await look();
   }
 
   async function startIphone(): Promise<NodeJS.ProcessEnv> {
@@ -120,9 +125,8 @@ function session(options: StartOptions, spawner: Spawner) {
     await waitFor(`${WDA}/status`, '"ready"', WDA_CEILING_S, 'WebDriverAgent', async () => {
       if (wdaExit === undefined) return;
       const reason = failureLine(await spawner.readFile(log('wda')));
-      throw new NotStarted(
-        `WebDriverAgent stopped (exit ${wdaExit}) before it answered${reason === undefined ? '' : `: ${reason}`}; log: ${log('wda')}`,
-      );
+      const because = reason === undefined ? '' : `: ${reason}`;
+      throw new NotStarted(`WebDriverAgent stopped (exit ${wdaExit}) before it answered${because}; log: ${log('wda')}`);
     });
     spawn('ios_webkit_debug_proxy', ['-c', `${udid}:9222`], 'iwdp');
     // Safari shows in the proxy only with a tab open; the test drives this one.

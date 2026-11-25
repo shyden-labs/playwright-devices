@@ -24,8 +24,8 @@ function run(file: string, args: string[], describe: (stopped: boolean) => strin
 }
 
 function adbFor(serial: string): Adb {
-  return (args) =>
-    run('adb', ['-s', serial, ...args], (stopped) => `adb ${args.join(' ')} failed${stopped ? ` after ${CALL_CEILING_MS} ms` : ''}`);
+  const after = ` after ${CALL_CEILING_MS} ms`;
+  return (args) => run('adb', ['-s', serial, ...args], (stopped) => `adb ${args.join(' ')} failed${stopped ? after : ''}`);
 }
 
 async function copyToIphone(udid: string, runnerId: string, file: string): Promise<void> {

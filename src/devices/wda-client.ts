@@ -113,10 +113,14 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
   /** Asks `ready` until it answers true, failing at `ceilingMs` with `failure`. */
   async function waitFor(ready: () => Promise<boolean>, ceilingMs: number, failure: string): Promise<void> {
     const deadline = clock.now() + ceilingMs;
-    while (!(await ready())) {
+    // Each look waits for the one before: a recursive wait, not a loop.
+    const look = async (): Promise<void> => {
+      if (await ready()) return;
       if (clock.now() >= deadline) throw new Error(failure);
       await clock.sleep(POLL_MS);
-    }
+      await look();
+    };
+    await look();
   }
 
   const created = (await call('POST', '/session', { capabilities: {} })) as { sessionId: string };
@@ -240,9 +244,10 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
         return ids.length > 0;
       };
       await waitFor(listed, NATIVE_CEILING_MS, `nothing matching ${predicate} showed within ${NATIVE_CEILING_MS} ms; nothing was tapped`);
-      const rects: ScreenRect[] = [];
-      for (const id of ids) rects.push((await call('GET', `${base}/element/${encodeURIComponent(id)}/rect`)) as ScreenRect);
-      const [first] = rects.sort((a, b) => a.y - b.y || a.x - b.x) as [ScreenRect];
+      const rects = await Promise.all(
+        ids.map(async (id) => (await call('GET', `${base}/element/${encodeURIComponent(id)}/rect`)) as ScreenRect),
+      );
+      const [first] = rects.toSorted((a, b) => a.y - b.y || a.x - b.x) as [ScreenRect];
       await tapAt({ x: first.x + first.width / 2, y: first.y + first.height / 2 });
     },
 

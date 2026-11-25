@@ -1,4 +1,5 @@
 // Probe (shyden-labs/playwright-devices#7): what the iPad photo picker shows after a photo is tapped, and after Done.
+import { fileURLToPath } from 'node:url';
 import { writeFileSync } from 'node:fs';
 import { webkit } from '@playwright/test';
 import { iosSession } from '../../../src/devices/device-session.ts';
@@ -6,7 +7,8 @@ import { connectWda } from '../../../src/devices/wda-client.ts';
 import { startJourneyServer } from '../serve.ts';
 import { PHOTO_GRID_IMAGE } from '../../../src/devices/ios-native.ts';
 
-const out = process.env.PROBE_OUT ?? '/tmp/probe.txt';
+// Kept with the evidence, never in a shared temporary folder.
+const out = process.env.PROBE_OUT ?? fileURLToPath(new URL('../evidence/probe.txt', import.meta.url));
 const wdaUrl = process.env.WDA_URL ?? 'http://127.0.0.1:8100';
 const lines: string[] = [];
 const log = (s: string) => {

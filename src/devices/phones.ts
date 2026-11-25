@@ -6,12 +6,12 @@
  * `lanBaseURL(port)` gives; `playwright-devices start` starts the device side.
  */
 import { fileURLToPath } from 'node:url';
-import { expect, test as base } from '@playwright/test';
+import { test as base } from '@playwright/test';
 import { withNamedSteps, type DeviceSession } from './device-session.ts';
 import { connectPhone, type PhoneFiles } from './phone-connect.ts';
 import { REAL_EFFECTS } from './phone-effects.ts';
 
-export { expect };
+export { expect } from '@playwright/test';
 export { lanBaseURL } from './lan.ts';
 export { PHONE_PROJECTS, phoneGroup, phoneProjects } from './phone-projects.ts';
 export type { PhoneFiles } from './phone-connect.ts';

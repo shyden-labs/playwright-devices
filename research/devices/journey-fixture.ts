@@ -5,7 +5,7 @@
  * served on this Mac's LAN address.
  */
 import { fileURLToPath } from 'node:url';
-import { expect, test as phones } from '../../src/devices/phones.ts';
+import { test as phones } from '../../src/devices/phones.ts';
 import { startJourneyServer } from './serve.ts';
 
 export const test = phones.extend<object, { journeyURL: string }>({
@@ -27,4 +27,4 @@ export const test = phones.extend<object, { journeyURL: string }>({
   },
 });
 
-export { expect };
+export { expect } from '../../src/devices/phones.ts';
