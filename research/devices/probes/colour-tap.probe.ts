@@ -59,7 +59,7 @@ async function iosMap(page: Parameters<typeof screenPointsOf>[0], colour: { x: n
     undefined,
   );
   const aim = await screenPointsOf(page, reader)(colour);
-  const listedColour = await rectOfId('Colour').catch((error: unknown) => String(error));
+  const listedColour = await rectOfId('Colour').catch(String);
   return { placed, markerLabel: MARKER_LABEL, markerReads: reads, aim, listedColour };
 }
 
@@ -84,9 +84,7 @@ test('the Colour tap after typing', async ({ page, session }, testInfo) => {
     if (onAndroid && colour !== null) {
       const adb = adbFor(serial);
       // Round 13: once Colour opens Chrome's option list, the page area is off the screen; say so and go on.
-      const area = await connectAndroidScreen({ adb })
-        .pageArea()
-        .catch((error: unknown) => String(error));
+      const area = await connectAndroidScreen({ adb }).pageArea().catch(String);
       if (typeof area === 'string') {
         testInfo.annotations.push({ type: `${stage}: android map`, description: area });
         return;
@@ -177,9 +175,11 @@ test('the Colour tap straight after typing, as the journey does', async ({ page,
   const after = await page.getByLabel('Colour').boundingBox();
   await new Promise((resolve) => setTimeout(resolve, 3000));
   await testInfo.attach('screen three seconds after the Colour tap', { body: await session.screenshot(), contentType: 'image/png' });
-  testInfo.annotations.push({ type: 'Colour box before and after the tap', description: JSON.stringify({ before, after }) });
-  testInfo.annotations.push({
-    type: 'touches seen',
-    description: JSON.stringify(await page.evaluate(() => (window as unknown as { touchesSeen: string[] }).touchesSeen)),
-  });
+  testInfo.annotations.push(
+    { type: 'Colour box before and after the tap', description: JSON.stringify({ before, after }) },
+    {
+      type: 'touches seen',
+      description: JSON.stringify(await page.evaluate(() => (window as unknown as { touchesSeen: string[] }).touchesSeen)),
+    },
+  );
 });

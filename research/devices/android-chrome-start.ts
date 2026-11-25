@@ -90,17 +90,20 @@ export async function startChromeCold({
   };
   const url = `http://127.0.0.1:${port}/json/version`;
   const started = clock.now();
-  for (;;) {
-    const { ready, seen } = await look(fetchFn, url);
+  // One look, then a pause and the next look only while Chrome has not yet named a browser, up to the ceiling.
+  const ready = async (): Promise<StartedChrome> => {
+    const { ready: named, seen } = await look(fetchFn, url);
     const waited = clock.now() - started;
-    if (ready) return { readyAfterMs: waited, stop };
+    if (named) return { readyAfterMs: waited, stop };
     if (waited >= ceilingMs) {
       throw new Error(
         `Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}. The phone showed: ${await phoneState(adb)}`,
       );
     }
     await clock.sleep(POLL_MS);
-  }
+    return ready();
+  };
+  return ready();
 }
 
 /** Stops Chrome and removes the command-line file Playwright leaves behind when a launch does not finish. */

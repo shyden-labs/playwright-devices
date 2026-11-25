@@ -194,7 +194,7 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
       let previous: ScreenPoint | undefined;
       const at = await waitFor(async () => {
         const now = centreOfFirstDescribed(await dump(), prefix);
-        const still = now !== undefined && previous !== undefined && now.x === previous.x && now.y === previous.y;
+        const still = now !== undefined && now.x === previous?.x && now.y === previous.y;
         previous = now;
         return still ? now : undefined;
       }, `nothing described "${prefix}…" showed and held still within ${NATIVE_CEILING_MS} ms; nothing was touched`);
