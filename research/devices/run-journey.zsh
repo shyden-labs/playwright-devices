@@ -56,7 +56,7 @@ start_wda() {
   local udid=$1 derived=$2 logs=$3
   mkdir -p $logs
   xcodebuild test-without-building -project $wda/src/WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner \
-    -destination id=$udid -derivedDataPath $derived >$logs/wda.log 2>&1 &
+    -destination id=$udid -derivedDataPath $derived >$logs/wda-$stamp-$$.log 2>&1 &
   pids+=$!
 }
 
@@ -81,7 +81,7 @@ case $target in
     xcrun devicectl device copy to --device $udid --domain-type appDataContainer --domain-identifier $runner_id \
       --source $fixtures/device-journey.txt --destination Documents/device-journey.txt >/dev/null
     require_pf_rule
-    ios_webkit_debug_proxy -c $udid:9222 >$wda/logs/iwdp.log 2>&1 &
+    ios_webkit_debug_proxy -c $udid:9222 >$wda/logs/iwdp-$stamp-$$.log 2>&1 &
     pids+=$!
     open_tab_through_wda
     wait_for http://127.0.0.1:9222/json webSocketDebuggerUrl 30 'ios_webkit_debug_proxy (a Safari tab)'
@@ -101,7 +101,7 @@ case $target in
     # from 9300, and leave 9222 to the simulator.
     config=null:9221 port=9300
     for phone in $(idevice_id -l); do config+=,$phone:$port; (( port += 1 )); done
-    ios_webkit_debug_proxy -c $config,:9222 -s unix:$socket >$wda/logs-sim/iwdp.log 2>&1 &
+    ios_webkit_debug_proxy -c $config,:9222 -s unix:$socket >$wda/logs-sim/iwdp-$stamp-$$.log 2>&1 &
     pids+=$!
     xcrun simctl openurl $udid http://127.0.0.1:9/
     # A cold inspector and Safari took 51 s to register at 4-5 GB swap (evidence/ios-simulator-inspector-cold-start-2026-11-19.txt).
