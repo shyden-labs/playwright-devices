@@ -4,8 +4,8 @@
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { webkit } from '@playwright/test';
-import { iosSession } from '../device-session.ts';
-import { connectWda } from '../wda-client.ts';
+import { iosSession } from '../../../src/devices/device-session.ts';
+import { connectWda } from '../../../src/devices/wda-client.ts';
 import { startJourneyServer } from '../serve.ts';
 
 const out = process.env.PROBE_OUT ?? '/tmp/probe.txt';

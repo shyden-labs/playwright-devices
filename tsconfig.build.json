@@ -10,6 +10,6 @@
     "rootDir": ".",
     "outDir": "dist"
   },
-  "include": ["src/one-suite/*.ts", "src/desktop/*.ts"],
+  "include": ["src/one-suite/*.ts", "src/desktop/*.ts", "src/devices/**/*.ts"],
   "exclude": []
 }

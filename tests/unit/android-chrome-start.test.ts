@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { requireChromeDebugApp, startChromeCold, stopChromeAfterPlaywright } from '../../research/devices/android-chrome-start.ts';
+import { requireChromeDebugApp, startChromeCold, stopChromeAfterPlaywright } from '../../src/devices/android-chrome-start.ts';
 
 /** An adb stand-in recording each call; `answers` gives the output for a call by its joined arguments. */
 function fakeAdb(answers: Record<string, string> = {}) {

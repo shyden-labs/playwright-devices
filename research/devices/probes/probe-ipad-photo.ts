@@ -1,10 +1,10 @@
 // Probe (shyden-labs/playwright-devices#7): what the iPad photo picker shows after a photo is tapped, and after Done.
 import { writeFileSync } from 'node:fs';
 import { webkit } from '@playwright/test';
-import { iosSession } from '../device-session.ts';
-import { connectWda } from '../wda-client.ts';
+import { iosSession } from '../../../src/devices/device-session.ts';
+import { connectWda } from '../../../src/devices/wda-client.ts';
 import { startJourneyServer } from '../serve.ts';
-import { PHOTO_GRID_IMAGE } from '../ios-native.ts';
+import { PHOTO_GRID_IMAGE } from '../../../src/devices/ios-native.ts';
 
 const out = process.env.PROBE_OUT ?? '/tmp/probe.txt';
 const wdaUrl = process.env.WDA_URL ?? 'http://127.0.0.1:8100';

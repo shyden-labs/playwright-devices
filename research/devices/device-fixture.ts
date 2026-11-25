@@ -7,11 +7,11 @@
 import { execFile } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { _android, chromium, expect, test as base, webkit, type Browser, type Page } from '@playwright/test';
-import { androidSession, iosSession, routeFrom, withNamedSteps, type DeviceSession } from './device-session.ts';
-import { requireChromeDebugApp, startChromeCold, stopChromeAfterPlaywright } from './android-chrome-start.ts';
-import type { Adb } from './finger-scroll.ts';
+import { androidSession, iosSession, routeFrom, withNamedSteps, type DeviceSession } from '../../src/devices/device-session.ts';
+import { requireChromeDebugApp, startChromeCold, stopChromeAfterPlaywright } from '../../src/devices/android-chrome-start.ts';
+import type { Adb } from '../../src/devices/finger-scroll.ts';
 import { startJourneyServer } from './serve.ts';
-import { connectWda } from './wda-client.ts';
+import { connectWda } from '../../src/devices/wda-client.ts';
 
 const here = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 

@@ -1,7 +1,7 @@
 import type { Page } from '@playwright/test';
 import { describe, expect, it } from 'vitest';
-import { androidSession, iosSession, routeFrom, withNamedSteps } from '../../research/devices/device-session.ts';
-import { PHOTO_GRID_IMAGE } from '../../research/devices/ios-native.ts';
+import { androidSession, iosSession, routeFrom, withNamedSteps } from '../../src/devices/device-session.ts';
+import { PHOTO_GRID_IMAGE } from '../../src/devices/ios-native.ts';
 
 /** A WebDriverAgent stand-in recording each step; `shown` is what the screen lists. */
 function fakeWda(shown: string[] = []) {
@@ -106,7 +106,11 @@ function fakeAdb(shown: string[] = []) {
     const call = args.join(' ');
     calls.push(call);
     if (call.startsWith('exec-out uiautomator dump')) {
-      const nodes = shown.map((text, i) => `<node text="${text}" content-desc="" bounds="[0,${i * 100}][100,${i * 100 + 100}]" />`);
+      // An entry "desc:<d>" is a node with no text, described as <d> (a photo in Google's picker).
+      const nodes = shown.map((entry, i) => {
+        const [text, desc] = entry.startsWith('desc:') ? ['', entry.slice('desc:'.length)] : [entry, ''];
+        return `<node text="${text}" content-desc="${desc}" bounds="[0,${i * 100}][100,${i * 100 + 100}]" />`;
+      });
       return Promise.resolve(`<hierarchy>${nodes.join('')}</hierarchy>`);
     }
     if (call === 'shell wm size') return Promise.resolve('Physical size: 1080x2400\n');
@@ -147,6 +151,16 @@ describe('androidSession', () => {
       'shell wm size',
       'shell input swipe 540 1080 540 360 400',
     ]);
+  });
+
+  it('routes the photo step: the first photo in the picker, then Done', async () => {
+    const device = fakeAdb(['desc:Photo taken on 25 Nov 2026', 'Done']);
+    const session = await androidSession({ page, adb: device.adb, baseURL: 'http://127.0.0.1:4321', files });
+    const before = device.kept().length;
+
+    await session.nativeChoosePhoto();
+
+    expect(device.kept().slice(before)).toEqual(['shell input tap 50 50', 'shell input tap 50 150']);
   });
 
   it("gives the test a page stand-in, so taps and keys go through Android's own input", async () => {

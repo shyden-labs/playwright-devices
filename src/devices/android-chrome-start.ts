@@ -10,6 +10,7 @@
  */
 import type { Adb } from './finger-scroll.ts';
 import type { WdaClock } from './wda-client.ts';
+import { realClock } from './clock.ts';
 
 const CHROME = 'com.android.chrome';
 const COMMAND_LINE = '/data/local/tmp/chrome-command-line';
@@ -18,11 +19,6 @@ const READY_CEILING_MS = 30_000;
 const POLL_MS = 250;
 /** One look at the endpoint may not hang the wait. */
 const LOOK_CEILING_MS = 2_000;
-
-const realClock: WdaClock = {
-  now: () => Date.now(),
-  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-};
 
 export interface ChromeStartOptions {
   adb: Adb;

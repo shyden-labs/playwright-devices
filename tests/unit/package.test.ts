@@ -42,7 +42,7 @@ describe('package.json', () => {
     // npm adds LICENSE, README.md and package.json itself, but not NOTICE (measured with npm pack, 2026-11-18).
     expect(pkg['files']).toEqual(['dist/', 'NOTICE']);
     expect(build.compilerOptions.outDir).toBe('dist');
-    expect(build.include).toEqual(['src/one-suite/*.ts', 'src/desktop/*.ts']);
+    expect(build.include).toEqual(['src/one-suite/*.ts', 'src/desktop/*.ts', 'src/devices/**/*.ts']);
   });
 
   it('takes Playwright from the project, whose reporter types the checks read', () => {

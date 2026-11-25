@@ -112,7 +112,7 @@ case $target in
       die "usage: run-journey.zsh android <serial> <android-cdp|android-playwright>"
     label=$route-$serial
     export ANDROID_SERIAL=$serial
-    # The fixture starts and stops Chrome itself (research/devices/android-chrome-start.ts).
+    # The fixture starts and stops Chrome itself (src/devices/android-chrome-start.ts).
     ;;
   *) die "usage: run-journey.zsh iphone <udid> | ios-sim <udid> | android <serial> <route>" ;;
 esac

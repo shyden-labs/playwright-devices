@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { centreOfFirstDescribed, centreOfText, rectOfResourceId } from '../../research/devices/android-screen.ts';
+import { centreOfFirstDescribed, centreOfText, rectOfResourceId } from '../../src/devices/android-screen.ts';
 
 /** A trimmed `uiautomator dump` of Chrome's native <select> list. */
 const DUMP = `<?xml version='1.0' encoding='UTF-8' standalone='yes' ?>

@@ -10,6 +10,7 @@
  */
 import type { Box } from './screen-map.ts';
 import type { ScreenPoint, ScreenRect, WdaClock } from './wda-client.ts';
+import { realClock } from './clock.ts';
 
 /** The page's visual viewport, as the page reports it. */
 export interface PageViewport {
@@ -56,11 +57,6 @@ const SETTLE_CEILING_MS = 5_000;
 
 /** Pause between reads while the page settles. */
 const SETTLE_POLL_MS = 100;
-
-const realClock: WdaClock = {
-  now: () => Date.now(),
-  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-};
 
 /**
  * A `toScreen` for the Android page stand-in: the screen point at the centre

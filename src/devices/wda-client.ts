@@ -2,6 +2,7 @@
  * A small WebDriverAgent client: real touches and keys on an iPhone, an iPad
  * or the iOS Simulator (shyden-labs/playwright-devices#7).
  */
+import { realClock } from './clock.ts';
 
 /** Time, passed in so tests can move it. */
 export interface WdaClock {
@@ -25,11 +26,6 @@ export interface WdaOptions {
  * naming nothing; three times WebDriverAgent's own wait is the ceiling.
  */
 const REQUEST_CEILING_MS = 30_000;
-
-const realClock: WdaClock = {
-  now: () => Date.now(),
-  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-};
 
 /** How often a wait asks WebDriverAgent again. */
 const POLL_MS = 100;
@@ -141,7 +137,11 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
       if (error instanceof Error && error.message.includes(VIEW_CHANGING)) return [];
       throw error;
     }
-    return found.map((element) => element[W3C_ELEMENT] ?? element.ELEMENT ?? '');
+    return found.map((element) => {
+      const id = element[W3C_ELEMENT] ?? element.ELEMENT;
+      if (id === undefined) throw new Error(`WebDriverAgent listed an element with no id: ${JSON.stringify(element)}`);
+      return id;
+    });
   }
 
   async function keyboardShown(): Promise<boolean> {
@@ -278,7 +278,7 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
         return ids.length > 0;
       };
       await waitFor(listed, NATIVE_CEILING_MS, `no cell named "${name}" showed within ${NATIVE_CEILING_MS} ms; nothing was tapped`);
-      const cell = (await call('GET', `${base}/element/${encodeURIComponent(ids[0] ?? '')}/rect`)) as ScreenRect;
+      const cell = (await call('GET', `${base}/element/${encodeURIComponent(ids[0] as string)}/rect`)) as ScreenRect;
       await tapAt({ x: cell.x + cell.width / 2, y: cell.y + cell.height / 4 });
     },
 

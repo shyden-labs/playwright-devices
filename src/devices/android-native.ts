@@ -10,6 +10,7 @@ import { basename } from 'node:path';
 import { centreOfFirstDescribed, centreOfText, rectOfResourceId } from './android-screen.ts';
 import type { Adb } from './finger-scroll.ts';
 import type { ScreenPoint, ScreenRect, WdaClock } from './wda-client.ts';
+import { realClock } from './clock.ts';
 
 /**
  * Prints the dump to adb's output instead of a file on the phone.
@@ -38,11 +39,6 @@ function inputTextArgument(text: string): string {
   if (text.includes('%s')) throw new Error(`adb input text reads %s as a space; cannot type "${text}"`);
   return `'${text.replaceAll(' ', '%s').replaceAll("'", "'\\''")}'`;
 }
-
-const realClock: WdaClock = {
-  now: () => Date.now(),
-  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-};
 
 export interface AndroidScreenOptions {
   adb: Adb;

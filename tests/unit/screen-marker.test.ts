@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { WdaClock } from '../../research/devices/wda-client.ts';
-import { MARKER_LABEL, screenPointsOf, type MarkerPage } from '../../research/devices/screen-marker.ts';
-import { MARKER_CSS_SIZE, type Box } from '../../research/devices/screen-map.ts';
+import type { WdaClock } from '../../src/devices/wda-client.ts';
+import { MARKER_LABEL, screenPointsOf, type MarkerPage } from '../../src/devices/screen-marker.ts';
+import { MARKER_CSS_SIZE, type Box } from '../../src/devices/screen-map.ts';
 
 /** A page stand-in: runs each evaluated function against a tiny fake DOM and records what it did. */
 function fakePage(log: string[]): MarkerPage {
