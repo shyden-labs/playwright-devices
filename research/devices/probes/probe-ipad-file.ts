@@ -56,7 +56,8 @@ if (page === undefined) throw new Error('Safari has no tab open');
 const wda = await connectWda({ url: wdaUrl, fetchFn: recordingFetch });
 const session = iosSession({ page, wda, baseURL: server.baseURL, file: { folder, label } });
 try {
-  for (let round = 1; round <= ROUNDS; round += 1) {
+  // One round after another: a recursive step, not a loop.
+  const runRound = async (round: number): Promise<void> => {
     log(`=== round ${round}, swap ${swap()} ===`);
     await session.page.goto('/journey.html', { timeout: 120_000 });
     await session.page.getByLabel('File').tap();
@@ -77,7 +78,9 @@ try {
     };
     await pollUntilGone(1);
     log(`page shows: ${(await page.getByTestId('file-result').textContent()) ?? '(none)'}`);
-  }
+    if (round < ROUNDS) await runRound(round + 1);
+  };
+  await runRound(1);
   writeFileSync(`${out}.png`, await wda.screenshot());
 } finally {
   writeFileSync(out, lines.join('\n') + '\n');

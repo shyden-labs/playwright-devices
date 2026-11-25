@@ -37,7 +37,9 @@ const TYPABLE = /^[\x20-\x7e]*$/;
 function inputTextArgument(text: string): string {
   if (!TYPABLE.test(text)) throw new Error(`adb input text types printable ASCII only; cannot type "${text}"`);
   if (text.includes('%s')) throw new Error(`adb input text reads %s as a space; cannot type "${text}"`);
-  return `'${text.replaceAll(' ', '%s').replaceAll("'", String.raw`'\''`)}'`;
+  const quoteEscape = String.raw`'\''`;
+  const escaped = text.replaceAll(' ', '%s').replaceAll("'", quoteEscape);
+  return `'${escaped}'`;
 }
 
 export interface AndroidScreenOptions {
