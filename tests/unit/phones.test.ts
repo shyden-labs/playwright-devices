@@ -42,8 +42,8 @@ function connected(calls: string[]) {
   };
 }
 
-function testInfo(status: string, expectedStatus = 'passed') {
-  return { project: { name: 'iphone' }, status, expectedStatus, attach: vi.fn(() => Promise.resolve()) };
+function testInfo(status: string, expectedStatus = 'passed', project = 'iphone') {
+  return { project: { name: project }, status, expectedStatus, attach: vi.fn(() => Promise.resolve()) };
 }
 
 beforeEach(() => {
@@ -68,13 +68,13 @@ describe('the phones entry point', () => {
   });
 });
 
-describe('the session fixture', () => {
+describe('the phone connection fixture', () => {
   it('connects the project’s phone with the base URL and files, names each native step, then closes and disconnects', async () => {
     const calls: string[] = [];
     connectPhone.mockResolvedValue(connected(calls));
     const files = { document: '/d.txt', photo: '/p.png' };
 
-    await fixture('session')(
+    await fixture('phoneConnection')(
       { baseURL: 'http://192.168.1.3:4173', phoneFiles: files },
       async (session) => {
         await (session as { nativeChoose: (o: string) => Promise<void> }).nativeChoose('Green');
@@ -88,9 +88,9 @@ describe('the session fixture', () => {
   });
 
   it('refuses a run with no base URL, before connecting', async () => {
-    await expect(fixture('session')({ baseURL: undefined, phoneFiles: {} }, () => Promise.resolve(), testInfo('passed'))).rejects.toThrow(
-      'set use.baseURL to lanBaseURL(<port>): the phone opens pages there',
-    );
+    await expect(
+      fixture('phoneConnection')({ baseURL: undefined, phoneFiles: {} }, () => Promise.resolve(), testInfo('passed')),
+    ).rejects.toThrow('set use.baseURL to lanBaseURL(<port>): the phone opens pages there');
     expect(connectPhone).not.toHaveBeenCalled();
   });
 
@@ -99,7 +99,7 @@ describe('the session fixture', () => {
     connectPhone.mockResolvedValue(connected(calls));
     const info = testInfo('failed');
 
-    await fixture('session')({ baseURL: 'http://192.168.1.3:4173', phoneFiles: {} }, () => Promise.resolve(), info);
+    await fixture('phoneConnection')({ baseURL: 'http://192.168.1.3:4173', phoneFiles: {} }, () => Promise.resolve(), info);
 
     expect(info.attach).toHaveBeenCalledWith('device screen at failure', { body: Buffer.from('phone screen'), contentType: 'image/png' });
     expect(calls).toEqual(['session close', 'disconnect']);
@@ -112,18 +112,87 @@ describe('the session fixture', () => {
     connectPhone.mockResolvedValue(phone);
 
     await expect(
-      fixture('session')({ baseURL: 'http://192.168.1.3:4173', phoneFiles: {} }, () => Promise.resolve(), testInfo('passed')),
+      fixture('phoneConnection')({ baseURL: 'http://192.168.1.3:4173', phoneFiles: {} }, () => Promise.resolve(), testInfo('passed')),
     ).rejects.toThrow('picker stuck');
     expect(calls).toEqual(['disconnect']);
+  });
+
+  it('connects nothing on a desktop project, which needs no base URL, and hands no phone (shyden-labs/playwright-devices#68)', async () => {
+    const handed: unknown[] = [];
+
+    await fixture('phoneConnection')(
+      { baseURL: undefined, phoneFiles: {} },
+      (value) => {
+        handed.push(value);
+        return Promise.resolve();
+      },
+      testInfo('failed', 'passed', 'chromium'),
+    );
+
+    expect(handed).toEqual([undefined]);
+    expect(connectPhone).not.toHaveBeenCalled();
+  });
+});
+
+/** Runs fixture `name` with `args` and answers what it handed the test. */
+async function handedBy(name: string, args: Record<string, unknown>, project = 'iphone'): Promise<unknown> {
+  let handed: unknown;
+  await fixture(name)(
+    args,
+    (value) => {
+      handed = value;
+      return Promise.resolve();
+    },
+    testInfo('passed', 'passed', project),
+  );
+  return handed;
+}
+
+describe('the page fixture (shyden-labs/playwright-devices#68)', () => {
+  it("is the phone's page on a phone project", async () => {
+    expect(await handedBy('page', { page: 'desktop page', phoneConnection: { page: 'phone page' } })).toBe('phone page');
+  });
+
+  it("is Playwright's own page on a desktop project, a tap there being a real click", async () => {
+    const calls: string[] = [];
+    const button = { click: () => Promise.resolve(void calls.push('click')) };
+    const page = (await handedBy('page', { page: { getByRole: () => button }, phoneConnection: undefined }, 'chromium')) as {
+      getByRole: (role: string) => { tap: () => Promise<void> };
+    };
+
+    await page.getByRole('button').tap();
+
+    expect(calls).toEqual(['click']);
+  });
+});
+
+describe('the session fixture (shyden-labs/playwright-devices#68)', () => {
+  it("is the phone's session on a phone project", async () => {
+    const phone = { page: 'phone page' };
+    expect(await handedBy('session', { phoneConnection: phone, page: 'phone page', phoneFiles: {} })).toBe(phone);
+  });
+
+  it("is a desktop session on Playwright's page on a desktop project, its file steps using the picker files", async () => {
+    const page = { on: () => page, off: () => page };
+    const session = (await handedBy(
+      'session',
+      { phoneConnection: undefined, page, phoneFiles: { document: '/d.txt', photo: '/p.png' } },
+      'chromium',
+    )) as {
+      page: unknown;
+      close: () => Promise<void>;
+    };
+
+    expect(session.page).toBe(page);
+    await expect(session.close()).resolves.toBeUndefined();
   });
 });
 
 describe('the fixtures handed to a test', () => {
-  it("are the session's page and steps", async () => {
-    const session = { page: 'p', nativeChoose: 'c', nativeChooseFile: 'f', nativeChoosePhoto: 'ph', fingerScroll: 's' };
+  it("are the session's steps", async () => {
+    const session = { nativeChoose: 'c', nativeChooseFile: 'f', nativeChoosePhoto: 'ph', fingerScroll: 's' };
     const handed: Record<string, unknown> = {};
     for (const [name, key] of [
-      ['page', 'page'],
       ['nativeChoose', 'nativeChoose'],
       ['nativeChooseFile', 'nativeChooseFile'],
       ['nativeChoosePhoto', 'nativeChoosePhoto'],

@@ -24,9 +24,15 @@ export function journeyResponse(path: string, html: string): JourneyResponse {
 }
 
 /** Starts serving `htmlPath` on the Wi-Fi address and a free port; answers the page's URL and how to stop. */
-export async function startJourneyServer(htmlPath: string): Promise<{ baseURL: string; close: () => Promise<void> }> {
+/**
+ * Serves the journey at `host`: the Mac's Wi-Fi address by default, which the phones reach; a desktop
+ * browser on the same machine opens it on loopback (shyden-labs/playwright-devices#68).
+ */
+export async function startJourneyServer(
+  htmlPath: string,
+  host: string = lanAddress(networkInterfaces()),
+): Promise<{ baseURL: string; close: () => Promise<void> }> {
   const html = await readFile(htmlPath, 'utf8');
-  const host = lanAddress(networkInterfaces());
   const server = createServer((request, response) => {
     const { status, headers, body } = journeyResponse(request.url ?? '/', html);
     response.writeHead(status, headers).end(body);
