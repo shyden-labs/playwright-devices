@@ -9,7 +9,8 @@
  * Chrome's toolbar hides and shows as the page scrolls.
  */
 import type { Box } from './screen-map.ts';
-import { realClock, type ScreenPoint, type ScreenRect, type WdaClock } from './wda-client.ts';
+import type { ScreenPoint, ScreenRect, WdaClock } from './wda-client.ts';
+import { realClock } from './clock.ts';
 
 /** The page's visual viewport, as the page reports it. */
 export interface PageViewport {
@@ -88,8 +89,8 @@ export function androidScreenPointsOf(
   const read = async () => JSON.stringify({ viewport: await page.evaluate(readViewport), area: await screen.pageArea() });
   return async (box) => {
     const deadline = clock.now() + SETTLE_CEILING_MS;
-    let previous = await read();
-    for (;;) {
+    // Each read waits for the one before: a recursive wait, not a loop.
+    const settle = async (previous: string): Promise<ScreenPoint> => {
       const current = await read();
       if (current === previous) {
         const { viewport, area } = JSON.parse(current) as { viewport: PageViewport; area: PageArea };
@@ -99,8 +100,9 @@ export function androidScreenPointsOf(
       if (clock.now() >= deadline) {
         throw new Error(`the page did not settle within ${SETTLE_CEILING_MS} ms; last two reads: ${previous} then ${current}`);
       }
-      previous = current;
       await clock.sleep(SETTLE_POLL_MS);
-    }
+      return settle(current);
+    };
+    return settle(await read());
   };
 }

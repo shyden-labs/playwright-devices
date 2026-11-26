@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MARKER_CSS_SIZE, screenMap } from '../../research/devices/screen-map.ts';
+import { MARKER_CSS_SIZE, screenMap } from '../../src/devices/screen-map.ts';
 
 describe('screenMap', () => {
   it('is measured with a 100 by 100 CSS pixel marker', () => {

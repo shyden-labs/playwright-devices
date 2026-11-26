@@ -4,11 +4,11 @@
 // with WebDriverAgent's wait for idle turned off (round 10).
 import { writeFileSync } from 'node:fs';
 import { webkit } from '@playwright/test';
-import { iosSession } from '../device-session.ts';
-import { connectWda } from '../wda-client.ts';
+import { iosSession } from '../../../src/devices/device-session.ts';
+import { connectWda } from '../../../src/devices/wda-client.ts';
 import { startJourneyServer } from '../serve.ts';
-import { PHOTO_GRID_IMAGE } from '../ios-native.ts';
-import { iosFingerScroll } from '../finger-scroll.ts';
+import { PHOTO_GRID_IMAGE } from '../../../src/devices/ios-native.ts';
+import { iosFingerScroll } from '../../../src/devices/finger-scroll.ts';
 
 const out = process.env.PROBE_OUT ?? 'research/devices/evidence/probe-photo-timing';
 const wdaUrl = process.env.WDA_URL ?? 'http://127.0.0.1:8100';

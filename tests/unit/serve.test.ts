@@ -1,6 +1,6 @@
 import type { NetworkInterfaceInfo } from 'node:os';
 import { describe, expect, it } from 'vitest';
-import { journeyHosts, journeyResponse, lanAddress } from '../../research/devices/serve.ts';
+import { journeyHosts, journeyResponse } from '../../research/devices/serve.ts';
 
 describe('journeyResponse', () => {
   const html = '<!doctype html><title>Device journey</title>';
@@ -23,22 +23,6 @@ describe('journeyResponse', () => {
       expect(journeyResponse(path, html)).toEqual({ status: 404, headers: { 'content-type': 'text/plain' }, body: 'not found' });
     },
   );
-});
-
-function v4(address: string, internal = false): NetworkInterfaceInfo {
-  return { address, family: 'IPv4', internal, netmask: '255.255.255.0', mac: '00:00:00:00:00:00', cidr: `${address}/24` };
-}
-
-describe('lanAddress', () => {
-  it('answers the Wi-Fi (en0) IPv4 address, which the phones and simulators reach', () => {
-    expect(lanAddress({ lo0: [v4('127.0.0.1', true)], utun3: [v4('100.64.0.2')], en0: [v4('10.179.17.81')] })).toBe('10.179.17.81');
-  });
-
-  it('fails naming what it saw when en0 has no IPv4 address', () => {
-    expect(() => lanAddress({ lo0: [v4('127.0.0.1', true)] })).toThrow(
-      'no IPv4 address on en0 (the Wi-Fi) to serve the journey to the phones; interfaces seen: lo0',
-    );
-  });
 });
 
 describe('journeyHosts', () => {

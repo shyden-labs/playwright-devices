@@ -1,0 +1,12 @@
+import { defineConfig } from '@playwright/test';
+import { lanBaseURL, phoneProjects } from '@shyden-labs/playwright-devices/phones';
+
+export default defineConfig({
+  workers: 1,
+  retries: 0,
+  timeout: 5 * 60_000,
+  expect: { timeout: 30_000 },
+  use: { baseURL: lanBaseURL(4173) },
+  webServer: { command: 'node server.mjs', port: 4173, reuseExistingServer: false },
+  projects: phoneProjects(),
+});

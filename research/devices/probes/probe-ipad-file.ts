@@ -1,14 +1,16 @@
 // Probe (shyden-labs/playwright-devices#7): how long each "is the file cell gone?" lookup takes right after the file is tapped
 // in the iPad's Files picker, and the Mac's swap at that moment. Tells memory (every lookup slow)
 // from the closing picker (only lookups during teardown slow) as the cause of the 30 s stalls.
+import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
 import { writeFileSync } from 'node:fs';
 import { webkit } from '@playwright/test';
-import { iosSession } from '../device-session.ts';
-import { connectWda } from '../wda-client.ts';
+import { iosSession } from '../../../src/devices/device-session.ts';
+import { connectWda } from '../../../src/devices/wda-client.ts';
 import { startJourneyServer } from '../serve.ts';
 
-const out = process.env.PROBE_OUT ?? '/tmp/probe.txt';
+// Kept with the evidence, never in a shared temporary folder.
+const out = process.env.PROBE_OUT ?? fileURLToPath(new URL('../evidence/probe.txt', import.meta.url));
 const wdaUrl = process.env.WDA_URL ?? 'http://127.0.0.1:8100';
 const ROUNDS = Number(process.env.PROBE_ROUNDS ?? '5');
 const folder = 'WebDriverAgentRunner-Runner';
@@ -20,7 +22,7 @@ const log = (s: string) => {
   console.log(line);
   lines.push(line);
 };
-const swap = () => /used = (\S+)/.exec(execFileSync('sysctl', ['vm.swapusage'], { encoding: 'utf8' }))?.[1] ?? '?';
+const swap = () => /used = (\S+)/.exec(execFileSync('/usr/sbin/sysctl', ['vm.swapusage'], { encoding: 'utf8' }))?.[1] ?? '?';
 
 // The client's session id, read from its own requests.
 let sessionPath = '';
@@ -54,7 +56,8 @@ if (page === undefined) throw new Error('Safari has no tab open');
 const wda = await connectWda({ url: wdaUrl, fetchFn: recordingFetch });
 const session = iosSession({ page, wda, baseURL: server.baseURL, file: { folder, label } });
 try {
-  for (let round = 1; round <= ROUNDS; round += 1) {
+  // One round after another: a recursive step, not a loop.
+  const runRound = async (round: number): Promise<void> => {
     log(`=== round ${round}, swap ${swap()} ===`);
     await session.page.goto('/journey.html', { timeout: 120_000 });
     await session.page.getByLabel('File').tap();
@@ -67,13 +70,17 @@ try {
     log(`picker open, still: lookup ${before.ms} ms, matched ${before.count}, swap ${swap()}`);
     await wda.tapCellIcon(label);
     log(`file tapped, swap ${swap()}`);
-    for (let poll = 1; poll <= 40; poll += 1) {
+    // One look after another: a recursive poll, not a loop.
+    const pollUntilGone = async (poll: number): Promise<void> => {
       const { ms, count } = await timedLookup();
       log(`poll ${poll}: lookup ${ms} ms, matched ${count}, swap ${swap()}`);
-      if (count === 0) break;
-    }
+      if (count !== 0 && poll < 40) await pollUntilGone(poll + 1);
+    };
+    await pollUntilGone(1);
     log(`page shows: ${(await page.getByTestId('file-result').textContent()) ?? '(none)'}`);
-  }
+    if (round < ROUNDS) await runRound(round + 1);
+  };
+  await runRound(1);
   writeFileSync(`${out}.png`, await wda.screenshot());
 } finally {
   writeFileSync(out, lines.join('\n') + '\n');

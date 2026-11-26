@@ -7,8 +7,8 @@ import {
   androidClosePicker,
   connectAndroidScreen,
   stageAndroidFile,
-} from '../../research/devices/android-native.ts';
-import type { WdaClock } from '../../research/devices/wda-client.ts';
+} from '../../src/devices/android-native.ts';
+import type { WdaClock } from '../../src/devices/wda-client.ts';
 
 /** No wait here is longer than this, so a fake clock past it means a wait without a ceiling. */
 const LONGEST_CEILING_MS = 60_000;

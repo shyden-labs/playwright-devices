@@ -1,0 +1,6 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [iphone] › clean.spec.ts:3:1 › a clean install taps, types and chooses a file on the phone (13.5s)
+
+  1 passed (16.2s)
