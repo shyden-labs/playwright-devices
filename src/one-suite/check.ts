@@ -51,7 +51,8 @@ export function testsByTarget(report: JSONReport, unnamedTarget: string): Map<st
         targets.set(target, entry);
       }
     }
-    for (const child of suite.suites ?? []) visit(child, [...path, child.title]);
+    // An untitled describe adds nothing to the id, as in Playwright's titlePath, which the assertion counter reads.
+    for (const child of suite.suites ?? []) visit(child, child.title === '' ? path : [...path, child.title]);
   };
   for (const file of report.suites) visit(file, [file.file]);
   return targets;
@@ -162,7 +163,8 @@ function testsWithGroups(
 
 /** One test's group-only problems. */
 function groupOnlyProblemsOf(id: string, test: ReportedTest, inGroups: Set<string>, all: string[]): string[] {
-  const tagged = all.filter((group) => test.tags.includes(`@${group}`));
+  // Playwright's JSON report writes tags without their '@' (shyden-labs/playwright-devices#39).
+  const tagged = all.filter((group) => test.tags.includes(group));
   if (tagged.length === 0) {
     if (inGroups.size === all.length) return [];
     return [...inGroups].map((group) => `"${id}" runs in the ${group} group only but has no @${group} tag with a group-only reason`);

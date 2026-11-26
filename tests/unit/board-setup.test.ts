@@ -4,6 +4,8 @@ import { main, planEstimateField, planPriorityField, PRIORITY_OPTIONS } from '..
 
 // `gh` is stood in: a unit test starts no process. Each test queues gh's replies in call order.
 vi.mock('node:child_process', () => ({ execFileSync: vi.fn() }));
+// Each command runs from the path trustedBin finds, never a bare name on PATH (issue shyden-labs/playwright-devices#50).
+vi.mock('../../scripts/trusted-bin.ts', () => ({ trustedBin: (name: string) => `/trusted/${name}` }));
 const gh = vi.mocked(execFileSync);
 
 /**
@@ -146,6 +148,7 @@ describe('main', () => {
   it('creates both fields on a bare board, reads them back and exits 0', () => {
     reply(board(), {}, {}, board(ESTIMATE, PRIORITY));
     expect(main(['PVT_1', 'Board'])).toBe(0);
+    expect(gh.mock.calls.map((c) => c[0])).toEqual(Array(4).fill('/trusted/gh'));
     expect(calls()).toEqual([
       ['query', '', ['-f', 'id=PVT_1']],
       ['mutation', 'Estimate', ['-f', 'id=PVT_1']],
