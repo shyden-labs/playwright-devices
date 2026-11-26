@@ -50,9 +50,9 @@ codesign -v --strict $runner
 
 # The run script refuses to start ios_webkit_debug_proxy unless the pf rule that keeps its ports to
 # this machine is installed as on the laptop: the rule file, loaded by its launchd job
-# (research/devices/mac-setup/, shyden-labs/playwright-devices#19).
-sudo cp $repo/research/devices/mac-setup/pf.shyden.conf /etc/pf.shyden.conf
-sudo cp $repo/research/devices/mac-setup/uk.co.shyden.pf.plist /Library/LaunchDaemons/uk.co.shyden.pf.plist
+# (mac-setup/, shyden-labs/playwright-devices#19).
+sudo cp $repo/mac-setup/pf.shyden.conf /etc/pf.shyden.conf
+sudo cp $repo/mac-setup/uk.co.shyden.pf.plist /Library/LaunchDaemons/uk.co.shyden.pf.plist
 sudo launchctl bootstrap system /Library/LaunchDaemons/uk.co.shyden.pf.plist
 for _ in {1..20}; do
   launchctl print system/uk.co.shyden.pf 2>/dev/null | grep -q 'last exit code = 0' && break
