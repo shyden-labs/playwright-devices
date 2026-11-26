@@ -45,6 +45,28 @@ function fakeClock(): WdaClock {
 
 const session = { 'POST /session': () => ({ sessionId: 's1', capabilities: {} }) };
 
+describe('pressKey (shyden-labs/playwright-devices#67)', () => {
+  it("presses the on-screen keyboard's return key for Enter, once the keyboard is listed", async () => {
+    const wda = fakeWda({ ...session, 'POST /session/s1/elements': () => [{ ELEMENT: 'kb' }], 'POST /session/s1/wda/keys': () => null });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await client.pressKey('Enter');
+
+    expect(wda.calls.find((c) => c.path === '/session/s1/wda/keys')?.body).toEqual({ value: ['\n'] });
+  });
+
+  it('refuses Escape, which the iPhone has no key for, and any other key, naming it and sending nothing', async () => {
+    const wda = fakeWda({ ...session, 'POST /session/s1/elements': () => [{ ELEMENT: 'kb' }], 'POST /session/s1/wda/keys': () => null });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await expect(client.pressKey('Escape')).rejects.toThrow(
+      'the iPhone has no Escape key: its on-screen keyboard has none; close what Escape would close by a real tap instead',
+    );
+    await expect(client.pressKey('Tab')).rejects.toThrow('no real key on the iPhone for "Tab"; keys routed: Enter');
+    expect(wda.calls.filter((c) => c.path === '/session/s1/wda/keys')).toEqual([]);
+  });
+});
+
 describe('typeText', () => {
   it('sends the keys only once the on-screen keyboard is listed', async () => {
     let keyboardLooks = 0;

@@ -10,13 +10,61 @@
  */
 import type { Locator, Page } from '@playwright/test';
 import type { Box } from './screen-map.ts';
-import type { ScreenPoint } from './wda-client.ts';
+import type { ScreenPoint, WdaClock } from './wda-client.ts';
+import { realClock } from './clock.ts';
 
 /** The real input this stand-in sends. */
 export interface RealInput {
   tapAt(point: ScreenPoint): Promise<void>;
   typeText(text: string): Promise<void>;
+  /** One real finger dragged across the screen. */
+  swipe(from: ScreenPoint, to: ScreenPoint): Promise<void>;
+  /** Presses a key by its Playwright name (`Enter`), as the phone's own key. */
+  pressKey(key: string): Promise<void>;
 }
+
+/** Where an element's centre is, and what of the page shows, in the same page (client) coordinates. */
+export interface Place {
+  centreY: number;
+  view: { left: number; top: number; width: number; height: number };
+}
+
+/** Reads `element`'s place inside the page (passed to `locator.evaluate`). */
+export function readPlace(element: Element): Place {
+  const rect = element.getBoundingClientRect();
+  const visual = window.visualViewport;
+  return {
+    centreY: rect.top + rect.height / 2,
+    view:
+      visual === null
+        ? { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight }
+        : { left: visual.offsetLeft, top: visual.offsetTop, width: visual.width, height: visual.height },
+  };
+}
+
+/** Whether `element` has focus in its page; run in the page by `locator.evaluate`. */
+export function hasFocus(element: Element): boolean {
+  return element === element.ownerDocument.activeElement;
+}
+
+/**
+ * Finger drags allowed to bring a target into view. A field under the keyboard
+ * on the pixel_tablet emulator sat 60 CSS px below what showed (run 44974365844).
+ */
+const MAX_DRAGS = 5;
+
+/** Aims allowed while what shows keeps moving between the check that the target shows and the aim. */
+const MAX_AIMS = 5;
+
+/** How long a target may keep moving after a drag or a keyboard change. */
+const SETTLE_CEILING_MS = 5_000;
+
+/** Pause between reads while the target settles. */
+const SETTLE_POLL_MS = 100;
+
+/** A drag runs between these fractions of what shows, at its middle. */
+const DRAG_NEAR = 0.25;
+const DRAG_FAR = 0.75;
 
 export interface RealInputPageOptions {
   input: RealInput;
@@ -24,6 +72,7 @@ export interface RealInputPageOptions {
   toScreen: (box: Box) => Promise<ScreenPoint>;
   /** Resolves relative URLs: Playwright gives the iOS route no context of its own to hold it. */
   baseURL: string;
+  clock?: WdaClock;
 }
 
 /** Locator methods that make a locator, so the result stays on real input. */
@@ -48,12 +97,7 @@ const LOCATOR_MAKERS = new Set([
 const UNROUTED_LOCATOR_INPUT = new Set([
   'fill',
   'clear',
-  'press',
-  'pressSequentially',
   'type',
-  'check',
-  'uncheck',
-  'setChecked',
   'hover',
   'dblclick',
   'dragTo',
@@ -74,22 +118,123 @@ function refuseAll(prefix: string): object {
   return new Proxy({}, { get: (_target, prop) => refuse(`${prefix}.${String(prop)}`) });
 }
 
-export function realInputPage(page: Page, { input, toScreen, baseURL }: RealInputPageOptions): Page {
-  const nameOf = (locator: Locator): string => String((locator as unknown as { name?: string }).name ?? locator);
+export function realInputPage(page: Page, { input, toScreen, baseURL, clock = realClock }: RealInputPageOptions): Page {
+  /**
+   * The target's box once two reads in a row agree, both the box and where what shows sits: a keyboard or a
+   * finger drag moves the page, and a drag can pan what shows on, as a fling, while the box stays put
+   * (pixel_tablet emulator, run 45027508984: aimed mid-fling, the finger landed on Chrome's bar above the keyboard).
+   */
+  async function settledBox(locator: Locator): Promise<Box> {
+    const read = async (): Promise<Box & { viewTop: number; viewLeft: number }> => {
+      const box = await locator.boundingBox();
+      if (box === null) throw new Error(`cannot tap ${locator.toString()}: it has no box on the page (hidden or detached)`);
+      const { view } = await locator.evaluate(readPlace);
+      return { ...box, viewTop: view.top, viewLeft: view.left };
+    };
+    const deadline = clock.now() + SETTLE_CEILING_MS;
+    // Reads a poll apart: two back to back agree even mid-fling. Each step reads again until two agree.
+    const settle = async (previous: Box & { viewTop: number; viewLeft: number }): Promise<Box> => {
+      await clock.sleep(SETTLE_POLL_MS);
+      const current = await read();
+      if (JSON.stringify(current) === JSON.stringify(previous)) {
+        const { x, y, width, height } = current;
+        return { x, y, width, height };
+      }
+      if (clock.now() >= deadline) {
+        throw new Error(
+          `cannot tap ${locator.toString()}: it did not stop moving within ${SETTLE_CEILING_MS} ms; last two boxes: ${JSON.stringify(previous)} then ${JSON.stringify(current)}`,
+        );
+      }
+      return settle(current);
+    };
+    return settle(await read());
+  }
 
+  /** A point of the page, as a box with no size, on the screen. */
+  const screenAt = (x: number, y: number) => toScreen({ x, y, width: 0, height: 0 });
+
+  /**
+   * Taps the target with one real finger, first dragging the page by finger, as a person would, until the
+   * target's centre shows: one under the keyboard cannot be touched where it is.
+   */
   async function tap(locator: Locator): Promise<void> {
-    const box = await locator.boundingBox();
-    if (box === null) throw new Error(`cannot tap ${nameOf(locator)}: it has no box on the page (hidden or detached)`);
-    await input.tapAt(await toScreen(box));
+    return tapFrom(locator, await settledBox(locator), 0, 0);
+  }
+
+  /** One step of a tap: tap if the centre shows and held still while aimed, else aim again or drag once, and step again. */
+  async function tapFrom(locator: Locator, box: Box, aims: number, drags: number): Promise<void> {
+    const place = await locator.evaluate(readPlace);
+    const { centreY, view } = place;
+    const bottom = view.top + view.height;
+    if (centreY >= view.top && centreY <= bottom) {
+      const point = await toScreen(box);
+      // The aim reads the screen afresh: if what shows moved meanwhile, as a keyboard rising in two steps
+      // does (pixel_tablet emulator, run 45353878042), the check above no longer holds, so it is made again.
+      if (JSON.stringify(await locator.evaluate(readPlace)) === JSON.stringify(place)) {
+        await input.tapAt(point);
+        return;
+      }
+      if (aims + 1 === MAX_AIMS) {
+        throw new Error(`cannot tap ${locator.toString()}: what shows moved while each of ${MAX_AIMS} taps was aimed`);
+      }
+      return tapFrom(locator, await settledBox(locator), aims + 1, drags);
+    }
+    if (drags === MAX_DRAGS) {
+      throw new Error(
+        `cannot tap ${locator.toString()}: its centre stayed at page y ${centreY}, outside what shows (${view.top} to ${bottom}), after ${MAX_DRAGS} finger drags`,
+      );
+    }
+    const x = view.left + view.width / 2;
+    const near = view.top + view.height * DRAG_NEAR;
+    const far = view.top + view.height * DRAG_FAR;
+    // Below what shows: the finger pushes the page up; above: down.
+    const [fromY, toY] = centreY > bottom ? [far, near] : [near, far];
+    const from = await screenAt(x, fromY);
+    const to = await screenAt(x, toY);
+    await input.swipe(from, to);
+    return tapFrom(locator, await settledBox(locator), aims, drags + 1);
+  }
+
+  /** Types into a field as a person does: one real tap on it, then the phone's own typing (shyden-labs/playwright-devices#67). */
+  async function pressSequentially(locator: Locator, text: string): Promise<void> {
+    await tap(locator);
+    await input.typeText(text);
+  }
+
+  /** Ticks or unticks a box with one real tap when it is not already so, then checks the tap took. */
+  async function setChecked(locator: Locator, checked: boolean): Promise<void> {
+    if ((await locator.isChecked()) === checked) return;
+    await tap(locator);
+    if ((await locator.isChecked()) !== checked) {
+      throw new Error(`${locator.toString()} is still ${checked ? 'unchecked' : 'checked'} after a real tap`);
+    }
+  }
+
+  /**
+   * Presses a key on a locator that already has focus. A phone gives focus only by a real tap,
+   * which would also press what it lands on, so a locator without focus is refused, naming why.
+   */
+  async function press(locator: Locator, key: string): Promise<void> {
+    if (!(await locator.evaluate(hasFocus))) {
+      throw new Error(
+        `cannot press ${key} on ${locator.toString()}: it does not have focus, and on a phone only a real tap gives focus; tap it instead, or tap a field first`,
+      );
+    }
+    await input.pressKey(key);
   }
 
   function wrapLocator(locator: Locator): Locator {
     return new Proxy(locator, {
       get(target, prop, receiver) {
         if (prop === 'tap' || prop === 'click') return () => tap(target);
+        if (prop === 'pressSequentially') return (text: string) => pressSequentially(target, text);
+        if (prop === 'check') return () => setChecked(target, true);
+        if (prop === 'uncheck') return () => setChecked(target, false);
+        if (prop === 'setChecked') return (checked: boolean) => setChecked(target, checked);
+        if (prop === 'press') return (key: string) => press(target, key);
         if (typeof prop === 'string' && UNROUTED_LOCATOR_INPUT.has(prop)) return refuse(prop);
         const value: unknown = Reflect.get(target, prop, receiver);
-        if (typeof prop === 'string' && LOCATOR_MAKERS.has(prop) && typeof value === 'function') {
+        if (typeof prop === 'string' && LOCATOR_MAKERS.has(prop)) {
           return (...args: unknown[]) => wrapLocator((value as (...a: unknown[]) => Locator).apply(target, args));
         }
         return typeof value === 'function' ? (value as (...a: unknown[]) => unknown).bind(target) : value;
@@ -100,7 +245,11 @@ export function realInputPage(page: Page, { input, toScreen, baseURL }: RealInpu
   const keyboard = new Proxy(
     {},
     {
-      get: (_target, prop) => (prop === 'type' ? (text: string) => input.typeText(text) : refuse(`keyboard.${String(prop)}`)),
+      get: (_target, prop) => {
+        if (prop === 'type') return (text: string) => input.typeText(text);
+        if (prop === 'press') return (key: string) => input.pressKey(key);
+        return refuse(`keyboard.${String(prop)}`);
+      },
     },
   );
 
@@ -110,7 +259,7 @@ export function realInputPage(page: Page, { input, toScreen, baseURL }: RealInpu
       if (prop === 'keyboard') return keyboard;
       if (prop === 'mouse' || prop === 'touchscreen') return refuseAll(prop);
       const value: unknown = Reflect.get(target, prop, receiver);
-      if (typeof prop === 'string' && LOCATOR_MAKERS.has(prop) && typeof value === 'function') {
+      if (typeof prop === 'string' && LOCATOR_MAKERS.has(prop)) {
         return (...args: unknown[]) => wrapLocator((value as (...a: unknown[]) => Locator).apply(target, args));
       }
       return typeof value === 'function' ? (value as (...a: unknown[]) => unknown).bind(target) : value;

@@ -159,6 +159,28 @@ describe('real input on Android', () => {
     expect(device.calls).toEqual(["shell input text 'Ana'\\''s%stea%s&%stoast'"]);
   });
 
+  it("pressKey sends Enter and Escape as the phone's own key events (shyden-labs/playwright-devices#67)", async () => {
+    const device = fakeAdb([[]]);
+    const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
+    await screen.pressKey('Enter');
+    await screen.pressKey('Escape');
+    expect(device.calls).toEqual(['shell input keyevent KEYCODE_ENTER', 'shell input keyevent KEYCODE_ESCAPE']);
+  });
+
+  it('swipe drags one finger between the points over 400 ms, rounded to whole pixels, as the measured scroll did', async () => {
+    const device = fakeAdb([[]]);
+    await connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).swipe({ x: 640.4, y: 668.6 }, { x: 640, y: 356 });
+    expect(device.calls).toEqual(['shell input swipe 640 669 640 356 400']);
+  });
+
+  it('pressKey refuses a key it has no key event for, naming it and sending nothing', async () => {
+    const device = fakeAdb([[]]);
+    await expect(connectAndroidScreen({ adb: device.adb, clock: fakeClock() }).pressKey('Tab')).rejects.toThrow(
+      'no key event routed for "Tab" on Android; keys routed: Enter, Escape',
+    );
+    expect(device.calls).toEqual([]);
+  });
+
   it('typeText refuses what adb input cannot type, sending nothing', async () => {
     const device = fakeAdb([[]]);
     const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });

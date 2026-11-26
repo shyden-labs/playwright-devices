@@ -1,0 +1,28 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [android-playwright] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (16.0s)
+
+
+  1) [android-playwright] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input › type into a field in one go 
+
+    Error: not routed to real input yet: pressSequentially
+
+       at ../../src/devices/real-input-page.ts:68
+
+      66 | function refuse(method: string): () => never {
+      67 |   return () => {
+    > 68 |     throw new Error(`not routed to real input yet: ${method}`);
+         |           ^
+      69 |   };
+      70 | }
+      71 |
+        at Proxy.pressSequentially (/Users/shyden/Developer/Repos/playwright-devices-67/src/devices/real-input-page.ts:68:11)
+        at /Users/shyden/Developer/Repos/playwright-devices-67/research/devices/journey.spec.ts:33:36
+        at /Users/shyden/Developer/Repos/playwright-devices-67/research/devices/journey.spec.ts:32:3
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-android-playwright/error-context.md
+
+  1 failed
+    [android-playwright] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-playwright-3b402284 exit=1

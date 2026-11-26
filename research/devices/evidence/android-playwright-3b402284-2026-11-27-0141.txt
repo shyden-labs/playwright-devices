@@ -1,0 +1,28 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [android-playwright] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (23.8s)
+
+
+  1) [android-playwright] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input › tick and untick a box 
+
+    Error: getByLabel('Agree') is still unchecked after a real tap
+
+       at ../../src/devices/real-input-page.ts:99
+
+       97 |     await tap(locator);
+       98 |     if ((await locator.isChecked()) !== checked) {
+    >  99 |       throw new Error(`${nameOf(locator)} is still ${checked ? 'unchecked' : 'checked'} after a real tap`);
+          |             ^
+      100 |     }
+      101 |   }
+      102 |
+        at setChecked (/Users/shyden/Developer/Repos/playwright-devices-67/src/devices/real-input-page.ts:99:13)
+        at /Users/shyden/Developer/Repos/playwright-devices-67/research/devices/journey.spec.ts:38:5
+        at /Users/shyden/Developer/Repos/playwright-devices-67/research/devices/journey.spec.ts:37:3
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-android-playwright/error-context.md
+
+  1 failed
+    [android-playwright] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-playwright-3b402284 exit=1

@@ -1,0 +1,53 @@
+21:27:20.191 box before: {"x":16,"y":454.232177734375,"width":265.5982360839844,"height":16}
+21:27:20.323 place before: {"centreY":462.232177734375,"view":{"left":0,"top":0,"width":411.4285583496094,"height":437.4285583496094}}
+21:27:37.809 box after: {"x":16,"y":174.80357360839844,"width":265.5982360839844,"height":16}
+21:27:37.859 place after: {"centreY":462.232177734375,"view":{"left":0,"top":279.4285583496094,"width":411.4285583496094,"height":437.4285583496094}}
+21:27:37.889 checked after one tap: false
+21:27:37.933 devicePixelRatio: 3.5
+21:27:37.974 page saw: 23503 ms pointerdown at 206,328 on LABEL view 437
+21:27:37.974 page saw: 23503 ms touchstart at 206,328 on LABEL view 437
+21:27:37.974 page saw: 23526 ms pointercancel at 0,0 on LABEL view 437
+21:27:37.974 page saw: 23540 ms viewport scroll height 437 offsetTop 5 pageTop 5
+21:27:37.974 page saw: 23556 ms viewport scroll height 437 offsetTop 12 pageTop 12
+21:27:37.974 page saw: 23573 ms viewport scroll height 437 offsetTop 21 pageTop 21
+21:27:37.974 page saw: 23590 ms viewport scroll height 437 offsetTop 31 pageTop 31
+21:27:37.974 page saw: 23606 ms viewport scroll height 437 offsetTop 41 pageTop 41
+21:27:37.974 page saw: 23623 ms viewport scroll height 437 offsetTop 51 pageTop 51
+21:27:37.975 page saw: 23640 ms viewport scroll height 437 offsetTop 60 pageTop 60
+21:27:37.975 page saw: 23656 ms viewport scroll height 437 offsetTop 70 pageTop 70
+21:27:37.975 page saw: 23675 ms viewport scroll height 437 offsetTop 79 pageTop 79
+21:27:37.975 page saw: 23690 ms viewport scroll height 437 offsetTop 88 pageTop 88
+21:27:37.975 page saw: 23706 ms viewport scroll height 437 offsetTop 97 pageTop 97
+21:27:37.975 page saw: 23723 ms viewport scroll height 437 offsetTop 107 pageTop 107
+21:27:37.975 page saw: 23739 ms viewport scroll height 437 offsetTop 116 pageTop 116
+21:27:37.975 page saw: 23758 ms viewport scroll height 437 offsetTop 125 pageTop 125
+21:27:37.975 page saw: 23773 ms viewport scroll height 437 offsetTop 134 pageTop 134
+21:27:37.975 page saw: 23789 ms viewport scroll height 437 offsetTop 143 pageTop 143
+21:27:37.975 page saw: 23806 ms viewport scroll height 437 offsetTop 152 pageTop 152
+21:27:37.975 page saw: 23822 ms viewport scroll height 437 offsetTop 161 pageTop 161
+21:27:37.975 page saw: 23839 ms viewport scroll height 437 offsetTop 171 pageTop 171
+21:27:37.975 page saw: 23856 ms viewport scroll height 437 offsetTop 180 pageTop 180
+21:27:37.975 page saw: 23872 ms viewport scroll height 437 offsetTop 189 pageTop 189
+21:27:37.975 page saw: 23889 ms viewport scroll height 437 offsetTop 198 pageTop 198
+21:27:37.975 page saw: 23903 ms touchend at 206,307 on LABEL view 437
+21:27:37.975 page saw: 23905 ms viewport scroll height 437 offsetTop 207 pageTop 207
+21:27:37.975 page saw: 23921 ms viewport scroll height 437 offsetTop 214 pageTop 214
+21:27:37.975 page saw: 23938 ms viewport scroll height 437 offsetTop 223 pageTop 223
+21:27:37.975 page saw: 23954 ms viewport scroll height 437 offsetTop 231 pageTop 231
+21:27:37.975 page saw: 23971 ms viewport scroll height 437 offsetTop 239 pageTop 239
+21:27:37.975 page saw: 23987 ms viewport scroll height 437 offsetTop 245 pageTop 245
+21:27:37.975 page saw: 24004 ms viewport scroll height 437 offsetTop 251 pageTop 251
+21:27:37.975 page saw: 24021 ms viewport scroll height 437 offsetTop 256 pageTop 256
+21:27:37.975 page saw: 24037 ms viewport scroll height 437 offsetTop 260 pageTop 260
+21:27:37.975 page saw: 24054 ms viewport scroll height 437 offsetTop 263 pageTop 263
+21:27:37.975 page saw: 24071 ms viewport scroll height 437 offsetTop 266 pageTop 266
+21:27:37.975 page saw: 24087 ms viewport scroll height 437 offsetTop 269 pageTop 269
+21:27:37.975 page saw: 24104 ms viewport scroll height 437 offsetTop 271 pageTop 271
+21:27:37.975 page saw: 24120 ms viewport scroll height 437 offsetTop 273 pageTop 273
+21:27:37.975 page saw: 24137 ms viewport scroll height 437 offsetTop 275 pageTop 275
+21:27:37.975 page saw: 24154 ms viewport scroll height 437 offsetTop 276 pageTop 276
+21:27:37.975 page saw: 24171 ms viewport scroll height 437 offsetTop 277 pageTop 277
+21:27:37.975 page saw: 24188 ms viewport scroll height 437 offsetTop 278 pageTop 278
+21:27:37.975 page saw: 24204 ms viewport scroll height 437 offsetTop 279 pageTop 279
+21:27:37.975 page saw: 24220 ms viewport scroll height 437 offsetTop 279 pageTop 279
+21:27:37.975 page saw: 24237 ms viewport scroll height 437 offsetTop 279 pageTop 279

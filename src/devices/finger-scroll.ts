@@ -11,7 +11,7 @@ const START = 0.45;
 const END = 0.15;
 
 /** The measured Android swipe took 400 ms. */
-const ANDROID_SWIPE_MS = 400;
+export const ANDROID_SWIPE_MS = 400;
 
 export function scrollSpan({ width, height }: ScreenSize): { from: ScreenPoint; to: ScreenPoint } {
   const x = Math.round(width / 2);
@@ -37,10 +37,15 @@ export function parseWmSize(output: string): ScreenSize {
   return { width: Number(chosen[2]), height: Number(chosen[3]) };
 }
 
+/** `adb` arguments for one finger dragged from `from` to `to`, in whole pixels, over the measured time. */
+export function androidSwipeArgs(from: ScreenPoint, to: ScreenPoint): string[] {
+  return ['shell', 'input', 'swipe', ...[from.x, from.y, to.x, to.y].map((n) => String(Math.round(n))), String(ANDROID_SWIPE_MS)];
+}
+
 /** Runs `adb` with these arguments and answers what it printed. */
 export type Adb = (args: string[]) => Promise<string>;
 
 export async function androidFingerScroll(adb: Adb): Promise<void> {
   const { from, to } = scrollSpan(parseWmSize(await adb(['shell', 'wm', 'size'])));
-  await adb(['shell', 'input', 'swipe', ...[from.x, from.y, to.x, to.y, ANDROID_SWIPE_MS].map(String)]);
+  await adb(androidSwipeArgs(from, to));
 }
