@@ -73,6 +73,33 @@ describe('startChromeCold', () => {
     expect(calls.filter((call) => call.startsWith('shell am start'))).toHaveLength(1);
   });
 
+  it('fails at once when Chrome shows its first-run screen, which opens no DevTools socket, naming it and the fix', async () => {
+    // Measured in CI 2026-11-26 (run 45727815519, pixel_9): every CDP start in the round sat on this screen
+    // and answered UND_ERR_SOCKET for the whole 30 s (shyden-labs/playwright-devices#47).
+    const firstRun =
+      '      topResumedActivity=ActivityRecord{70394152 u0 com.android.chrome/org.chromium.chrome.browser.firstrun.FirstRunActivity t11}';
+    const { adb, calls } = fakeAdb({ 'shell dumpsys activity activities': `ACTIVITY MANAGER ACTIVITIES\n${firstRun}\n` });
+    const { fetchFn } = fakeFetch([new Error('UND_ERR_SOCKET')]);
+    const clock = fakeClock();
+
+    await expect(startChromeCold({ adb, fetchFn, clock, port: 9230 })).rejects.toThrow(
+      'Chrome shows its first-run screen (org.chromium.chrome.browser.firstrun.FirstRunActivity), which opens no DevTools socket: open Chrome on the phone once and finish its first run, then run again',
+    );
+    expect(clock.now()).toBe(0);
+    expect(calls.filter((call) => call.startsWith('shell am start'))).toHaveLength(1);
+  });
+
+  it('keeps waiting while the screen shows anything but the first-run screen', async () => {
+    const browsing = '      topResumedActivity=ActivityRecord{1 u0 com.android.chrome/com.google.android.apps.chrome.Main t3}';
+    const { adb, calls } = fakeAdb({ 'shell dumpsys activity activities': browsing });
+    const { fetchFn } = fakeFetch([new Error('ECONNREFUSED'), VERSION]);
+
+    const started = await startChromeCold({ adb, fetchFn, clock: fakeClock(), port: 9230 });
+
+    expect(started.readyAfterMs).toBe(250);
+    expect(calls.filter((call) => call === 'shell dumpsys activity activities')).toHaveLength(1);
+  });
+
   it('stop removes the forward, stops Chrome and removes the command-line file', async () => {
     const { adb, calls } = fakeAdb();
     const { fetchFn } = fakeFetch([VERSION]);

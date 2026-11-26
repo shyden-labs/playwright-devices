@@ -70,6 +70,7 @@ export async function startChromeCold({
     const { ready, seen } = await look(fetchFn, url);
     const waited = clock.now() - started;
     if (ready) return { readyAfterMs: waited, stop };
+    await refuseFirstRunScreen(adb);
     if (waited >= ceilingMs) {
       throw new Error(`Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}`);
     }
@@ -77,6 +78,23 @@ export async function startChromeCold({
     return attempt();
   };
   return attempt();
+}
+
+/** Chrome's first-run screen: while it shows, Chrome opens no DevTools socket. */
+const FIRST_RUN_ACTIVITY = 'org.chromium.chrome.browser.firstrun.FirstRunActivity';
+
+/**
+ * Fails at once when the phone shows Chrome's first-run screen: it opens no
+ * DevTools socket, so waiting out the ceiling would only end in UND_ERR_SOCKET
+ * (CI run 45727815519, pixel_9, 2026-11-26; shyden-labs/playwright-devices#47).
+ */
+async function refuseFirstRunScreen(adb: Adb): Promise<void> {
+  const top = (await adb(['shell', 'dumpsys', 'activity', 'activities'])).split('\n').find((line) => line.includes('topResumedActivity='));
+  if (top?.includes(FIRST_RUN_ACTIVITY)) {
+    throw new Error(
+      `Chrome shows its first-run screen (${FIRST_RUN_ACTIVITY}), which opens no DevTools socket: open Chrome on the phone once and finish its first run, then run again`,
+    );
+  }
 }
 
 /** Stops Chrome and removes the command-line file Playwright leaves behind when a launch does not finish. */
