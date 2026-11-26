@@ -1,0 +1,9 @@
+goto: ok 156ms 
+WDA tap "Tap me": ok 1103ms {"wdaRect":{"y":160,"x":16,"width":97,"height":49},"cssBox":{"x":16,"y":92.21875,"width":96.53125,"height":48}}
+tap-result (trusted click): ok 8ms 
+calibrated point vs WDA rect of Tap me: ok 198ms {"x":64,"y":184}
+finger tap Name field (screen point) and type: ok 1315ms {"x":188,"y":296}
+typed-result: ok 5ms 
+scroll reset before swipe: ok 728ms 0
+finger swipe up: ok 2941ms {"size":{"width":420,"height":912},"scrollY":585}
+scroll-result: ok 5ms 

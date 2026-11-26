@@ -1,0 +1,6 @@
+ss.add_server_fd(3)
+Listing devices on :9221
+ss.add_fd(4)
+ss.recv fd=4 len=294
+ss.remove_server_fd(3)
+ss.remove_fd(4)

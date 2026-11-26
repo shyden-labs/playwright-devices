@@ -1,0 +1,545 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project /Users/shyden/Library/Caches/playwright-devices/wda/src/WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -destination id=C02FB4F0-63BC-410E-9D37-AC60C69EC1F7 -derivedDataPath /Users/shyden/Library/Caches/playwright-devices/wda/derived-sim
+
+2026-11-20 22:04:22.623422+0700 WebDriverAgentRunner-Runner[41552:1052672] [Default] Running tests...
+2026-11-20 22:04:24.638556+0700 WebDriverAgentRunner-Runner[41552:1052672] [UIKit App Config] Update the Info.plist: Launch screens will soon be required.
+    t =      nans Interface orientation changed to Portrait
+objc[41552]: Class UIAccessibilityLoaderWebShared is implemented in both /private/var/run/com.apple.security.cryptexd/mnt/com.apple.iPhoneOS.SimulatorRuntime-v24.1.434.0.s47Tlv/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x108840398) and /private/var/run/com.apple.security.cryptexd/mnt/com.apple.iPhoneOS.SimulatorRuntime-v24.1.434.0.s47Tlv/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x1089f8310). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+Test Suite 'All tests' started at 2026-11-20 22:04:48.415.
+Test Suite 'WebDriverAgentRunner.xctest' started at 2026-11-20 22:04:48.790.
+Test Suite 'UITestingUITests' started at 2026-11-20 22:04:48.796.
+    t =      nans Suite Set Up
+Test Case '-[UITestingUITests testRunner]' started.
+    t =     0.02s Start Test at 2026-11-20 22:04:50.118
+    t =     0.06s Set Up
+2026-11-20 22:04:50.163552+0700 WebDriverAgentRunner-Runner[41552:1052672] Built at Nov 17 2026 23:33:36
+2026-11-20 22:04:52.140316+0700 WebDriverAgentRunner-Runner[41552:1052672] ServerURLHere->http://192.168.1.9:8100<-ServerURLHere
+2026-11-20 22:04:52.572476+0700 WebDriverAgentRunner-Runner[41552:1052672] Using singleton test manager
+2026-11-20 22:06:36.261283+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   106.23s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x108715b60)'
+    t =   106.80s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   107.31s     Find: Descendants matching type Any
+    t =   107.31s     Find: Elements matching predicate 'BLOCKPREDICATE(0x108715b60)'
+    t =   107.32s Find the "playwright-devices screen marker" Image
+    t =   107.33s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   107.44s     Find: Descendants matching type Any
+    t =   107.45s     Find: Elements matching predicate 'BLOCKPREDICATE(0x108715b60)'
+    t =   107.45s     Find: Identity Binding
+    t =   107.47s Find the "playwright-devices screen marker" Image
+    t =   107.47s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   107.58s     Find: Descendants matching type Any
+    t =   107.59s     Find: Elements matching predicate 'BLOCKPREDICATE(0x108715b60)'
+    t =   107.59s     Find: Identity Binding
+2026-11-20 22:06:37.710000+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   107.61s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1120159b0)'
+    t =   107.61s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   107.72s     Find: Descendants matching type Any
+    t =   107.73s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1120159b0)'
+    t =   107.73s Find the "playwright-devices screen marker" Image
+    t =   107.73s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   107.85s     Find: Descendants matching type Any
+    t =   107.85s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1120159b0)'
+    t =   107.85s     Find: Identity Binding
+    t =   107.86s Find the "playwright-devices screen marker" Image
+    t =   107.87s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   107.98s     Find: Descendants matching type Any
+    t =   107.98s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1120159b0)'
+    t =   107.98s     Find: Identity Binding
+2026-11-20 22:06:38.527737+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   108.43s Find the Application 'com.apple.mobilesafari'
+    t =   108.44s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   108.52s Find the Application 'com.apple.mobilesafari'
+    t =   108.52s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+2026-11-20 22:06:39.836826+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 2s until com.apple.mobilesafari is in idle state (including animations)
+    t =   109.74s Wait for com.apple.mobilesafari to idle
+2026-11-20 22:06:40.725976+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   110.63s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1086e43f0)'
+    t =   110.64s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   111.02s     Find: Descendants matching type Any
+    t =   111.02s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1086e43f0)'
+    t =   111.04s Find the "playwright-devices screen marker" Image
+    t =   111.04s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   111.19s     Find: Descendants matching type Any
+    t =   111.19s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1086e43f0)'
+    t =   111.20s     Find: Identity Binding
+    t =   111.21s Find the "playwright-devices screen marker" Image
+    t =   111.21s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   111.44s     Find: Descendants matching type Any
+    t =   111.44s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1086e43f0)'
+    t =   111.44s     Find: Identity Binding
+2026-11-20 22:06:41.586901+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   111.49s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x11206b7e0)'
+    t =   111.49s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   111.64s     Find: Descendants matching type Any
+    t =   111.64s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11206b7e0)'
+    t =   111.65s Find the "playwright-devices screen marker" Image
+    t =   111.65s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   111.77s     Find: Descendants matching type Any
+    t =   111.78s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11206b7e0)'
+    t =   111.78s     Find: Identity Binding
+    t =   111.79s Find the "playwright-devices screen marker" Image
+    t =   111.79s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   111.91s     Find: Descendants matching type Any
+    t =   111.92s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11206b7e0)'
+    t =   111.92s     Find: Identity Binding
+2026-11-20 22:06:42.077279+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   111.98s Find the Application 'com.apple.mobilesafari'
+    t =   111.98s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   112.07s Find the Application 'com.apple.mobilesafari'
+    t =   112.07s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+2026-11-20 22:06:42.679818+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 2s until com.apple.mobilesafari is in idle state (including animations)
+    t =   112.58s Wait for com.apple.mobilesafari to idle
+2026-11-20 22:06:43.039173+0700 WebDriverAgentRunner-Runner[41552:1052672] Cannot precisely detect the current application. Will use the system's recently active one
+2026-11-20 22:06:43.039566+0700 WebDriverAgentRunner-Runner[41552:1052672] Consider changing the 'defaultActiveApplication' setting to the bundle identifier of the desired application under test
+2026-11-20 22:06:43.039671+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   112.94s Get all elements bound by accessibility element for: Descendants matching type Keyboard
+    t =   112.96s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   113.75s     Find: Descendants matching type Keyboard
+2026-11-20 22:06:44.276382+0700 WebDriverAgentRunner-Runner[41552:1052672] Cannot precisely detect the current application. Will use the system's recently active one
+2026-11-20 22:06:44.276590+0700 WebDriverAgentRunner-Runner[41552:1052672] Consider changing the 'defaultActiveApplication' setting to the bundle identifier of the desired application under test
+2026-11-20 22:06:44.276672+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   114.18s Get all elements bound by accessibility element for: Descendants matching type Keyboard
+    t =   114.18s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   117.40s     Find: Descendants matching type Keyboard
+    t =   117.67s Find the Keyboard (Identity Binding)
+    t =   117.67s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   118.20s     Find: Descendants matching type Keyboard
+    t =   118.20s     Find: Identity Binding
+2026-11-20 22:06:48.941502+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   118.84s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1120cb630)'
+    t =   118.85s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   119.00s     Find: Descendants matching type Any
+    t =   119.00s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1120cb630)'
+    t =   119.02s Find the "playwright-devices screen marker" Image
+    t =   119.02s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   119.18s     Find: Descendants matching type Any
+    t =   119.19s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1120cb630)'
+    t =   119.19s     Find: Identity Binding
+    t =   119.20s Find the "playwright-devices screen marker" Image
+    t =   119.20s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   119.68s     Find: Descendants matching type Any
+    t =   119.69s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1120cb630)'
+    t =   119.73s     Find: Identity Binding
+2026-11-20 22:06:50.023719+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   119.92s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112191500)'
+    t =   119.94s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   120.63s     Find: Descendants matching type Any
+    t =   120.69s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112191500)'
+    t =   120.73s Find the "playwright-devices screen marker" Image
+    t =   120.74s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   121.09s     Find: Descendants matching type Any
+    t =   121.09s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112191500)'
+    t =   121.10s     Find: Identity Binding
+    t =   121.13s Find the "playwright-devices screen marker" Image
+    t =   121.13s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   121.35s     Find: Descendants matching type Any
+    t =   121.36s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112191500)'
+    t =   121.36s     Find: Identity Binding
+2026-11-20 22:06:51.537011+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   121.49s Find the Application 'com.apple.mobilesafari'
+    t =   121.49s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   121.61s Find the Application 'com.apple.mobilesafari'
+    t =   121.62s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+2026-11-20 22:06:52.148040+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 2s until com.apple.mobilesafari is in idle state (including animations)
+    t =   122.05s Wait for com.apple.mobilesafari to idle
+2026-11-20 22:06:52.599257+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   122.50s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1121f85a0)'
+    t =   122.51s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   123.97s     Find: Descendants matching type Any
+    t =   123.98s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1121f85a0)'
+    t =   124.12s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1120cb450)'
+    t =   124.12s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   124.38s     Find: Descendants matching type Any
+    t =   124.38s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1120cb450)'
+    t =   124.43s Find the "Green" Button
+    t =   124.43s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   124.66s     Find: Descendants matching type Any
+    t =   124.67s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1120cb450)'
+    t =   124.68s     Find: Identity Binding
+    t =   124.69s Find the "Green" Button
+    t =   124.70s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   124.86s     Find: Descendants matching type Any
+    t =   124.86s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1120cb450)'
+    t =   124.87s     Find: Identity Binding
+    t =   124.88s Tap "Green" Button
+2026-11-20 22:06:54.980724+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 10s until com.apple.mobilesafari is in idle state (including animations)
+    t =   124.88s     Wait for com.apple.mobilesafari to idle
+    t =   125.34s     Find the "Green" Button
+    t =   125.35s         Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   125.56s         Find: Descendants matching type Any
+    t =   125.56s         Find: Elements matching predicate 'BLOCKPREDICATE(0x1120cb450)'
+    t =   125.57s         Find: Identity Binding
+    t =   125.58s Application is configured to skip UI interruption handling
+    t =   125.60s     Synthesize event
+2026-11-20 22:06:56.167502+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 10s until com.apple.mobilesafari is in idle state (including animations)
+    t =   126.07s     Wait for com.apple.mobilesafari to idle
+2026-11-20 22:06:58.221824+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   128.13s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x11227ccf0)'
+    t =   128.13s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   128.35s     Find: Descendants matching type Any
+    t =   128.36s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11227ccf0)'
+    t =   128.37s Find the "playwright-devices screen marker" Image
+    t =   128.38s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   128.58s     Find: Descendants matching type Any
+    t =   128.59s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11227ccf0)'
+    t =   128.59s     Find: Identity Binding
+    t =   128.62s Find the "playwright-devices screen marker" Image
+    t =   128.62s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   128.89s     Find: Descendants matching type Any
+    t =   128.89s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11227ccf0)'
+    t =   128.90s     Find: Identity Binding
+2026-11-20 22:06:59.075959+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   128.98s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112192850)'
+    t =   128.99s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   129.22s     Find: Descendants matching type Any
+    t =   129.26s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112192850)'
+    t =   129.30s Find the "playwright-devices screen marker" Image
+    t =   129.31s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   129.56s     Find: Descendants matching type Any
+    t =   129.58s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112192850)'
+    t =   129.60s     Find: Identity Binding
+    t =   129.90s Find the "playwright-devices screen marker" Image
+    t =   129.92s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   130.15s     Find: Descendants matching type Any
+    t =   130.15s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112192850)'
+    t =   130.16s     Find: Identity Binding
+2026-11-20 22:07:00.480355+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   130.38s Find the Application 'com.apple.mobilesafari'
+    t =   130.39s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   130.55s Find the Application 'com.apple.mobilesafari'
+    t =   130.56s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+2026-11-20 22:07:01.447069+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 2s until com.apple.mobilesafari is in idle state (including animations)
+    t =   131.36s Wait for com.apple.mobilesafari to idle
+    t =   133.48s App animations complete notification not received, will attempt to continue.
+    t =   133.74s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1086d9a40)'
+    t =   133.78s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   134.15s     Find: Descendants matching type Any
+    t =   134.16s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1086d9a40)'
+    t =   134.25s Find the "Choose File" Button
+    t =   134.26s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   134.70s     Find: Descendants matching type Any
+    t =   134.70s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1086d9a40)'
+    t =   134.71s     Find: Identity Binding
+    t =   134.74s Find the "Choose File" Button
+    t =   134.76s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   135.08s     Find: Descendants matching type Any
+    t =   135.09s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1086d9a40)'
+    t =   135.10s     Find: Identity Binding
+    t =   135.17s Tap "Choose File" Button
+2026-11-20 22:07:05.268702+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 10s until com.apple.mobilesafari is in idle state (including animations)
+    t =   135.17s     Wait for com.apple.mobilesafari to idle
+    t =   135.20s     Find the "Choose File" Button
+    t =   135.20s         Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   135.39s         Find: Descendants matching type Any
+    t =   135.40s         Find: Elements matching predicate 'BLOCKPREDICATE(0x1086d9a40)'
+    t =   135.41s         Find: Identity Binding
+    t =   135.42s Application is configured to skip UI interruption handling
+    t =   135.43s     Synthesize event
+2026-11-20 22:07:06.314635+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 10s until com.apple.mobilesafari is in idle state (including animations)
+    t =   136.22s     Wait for com.apple.mobilesafari to idle
+2026-11-20 22:07:09.394216+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   139.30s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1123450b0)'
+    t =   139.30s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   139.56s     Find: Descendants matching type Any
+    t =   139.56s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1123450b0)'
+2026-11-20 22:07:10.025770+0700 WebDriverAgentRunner-Runner[41552:1052672] Cannot precisely detect the current application. Will use the system's recently active one
+2026-11-20 22:07:10.026512+0700 WebDriverAgentRunner-Runner[41552:1052672] Consider changing the 'defaultActiveApplication' setting to the bundle identifier of the desired application under test
+2026-11-20 22:07:10.027347+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   139.93s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112190480)'
+    t =   139.94s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   140.41s     Find: Descendants matching type Any
+    t =   140.42s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112190480)'
+    t =   140.51s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112347c90)'
+    t =   140.52s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   140.96s     Find: Descendants matching type Any
+    t =   140.96s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112347c90)'
+    t =   141.19s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122cbe40)'
+    t =   141.20s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   141.43s     Find: Descendants matching type Any
+    t =   141.43s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122cbe40)'
+    t =   141.47s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122e3600)'
+    t =   141.47s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   141.69s     Find: Descendants matching type Any
+    t =   141.71s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122e3600)'
+    t =   141.84s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122cbe40)'
+    t =   141.85s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   142.11s     Find: Descendants matching type Any
+    t =   142.12s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122cbe40)'
+    t =   142.31s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112144b10)'
+    t =   142.32s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   142.50s     Find: Descendants matching type Any
+    t =   142.51s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112144b10)'
+    t =   142.55s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x11226b000)'
+    t =   142.55s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   142.80s     Find: Descendants matching type Any
+    t =   142.81s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11226b000)'
+    t =   142.88s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112145e90)'
+    t =   142.88s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   143.09s     Find: Descendants matching type Any
+    t =   143.09s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112145e90)'
+    t =   143.24s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1086f3180)'
+    t =   143.25s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   143.43s     Find: Descendants matching type Any
+    t =   143.43s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1086f3180)'
+    t =   143.48s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122ca190)'
+    t =   143.48s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   143.65s     Find: Descendants matching type Any
+    t =   143.66s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122ca190)'
+    t =   143.73s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112192f10)'
+    t =   143.73s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   143.96s     Find: Descendants matching type Any
+    t =   143.96s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112192f10)'
+    t =   144.22s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x11206a820)'
+    t =   144.24s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   144.70s     Find: Descendants matching type Any
+    t =   144.70s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11206a820)'
+    t =   144.97s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122ec900)'
+    t =   144.98s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   145.73s     Find: Descendants matching type Any
+    t =   145.75s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122ec900)'
+    t =   145.98s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112145e00)'
+    t =   145.99s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   146.94s     Find: Descendants matching type Any
+    t =   146.96s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112145e00)'
+    t =   147.36s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112193720)'
+    t =   147.37s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   147.59s     Find: Descendants matching type Any
+    t =   147.59s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112193720)'
+    t =   147.66s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112357bd0)'
+    t =   147.66s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   147.99s     Find: Descendants matching type Any
+    t =   148.01s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112357bd0)'
+    t =   148.06s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112356640)'
+    t =   148.06s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   148.28s     Find: Descendants matching type Any
+    t =   148.28s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112356640)'
+    t =   148.48s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1120a2c70)'
+    t =   148.49s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   148.67s     Find: Descendants matching type Any
+    t =   148.67s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1120a2c70)'
+2026-11-20 22:07:19.156838+0700 WebDriverAgentRunner-Runner[41552:1052672] Cannot precisely detect the current application. Will use the system's recently active one
+2026-11-20 22:07:19.157174+0700 WebDriverAgentRunner-Runner[41552:1052672] Consider changing the 'defaultActiveApplication' setting to the bundle identifier of the desired application under test
+2026-11-20 22:07:19.157470+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   149.06s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112144e10)'
+    t =   149.07s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   150.73s     Find: Descendants matching type Any
+    t =   150.74s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112144e10)'
+    t =   150.83s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112144e10)'
+    t =   150.85s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   151.09s     Find: Descendants matching type Any
+    t =   151.10s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112144e10)'
+    t =   151.24s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1121c3bd0)'
+    t =   151.24s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   151.45s     Find: Descendants matching type Any
+    t =   151.46s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1121c3bd0)'
+    t =   151.51s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112346460)'
+    t =   151.51s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   151.71s     Find: Descendants matching type Any
+    t =   151.71s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112346460)'
+    t =   151.75s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122ca280)'
+    t =   151.76s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   151.96s     Find: Descendants matching type Any
+    t =   151.96s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122ca280)'
+    t =   152.10s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1121458f0)'
+    t =   152.10s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   154.27s     Find: Descendants matching type Any
+    t =   154.28s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1121458f0)'
+    t =   154.38s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x11227e250)'
+    t =   154.41s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   154.77s     Find: Descendants matching type Any
+    t =   154.77s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11227e250)'
+    t =   154.92s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112002400)'
+    t =   154.93s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   155.21s     Find: Descendants matching type Any
+    t =   155.22s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112002400)'
+    t =   155.52s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x11227d620)'
+    t =   155.53s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   155.77s     Find: Descendants matching type Any
+    t =   155.78s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11227d620)'
+    t =   155.89s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122e3c90)'
+    t =   155.96s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   156.25s     Find: Descendants matching type Any
+    t =   156.26s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122e3c90)'
+    t =   156.34s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122e0ba0)'
+    t =   156.34s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   156.61s     Find: Descendants matching type Any
+    t =   156.63s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122e0ba0)'
+    t =   156.82s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122ca730)'
+    t =   156.83s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   157.05s     Find: Descendants matching type Any
+    t =   157.07s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122ca730)'
+    t =   157.43s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112355710)'
+    t =   157.53s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   157.92s     Find: Descendants matching type Any
+    t =   157.94s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112355710)'
+    t =   158.08s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112355710)'
+    t =   158.10s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   158.40s     Find: Descendants matching type Any
+    t =   158.40s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112355710)'
+    t =   158.62s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122bf450)'
+    t =   158.67s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   158.93s     Find: Descendants matching type Any
+    t =   158.95s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122bf450)'
+    t =   159.11s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122c9cb0)'
+    t =   159.18s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   159.46s     Find: Descendants matching type Any
+    t =   159.46s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122c9cb0)'
+    t =   159.53s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1123575d0)'
+    t =   159.53s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   159.78s     Find: Descendants matching type Any
+    t =   159.79s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1123575d0)'
+    t =   159.95s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122cb0f0)'
+    t =   159.95s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   160.17s     Find: Descendants matching type Any
+    t =   160.17s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122cb0f0)'
+    t =   160.21s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112356e80)'
+    t =   160.22s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   160.39s     Find: Descendants matching type Any
+    t =   160.40s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112356e80)'
+    t =   160.43s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1121901e0)'
+    t =   160.43s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   160.61s     Find: Descendants matching type Any
+    t =   160.62s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1121901e0)'
+    t =   160.76s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122ef900)'
+    t =   160.76s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   161.01s     Find: Descendants matching type Any
+    t =   161.03s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122ef900)'
+    t =   161.10s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1086be4c0)'
+    t =   161.10s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   161.30s     Find: Descendants matching type Any
+    t =   161.31s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1086be4c0)'
+    t =   161.37s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1086d85a0)'
+    t =   161.42s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   161.62s     Find: Descendants matching type Any
+    t =   161.62s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1086d85a0)'
+    t =   161.78s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112344a80)'
+    t =   161.79s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   161.99s     Find: Descendants matching type Any
+    t =   161.99s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112344a80)'
+    t =   162.03s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x11227d2f0)'
+    t =   162.03s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   162.24s     Find: Descendants matching type Any
+    t =   162.24s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11227d2f0)'
+    t =   162.30s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122eda70)'
+    t =   162.30s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   162.53s     Find: Descendants matching type Any
+    t =   162.54s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122eda70)'
+    t =   162.69s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x11232bab0)'
+    t =   162.69s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   162.97s     Find: Descendants matching type Any
+    t =   162.98s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11232bab0)'
+    t =   163.05s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122e0ba0)'
+    t =   163.05s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   163.24s     Find: Descendants matching type Any
+    t =   163.24s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122e0ba0)'
+    t =   163.28s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1121b4270)'
+    t =   163.29s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   163.52s     Find: Descendants matching type Any
+    t =   163.53s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1121b4270)'
+    t =   163.74s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1122ecea0)'
+    t =   163.74s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   174.39s     Find: Descendants matching type Any
+    t =   174.41s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1122ecea0)'
+2026-11-20 22:07:45.313620+0700 WebDriverAgentRunner-Runner[41552:1052672] Cannot precisely detect the current application. Will use the system's recently active one
+2026-11-20 22:07:45.316448+0700 WebDriverAgentRunner-Runner[41552:1052672] Consider changing the 'defaultActiveApplication' setting to the bundle identifier of the desired application under test
+2026-11-20 22:07:45.316694+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   175.22s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112268c90)'
+    t =   175.23s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   187.69s     Find: Descendants matching type Any
+    t =   188.10s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112268c90)'
+    t =   190.43s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1123b3330)'
+    t =   190.58s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   194.46s     Find: Descendants matching type Any
+    t =   194.51s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1123b3330)'
+    t =   195.26s Find the "DOC.sidebar.item.On My iPad" Cell
+    t =   195.30s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   197.34s     Find: Descendants matching type Any
+    t =   197.43s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1123b3330)'
+    t =   197.61s     Find: Identity Binding
+    t =   198.23s Find the "On My iPad" StaticText
+    t =   198.28s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   199.94s     Find: Descendants matching type Any
+    t =   199.94s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1123b3330)'
+    t =   200.98s     Find: Identity Binding
+    t =   203.25s Find the "DOC.sidebar.item.On My iPad" Cell
+    t =   203.34s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   204.25s     Find: Descendants matching type Any
+    t =   204.26s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1123b3330)'
+    t =   204.40s     Find: Identity Binding
+    t =   205.10s Tap "DOC.sidebar.item.On My iPad" Cell
+2026-11-20 22:08:15.204757+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 10s until com.apple.mobilesafari is in idle state (including animations)
+    t =   205.11s     Wait for com.apple.mobilesafari to idle
+    t =   205.66s     Find the "DOC.sidebar.item.On My iPad" Cell
+    t =   206.05s         Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   209.85s         Find: Descendants matching type Any
+    t =   210.21s         Find: Elements matching predicate 'BLOCKPREDICATE(0x1123b3330)'
+    t =   211.28s         Find: Identity Binding
+    t =   213.03s Application is configured to skip UI interruption handling
+    t =   213.15s     Synthesize event
+2026-11-20 22:08:27.948316+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 10s until com.apple.mobilesafari is in idle state (including animations)
+    t =   217.86s     Wait for com.apple.mobilesafari to idle
+    t =   219.54s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x112482c70)'
+    t =   219.67s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   225.37s     Find: Descendants matching type Any
+    t =   226.00s     Find: Elements matching predicate 'BLOCKPREDICATE(0x112482c70)'
+    t =   228.20s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1124c7090)'
+    t =   228.48s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   231.97s     Find: Descendants matching type Any
+    t =   232.01s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1124c7090)'
+    t =   232.55s Find the "WebDriverAgentRunner-Runner, Container" Cell
+    t =   232.96s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   235.32s     Find: Descendants matching type Any
+    t =   235.49s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1124c7090)'
+    t =   235.91s     Find: Identity Binding
+    t =   237.88s Find the "WebDriverAgentRunner-Runner, Container" Cell
+    t =   238.17s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   241.35s     Find: Descendants matching type Any
+    t =   242.19s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1124c7090)'
+    t =   243.00s     Find: Identity Binding
+    t =   245.14s Find the Application 'com.apple.mobilesafari'
+    t =   245.19s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   246.57s Find the Application 'com.apple.mobilesafari'
+    t =   246.67s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+2026-11-20 22:09:00.724962+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 2s until com.apple.mobilesafari is in idle state (including animations)
+    t =   250.63s Wait for com.apple.mobilesafari to idle
+    t =   252.40s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1123b2d00)'
+    t =   253.23s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   259.78s     Find: Descendants matching type Any
+    t =   259.83s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1123b2d00)'
+    t =   260.76s Find the "device-journey, txt" Cell
+    t =   260.77s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   261.74s     Find: Descendants matching type Any
+    t =   261.76s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1123b2d00)'
+    t =   261.77s     Find: Identity Binding
+    t =   262.22s Find the "device-journey, txt" Cell
+    t =   262.33s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   263.15s     Find: Descendants matching type Any
+    t =   263.16s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1123b2d00)'
+    t =   263.17s     Find: Identity Binding
+    t =   263.69s Find the Application 'com.apple.mobilesafari'
+    t =   263.70s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   264.02s Find the Application 'com.apple.mobilesafari'
+    t =   264.02s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+2026-11-20 22:09:15.210788+0700 WebDriverAgentRunner-Runner[41552:1052672] Waiting up to 2s until com.apple.mobilesafari is in idle state (including animations)
+    t =   265.11s Wait for com.apple.mobilesafari to idle
+    t =   265.48s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x1125f2ac0)'
+    t =   265.64s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   267.47s     Find: Descendants matching type Any
+    t =   267.48s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1125f2ac0)'
+    t =   268.49s Find the "device-journey, txt" Cell
+    t =   268.68s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   271.74s     Find: Descendants matching type Any
+    t =   271.75s     Find: Elements matching predicate 'BLOCKPREDICATE(0x1125f2ac0)'
+    t =   271.76s     Find: Identity Binding
+2026-11-20 22:09:48.381139+0700 WebDriverAgentRunner-Runner[41552:1052672] The device under test does not support HEIC image encoding. Falling back to PNG
+2026-11-20 22:09:49.810795+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   299.71s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x11264c2a0)'
+    t =   299.74s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   300.09s     Find: Descendants matching type Any
+    t =   300.10s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11264c2a0)'
+2026-11-20 22:09:50.215457+0700 WebDriverAgentRunner-Runner[41552:1052672] Getting the most recent active application (out of 2 total items)
+    t =   300.12s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x11258d770)'
+    t =   300.12s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   300.20s     Find: Descendants matching type Any
+    t =   300.20s     Find: Elements matching predicate 'BLOCKPREDICATE(0x11258d770)'
+** BUILD INTERRUPTED **

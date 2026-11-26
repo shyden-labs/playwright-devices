@@ -1,0 +1,48 @@
+# Real phones at 08dee8a (Chrome start/stop in the fixture), 2026-11-21 WIB. Per-run reports beside this file.
+== round 1 00:22:17
+  1 passed (42.0s)
+run-journey: android-playwright-3b402284 exit=0
+  1 passed (40.8s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (27.0s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 2 00:24:17
+  1 passed (42.0s)
+run-journey: android-playwright-3b402284 exit=0
+  1 passed (41.0s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.4s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 3 00:26:15
+  1 passed (41.7s)
+run-journey: android-playwright-3b402284 exit=0
+  1 passed (41.1s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.5s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 4 00:28:15
+  1 passed (41.8s)
+run-journey: android-playwright-3b402284 exit=0
+  1 passed (41.7s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (27.0s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== round 5 00:30:17
+  1 passed (42.3s)
+run-journey: android-playwright-3b402284 exit=0
+  1 passed (41.3s)
+run-journey: android-cdp-3b402284 exit=0
+  1 passed (26.7s)
+run-journey: iphone-00008150-000954D90A20401C exit=0
+== stale file planted 00:32:17
+  1 passed (41.5s)
+run-journey: android-cdp-3b402284 exit=0
+ls: /data/local/tmp/chrome-command-line: No such file or directory
+== debug app cleared 00:32:59
+    Error: Chrome is not the debug app (debug_app is "null"), so Playwright's launch would wait for a socket Chrome never opens: run adb shell am set-debug-app --persistent com.android.chrome
+  1 failed
+run-journey: android-playwright-3b402284 exit=1
+debug_app now: com.android.chrome
+released
+
+[exited with code 0]

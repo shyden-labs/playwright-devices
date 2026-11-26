@@ -1,0 +1,56 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (5.2m)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input › choose a photo 
+
+    Test timeout of 300000ms exceeded.
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('photo-result')
+    Expected pattern: /^image\/.+/
+    Error: Target page, context or browser has been closed
+
+    Call log:
+      - Expect "soft toHaveText" getByTestId('photo-result') with timeout 30000ms
+      - waiting for getByTestId('photo-result')
+      - Target page, context or browser has been closed
+
+
+      44 |     await page.getByLabel('Photo').tap();
+      45 |     await nativeChoosePhoto();
+    > 46 |     await expect.soft(page.getByTestId('photo-result')).toHaveText(/^image\/.+/);
+         |                                                         ^
+      47 |   });
+      48 |
+      49 |   await test.step('finger scroll', async () => {
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:46:57
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:43:3
+
+    Error: WebDriverAgent refused GET /session/0BBD7325-DB56-4CDF-918D-31DC24275620/window/size (404): Session does not exist
+
+       at wda-client.ts:112
+
+      110 |       const message =
+      111 |         (parsed.value as { message?: string; error?: string } | null)?.message ?? (parsed.value as { error?: string } | null)?.error;
+    > 112 |       throw new Error(`WebDriverAgent refused ${method} ${path} (${response.status}): ${message ?? 'no message'}`);
+          |             ^
+      113 |     }
+      114 |     return parsed.value;
+      115 |   }
+        at call (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/wda-client.ts:112:13)
+        at Object.windowSize (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/wda-client.ts:211:15)
+        at iosFingerScroll (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/finger-scroll.ts:28:35)
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:50:5
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:49:3
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  Slow test file: research/devices/journey.spec.ts (5.2m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: ios-sim-1955585D-532E-4881-9E5F-593D91EE1062 exit=1

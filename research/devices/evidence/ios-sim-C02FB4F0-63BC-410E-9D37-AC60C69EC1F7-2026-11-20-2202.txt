@@ -1,0 +1,15 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (3.9m)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input › choose a file › native: choose a file 
+
+    Error: WebDriverAgent did not answer POST /session/B00F107F-801A-4E1E-AB0F-0CAA05DD9DE3/elements within 30000 ms
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: ios-sim-C02FB4F0-63BC-410E-9D37-AC60C69EC1F7 exit=1

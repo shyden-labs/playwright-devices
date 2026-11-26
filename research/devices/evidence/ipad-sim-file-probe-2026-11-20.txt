@@ -1,0 +1,13 @@
+# iPad Pro 13 sim file-picker lookup probe, 2026-11-20 (WIB = UTC+7). Probe: research/devices/probes/probe-ipad-file.ts.
+## Attempt 1 (22:17 WIB): page.goto timed out at 30 s, swap 6829 MB at round start; nothing measured.
+## Attempt 2 (22:21 WIB), swap 6994 MB at round start; another project's heavy run active:
+run-journey: ios_webkit_debug_proxy (a Safari tab) answered after 21 s
+run-journey: probing ios-sim-C02FB4F0-63BC-410E-9D37-AC60C69EC1F7 with research/devices/probes/probe-ipad-file.ts
+15:21:46.165 === round 1, swap 6993.81M ===
+15:23:10.368 close: WebDriverAgent did not answer POST /session/7E2CC537-6030-431E-99A2-EF304D87B03B/elements within 30000 ms
+node:internal/modules/run_main:111
+[Error: WebDriverAgent did not answer POST /session/7E2CC537-6030-431E-99A2-EF304D87B03B/actions within 30000 ms]
+Node.js v26.13.0
+exit=1
+[exited with code 0]
+Reading: the first page tap (POST /actions, before any picker opened) went unanswered 30 s, so WDA stalls on ordinary requests under this memory load, not only on the closing Files picker.

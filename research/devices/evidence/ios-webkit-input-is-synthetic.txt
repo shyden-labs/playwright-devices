@@ -1,0 +1,73 @@
+Playwright 1.65.1 WebKit-over-proxy input (measured 2026-11-17). wvInput.ts RawMouseImpl5/RawKeyboardImpl5 call globalThis.__pwWebViewInput via page evaluate:
+var RawKeyboardImpl5, RawMouseImpl5, RawTouchscreenImpl5;
+var init_wvInput = __esm({
+  "packages/playwright-core/src/server/webkit/webview/wvInput.ts"() {
+    "use strict";
+    RawKeyboardImpl5 = class {
+      constructor(page) {
+        this._page = page;
+      }
+      async keydown(progress2, modifiers, keyName, description, autoRepeat) {
+        const { code, keyCode, key, text: text2, location: location2 } = description;
+        const params2 = {
+          code,
+          key,
+          keyCode,
+          location: location2,
+          repeat: autoRepeat,
+          ...modifierFlags(modifiers),
+          ...text2 ? { text: text2 } : {}
+        };
+        const frame = await this._page.deepestFocusedFrame(progress2);
+        await evaluateInFrame(progress2, frame, (p) => globalThis.__pwWebViewInput.keydown(p), params2);
+      }
+      async keyup(progress2, modifiers, keyName, description) {
+        const { code, keyCode, key, location: location2 } = description;
+        const params2 = { code, key, keyCode, location: location2, ...modifierFlags(modifiers) };
+        const frame = await this._page.deepestFocusedFrame(progress2);
+        await evaluateInFrame(progress2, frame, (p) => globalThis.__pwWebViewInput.keyup(p), params2);
+      }
+      async sendText(progress2, text2) {
+        const frame = await this._page.deepestFocusedFrame(progress2);
+        await evaluateInFrame(progress2, frame, (t) => globalThis.__pwWebViewInput.insertText(t), text2);
+      }
+    };
+    RawMouseImpl5 = class {
+      constructor(page) {
+        this._lastHoveredFrames = [];
+        this._page = page;
+      }
+      async move(progress2, x, y, button, buttons, modifiers, forClick) {
+        const path66 = await this._page.framePointerPath(progress2, x, y);
+        const params2 = { button: buttonToNumber(button), buttons: toButtonsMask4(buttons), ...modifierFlags(modifiers) };
+        const hoveredFrames = path66.map((entry) => entry.frame);
+        const attachedFrames = this._page._page.frameManager.frames();
+        for (const frame of this._lastHoveredFrames.reverse()) {
+          if (hoveredFrames.includes(frame) || !attachedFrames.includes(frame))
+            continue;
+          await evaluateInFrame(progress2, frame, () => globalThis.__pwWebViewInput.clearHover(), void 0);
+        }
+        this._lastHoveredFrames = hoveredFrames;
+        for (const { frame, point } of path66)
+          await evaluateInFrame(progress2, frame, (p) => globalThis.__pwWebViewInput.mouseMove(p), { ...params2, ...point });
+      }
+      async down(progress2, x, y, button, buttons, modifiers, clickCount) {
+        const buttonCode = buttonToNumber(button);
+        const buttonsMask = toButtonsMask4(buttons);
+        await this._mouseEvent(progress2, "mousedown", x, y, buttonCode, buttonsMask, modifiers, clickCount);
+        if (button === "right")
+          await this._mouseEvent(progress2, "contextmenu", x, y, buttonCode, buttonsMask, modifiers, clickCount);
+      }
+      async up(progress2, x, y, button, buttons, modifiers, clickCount) {
+        const buttonCode = buttonToNumber(button);
+        const buttonsMask = toButtonsMask4(buttons);
+
+Synthetic DOM constructs inside the injected helper (coreBundle.js 50201-50740):
+   1 .value =
+   2 dispatchEvent
+   1 execCommand
+   1 new InputEvent
+   2 new KeyboardEvent
+  11 new MouseEvent
+   7 new PointerEvent
+   2 new TouchEvent

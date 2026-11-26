@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <!-- A fixed scale: Safari zooms a page whose inputs reach the screen edge, and a tap measured mid-zoom misses. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Device journey</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 16px;
+        font:
+          16px/1.4 system-ui,
+          sans-serif;
+      }
+      /* 16px text and room either side: Safari zooms into smaller fields, and fields at the edge. */
+      label,
+      button,
+      input,
+      select {
+        display: block;
+        font-size: 16px;
+      }
+      input,
+      select,
+      button {
+        width: 70%;
+        margin: 4px 0 16px;
+        padding: 10px;
+      }
+      output {
+        display: block;
+        min-height: 1.4em;
+        margin-bottom: 16px;
+      }
+      #below {
+        height: 300vh;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Device journey</h1>
+
+    <button type="button" id="tap">Tap me</button>
+    <output data-testid="tap-result"></output>
+
+    <label for="name">Name</label>
+    <input id="name" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+    <output data-testid="typed-result"></output>
+
+    <label for="colour">Colour</label>
+    <select id="colour">
+      <option value="">Choose one</option>
+      <option>Red</option>
+      <option>Green</option>
+      <option>Blue</option>
+    </select>
+    <output data-testid="colour-result"></output>
+
+    <label for="file">File</label>
+    <input type="file" id="file" />
+    <output data-testid="file-result"></output>
+
+    <label for="photo">Photo</label>
+    <input type="file" id="photo" accept="image/*" />
+    <!-- Only the kind is shown: a photo's name and date are personal. -->
+    <output data-testid="photo-result"></output>
+
+    <output data-testid="scroll-result"></output>
+    <div id="below"></div>
+
+    <script>
+      const show = (id, text) => (document.querySelector(`[data-testid="${id}"]`).textContent = text);
+      document.getElementById('tap').addEventListener('click', () => show('tap-result', 'Tapped'));
+      document.getElementById('name').addEventListener('input', (event) => show('typed-result', `Hello, ${event.target.value}`));
+      document.getElementById('colour').addEventListener('change', (event) => show('colour-result', event.target.value));
+      document.getElementById('file').addEventListener('change', (event) => show('file-result', event.target.files[0]?.name ?? ''));
+      document.getElementById('photo').addEventListener('change', (event) => show('photo-result', event.target.files[0]?.type ?? ''));
+      addEventListener('scroll', () => {
+        if (scrollY > 0) show('scroll-result', 'Scrolled');
+      });
+    </script>
+  </body>
+</html>

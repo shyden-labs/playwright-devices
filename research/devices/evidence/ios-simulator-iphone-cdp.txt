@@ -1,0 +1,5 @@
+proxy /json: []
+chromium.connectOverCDP http://127.0.0.1:9222: refused: Error: browserType.connectOverCDP: Unexpected status 404 when connecting to http://127.0.0.1:9222/json/version/. | This does not look like a DevTools server, try connecting via ws://. | Call log:
+webkit.connectOverCDP http://127.0.0.1:9222: refused: Error: browserType.connectOverCDP: No Mobile Safari tabs found at http://127.0.0.1:9222/json — open Safari first.
+chromium.connectOverCDP ws://: refused: SyntaxError: browserType.connectOverCDP: Invalid URL: ws:// | Call log: | [2m  - <ws connecting> ws://[22m
+webkit.connectOverCDP ws://: refused: TypeError: browserType.connectOverCDP: Invalid URL

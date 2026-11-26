@@ -1,0 +1,103 @@
+# #7 AC 2: why the proxy could not connect to a freshly booted iPhone 18 Pro simulator (1955585D-532E-4881-9E5F-593D91EE1062), 2026-11-19 06:15-06:29 WIB
+# ios_webkit_debug_proxy 1.9.3; no phone on USB (idevice_id -l and adb devices empty)
+## probe 1: fresh boot, proxy 6 s per attempt (no Safari / openurl (timed out) / Safari stopped)
+06:15:00 swap total = 2048.00M  used = 648.31M  free = 1399.69M  (encrypted)
+06:15:17 booted
+06:15:20 socket=/private/var/tmp/com.apple.launchd.8H8fCyxJl8/com.apple.webinspectord_sim.socket exists=yes
+06:15:20 webinspectord processes for this sim (before Safari): 0
+06:15:20 MobileSafari running: 0
+06:15:24 [1-no-safari] after 0s: 9221=[{   "deviceId": "SIMULATOR",   "deviceName": "SIMULATOR",   "deviceOSVersion": "0.0.0",   "url": "127.0.0.1:9222"}]
+06:15:25 [1-no-safari] 9222 pages=0
+06:15:25 [1-no-safari] iwdp log: 
+06:16:18 after openurl: webinspectord=0 MobileSafari=0
+06:16:25 [2-safari-open] after 1s: 9221=[{   "deviceId": "SIMULATOR",   "deviceName": "SIMULATOR",   "deviceOSVersion": "0.0.0",   "url": "127.0.0.1:9222"}]
+06:16:25 [2-safari-open] 9222 pages=0
+06:16:26 [2-safari-open] iwdp log: 
+06:18:10 after terminating Safari: webinspectord=0 MobileSafari=0
+06:18:14 [3-safari-stopped] after 1s: 9221=[{   "deviceId": "SIMULATOR",   "deviceName": "SIMULATOR",   "deviceOSVersion": "0.0.0",   "url": "127.0.0.1:9222"}]
+06:18:14 [3-safari-stopped] 9222 pages=0
+06:18:14 [3-safari-stopped] iwdp log: 
+06:18:14 swap total = 4096.00M  used = 3474.50M  free = 621.50M  (encrypted)
+## probe 2: same boot, inspector and Safari state from the simulator's launchctl
+06:19:05 state: 17704	0	com.apple.webinspectord;
+06:19:13 [4-before-launch] 9221=[{"deviceId":"SIMULATOR","deviceName":"SIMULATOR","deviceOSVersion":"0.0.0","url":"127.0.0.1:9222"}] pages=0
+   iwdp log: Listing devices on :9221|Unable to connect to SIMULATOR (SIMULATOR)|  Please verify that Settings > Safari > Advanced > Web Inspector = ON|
+com.apple.mobilesafari: 21629
+06:19:21 after launch: 21629	0	UIKitApplication:com.apple.mobilesafari[1f4c][rb-legacy];17704	0	com.apple.webinspectord;
+06:19:37 [5-safari-launched] 9221=[{"deviceId":"SIMULATOR","deviceName":"SIMULATOR","deviceOSVersion":"0.0.0","url":"127.0.0.1:9222"}] pages=0
+   iwdp log: Listing devices on :9221|Unable to connect to SIMULATOR (SIMULATOR)|  Please verify that Settings > Safari > Advanced > Web Inspector = ON|
+06:19:48 after openurl: 21629	0	UIKitApplication:com.apple.mobilesafari[1f4c][rb-legacy];17704	0	com.apple.webinspectord;
+06:20:05 [6-after-openurl] 9221=[{"deviceId":"SIMULATOR","deviceName":"SIMULATOR","deviceOSVersion":"0.0.0","url":"127.0.0.1:9222"}] pages=0
+   iwdp log: Listing devices on :9221|Unable to connect to SIMULATOR (SIMULATOR)|  Please verify that Settings > Safari > Advanced > Web Inspector = ON|
+total = 5120.00M  used = 3862.38M  free = 1257.62M  (encrypted)
+## probe 3: same boot, one proxy attempt every 30 s
+06:20:35 try 1 connected=0 pages=0 swap=5112.25M
+06:21:05 try 2 connected=1 pages=1 swap=4438.69M
+## probe 3, failed attempt: the proxy sends _rpc_reportIdentifier and never gets an answer; 'Unable to connect' is printed only when it is killed
+ss.add_server_fd(3)
+Listing devices on :9221
+ss.add_fd(4)
+ss.add_server_fd(5)
+ss.add_fd(6)
+wi.send_packet[174]:
+ss.recv fd=4 len=294
+ss.accept server=5 new_client=7
+ss.add_fd(7)
+ss.recv fd=7 len=81
+ws.recv[81]:
+ss.remove_fd(7)
+ss.remove_server_fd(3)
+ss.remove_fd(4)
+ss.remove_server_fd(5)
+Unable to connect to SIMULATOR (SIMULATOR)
+  Please verify that Settings > Safari > Advanced > Web Inspector = ON
+ss.remove_fd(6)
+## webinspectord log, probes 1-3 (simctl spawn log show)
+2026-11-19 06:15:58.764 Df webinspectord[16523:f457] [com.apple.webinspectord:default] Launched (Simulator)
+2026-11-19 06:15:59.378 Df webinspectord[16523:f457] [com.apple.WebInspector:default] Simulator: created _RWITCPServer <_RWITCPServer: 0x101824150>, listening on socket "com.apple.webinspectord_sim.socket"
+2026-11-19 06:15:59.991 Df webinspectord[16523:f457] [com.apple.WebInspector:default] Simulator: Received Client Connection
+2026-11-19 06:15:59.991 Df webinspectord[16523:f457] [com.apple.WebInspector:default] Received Pending Client Connection: <_RWIRelayClientTCPConnection: 0x101824810>
+2026-11-19 06:16:00.055 Df webinspectord[16523:f457] [com.apple.WebInspector:default] Finalized Client Connection: <_RWIRelayClientTCPConnection: 0x101824810>
+2026-11-19 06:16:00.057 Df webinspectord[16523:f457] [com.apple.WebInspector:default] Shutting Down, last client disconnected.
+2026-11-19 06:18:29.545 Df webinspectord[17704:1040d] [com.apple.webinspectord:default] Launched (Simulator)
+2026-11-19 06:19:07.732 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Simulator: created _RWITCPServer <_RWITCPServer: 0x103c24150>, listening on socket "com.apple.webinspectord_sim.socket"
+2026-11-19 06:19:52.026 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Simulator: Received Client Connection
+2026-11-19 06:20:07.494 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Received Pending Client Connection: <_RWIRelayClientTCPConnection: 0x103c24810>
+2026-11-19 06:20:07.523 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Simulator: Received Client Connection
+2026-11-19 06:20:07.523 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Received Pending Client Connection: <_RWIRelayClientTCPConnection: 0x103c24060>
+2026-11-19 06:20:07.523 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Simulator: Received Client Connection
+2026-11-19 06:20:07.523 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Received Pending Client Connection: <_RWIRelayClientTCPConnection: 0x103c24180>
+2026-11-19 06:20:07.523 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Simulator: Received Client Connection
+2026-11-19 06:20:07.524 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Received Pending Client Connection: <_RWIRelayClientTCPConnection: 0x103c24900>
+2026-11-19 06:20:07.608 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] XPC Application Connection Event: 21629 - com.apple.mobilesafari
+2026-11-19 06:20:37.463 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Simulator: Received Client Connection
+2026-11-19 06:20:37.470 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Received Pending Client Connection: <_RWIRelayClientTCPConnection: 0x103c25fb0>
+2026-11-19 06:20:37.485 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Finalized Client Connection: <_RWIRelayClientTCPConnection: 0x103c24810>
+2026-11-19 06:20:37.583 Df webinspectord[17704:1040d] [com.apple.WebInspector:default] Shutting Down, last client disconnected.
+2026-11-19 06:20:40.972 Df webinspectord[24065:14eb1] [com.apple.webinspectord:default] Launched (Simulator)
+2026-11-19 06:20:40.979 Df webinspectord[24065:14eb1] [com.apple.WebInspector:default] Simulator: created _RWITCPServer <_RWITCPServer: 0x105c24150>, listening on socket "com.apple.webinspectord_sim.socket"
+2026-11-19 06:20:41.124 Df webinspectord[24065:14eb1] [com.apple.WebInspector:default] XPC Application Connection Event: 22568 - process-com.apple.WebKit.WebContent
+2026-11-19 06:20:41.881 Df webinspectord[24065:14eb1] [com.apple.WebInspector:default] XPC Application Connection Event: 16454 - com.apple.amsengagementd
+2026-11-19 06:20:41.922 Df webinspectord[24065:14eb1] [com.apple.WebInspector:default] XPC Application Connection Event: 21629 - com.apple.mobilesafari
+2026-11-19 06:20:59.910 Df webinspectord[24065:14eb1] [com.apple.WebInspector:default] Simulator: Received Client Connection
+2026-11-19 06:20:59.912 Df webinspectord[24065:14eb1] [com.apple.WebInspector:default] Received Pending Client Connection: <_RWIRelayClientTCPConnection: 0x105c259b0>
+2026-11-19 06:20:59.913 Df webinspectord[24065:14eb1] [com.apple.WebInspector:default] Finalized Client Connection: <_RWIRelayClientTCPConnection: 0x105c259b0>
+2026-11-19 06:21:05.945 Df webinspectord[24065:14eb1] [com.apple.WebInspector:default] Shutting Down, last client disconnected.
+## probe 4: fresh boot, ONE proxy left running for 300 s, then openurl
+06:22:34 swap 5385.38M
+06:22:54 booted
+06:28:21 connected=0 after 300s from boot+getenv, swap 5910.19M
+06:28:34 pages=1 9s after openurl
+Listing devices on :9221
+Connected :9222 to SIMULATOR (SIMULATOR)
+Disconnected :9222 from SIMULATOR (SIMULATOR)
+## webinspectord log, probe 4
+2026-11-19 06:23:42.441 Df webinspectord[26604:179eb] [com.apple.webinspectord:default] Launched (Simulator)
+2026-11-19 06:24:06.003 Df webinspectord[26604:179eb] [com.apple.WebInspector:default] Simulator: created _RWITCPServer <_RWITCPServer: 0x101c24150>, listening on socket "com.apple.webinspectord_sim.socket"
+2026-11-19 06:24:07.745 Df webinspectord[26604:179eb] [com.apple.WebInspector:default] Simulator: Received Client Connection
+2026-11-19 06:24:07.746 Df webinspectord[26604:179eb] [com.apple.WebInspector:default] Received Pending Client Connection: <_RWIRelayClientTCPConnection: 0x101c24810>
+2026-11-19 06:24:13.779 Df webinspectord[26604:179eb] [com.apple.WebInspector:default] Finalized Client Connection: <_RWIRelayClientTCPConnection: 0x101c24810>
+2026-11-19 06:24:57.694 Df webinspectord[26604:179eb] [com.apple.WebInspector:default] XPC Application Connection Event: 27255 - com.apple.amsengagementd
+2026-11-19 06:28:31.839 Df webinspectord[26604:179eb] [com.apple.WebInspector:default] XPC Application Connection Event: 32945 - com.apple.mobilesafari
+2026-11-19 06:28:34.523 Df webinspectord[26604:179eb] [com.apple.WebInspector:default] Shutting Down, last client disconnected.
+## finding: webinspectord starts on demand; the proxy is accepted but reports Connected and lists pages only once Safari registers with the daemon (probe 4: no Connected in 300 s, then 10 s after openurl). Cold daemon + cold Safari took 51 s at 4-5 GB swap (probe 2: Safari launched 06:19:16, registered 06:20:07). Run 4 (8 GB swap) had a 60 s ceiling for that chain.

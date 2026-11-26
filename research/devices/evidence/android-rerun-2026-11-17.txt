@@ -1,0 +1,16 @@
+== android-cdp
+
+Running 1 test using 1 worker
+
+  ✓  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (2.8s)
+
+  1 passed (4.2s)
+android-cdp exit=0
+== android-playwright
+
+Running 1 test using 1 worker
+
+  ✓  1 journey.spec.ts:9:1 › a page is read, tapped, typed into and scrolled by real input (1.9s)
+
+  1 passed (2.7s)
+android-playwright exit=0

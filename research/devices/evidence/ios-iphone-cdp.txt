@@ -1,0 +1,5 @@
+proxy /json: [{ "devtoolsFrontendUrl": "/devtools/devtools.html?ws=127.0.0.1:9222/devtools/page/1", "faviconUrl": "", "thumbnailUrl": "/thumb/http://10.179.17.81:4517/journey.html", "title": "Device journey", "url": "http://10.179.17.81:4517/journey.html", "webSocketDebuggerUrl": "ws://127.0.0.1:9222/devtools/page/1", "appId": "PID:8372" }]
+chromium.connectOverCDP http://127.0.0.1:9222: refused: Error: browserType.connectOverCDP: Unexpected status 404 when connecting to http://127.0.0.1:9222/json/version/. | This does not look like a DevTools server, try connecting via ws://. | Call log:
+webkit.connectOverCDP http://127.0.0.1:9222: accepted
+chromium.connectOverCDP ws://127.0.0.1:9222/devtools/page/1: refused: Error: browserType.connectOverCDP: Protocol error (Browser.getVersion): 'Browser.getVersion' was not found | Call log: | [2m  - <ws connecting> ws://127.0.0.1:9222/devtools/page/1[22m
+webkit.connectOverCDP ws://127.0.0.1:9222/devtools/page/1: accepted

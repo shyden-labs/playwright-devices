@@ -1,0 +1,22 @@
+# #7 AC 2 run 5, iPhone 18 Pro simulator, fresh boot by the script, proxy started before WDA, tab ceiling 180 s
+## result: the proxy connected and the journey ran (tap, type, select passed); it failed at the file-picker step: after the real tap on File no native menu (Browse) appeared within 3000 ms, screen dump has no menu. Cause not proven; swap 5.2-5.4 of 6.1 GB at the end, so memory pressure is one candidate, not a finding.
+start 06:30:47 swap total = 6144.00M  used = 2303.62M  free = 3840.38M  (encrypted)
+Running 1 test using 1 worker
+  ✘  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (56.3s)
+    Error: no visible native button or text labelled "Browse" appeared within 3000ms
+       at wda-input.ts:149
+      147 |         }
+      148 |         if (Date.now() >= deadline)
+    > 149 |           throw new Error(`no visible native button or text labelled "${label}" appeared within ${String(nativeCeilingMs)}ms`);
+          |                 ^
+      150 |         await new Promise((resolve) => setTimeout(resolve, nativePollMs));
+      151 |       }
+      152 |     },
+        at Object.tapNative (/Users/shyden/Developer/Repos/playwright-devices/research/devices/wda-input.ts:149:17)
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:289:11
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:351:11
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:35:3
+    Error Context: evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip
+  1 failed
+exit=1 end 06:35:39 swap total = 6144.00M  used = 5177.56M  free = 966.44M  (encrypted)

@@ -1,0 +1,173 @@
+{
+  "config": {
+    "argv": [
+      "/Users/shyden/.local/share/node/v26.13.0/bin/node",
+      "/Users/shyden/Developer/Repos/playwright-devices-7tf/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "playwright.devices.config.ts"
+    ],
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices-7tf/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "testIgnore": [],
+        "testMatch": "journey.spec.ts",
+        "timeout": 300000,
+        "use": {},
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/devices/android-playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a page is read, tapped, typed into and scrolled by real input",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 47,
+                  "error": {
+                    "message": "Error: Chrome is not the debug app (debug_app is \"null\"), so Playwright's launch would wait for a socket Chrome never opens: run adb shell am set-debug-app --persistent com.android.chrome",
+                    "stack": "Error: Chrome is not the debug app (debug_app is \"null\"), so Playwright's launch would wait for a socket Chrome never opens: run adb shell am set-debug-app --persistent com.android.chrome\n    at requireChromeDebugApp (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/android-chrome-start.ts:93:9)\n    at connect (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/device-fixture.ts:83:7)\n    at Object.session (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/device-fixture.ts:126:24)",
+                    "location": {
+                      "file": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/android-chrome-start.ts",
+                      "column": 9,
+                      "line": 93
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39mandroid-chrome-start.ts:93\n\n \u001b[90m 91 |\u001b[39m   \u001b[36mconst\u001b[39m found \u001b[33m=\u001b[39m (\u001b[36mawait\u001b[39m adb([\u001b[32m'shell'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'settings'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'get'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'global'\u001b[39m\u001b[33m,\u001b[39m \u001b[32m'debug_app'\u001b[39m]))\u001b[33m.\u001b[39mtrim()\u001b[33m;\u001b[39m\n \u001b[90m 92 |\u001b[39m   \u001b[36mif\u001b[39m (found \u001b[33m===\u001b[39m \u001b[33mCHROME\u001b[39m) \u001b[36mreturn\u001b[39m\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 93 |\u001b[39m   \u001b[36mthrow\u001b[39m \u001b[36mnew\u001b[39m \u001b[33mError\u001b[39m(\n \u001b[90m    |\u001b[39m         \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 94 |\u001b[39m     \u001b[32m`Chrome is not the debug app (debug_app is \"${found}\"), so Playwright's launch would wait for a socket Chrome never opens: run adb shell am set-debug-app --persistent ${CHROME}`\u001b[39m\u001b[33m,\u001b[39m\n \u001b[90m 95 |\u001b[39m   )\u001b[33m;\u001b[39m\n \u001b[90m 96 |\u001b[39m }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/android-chrome-start.ts",
+                        "column": 9,
+                        "line": 93
+                      },
+                      "message": "Error: Chrome is not the debug app (debug_app is \"null\"), so Playwright's launch would wait for a socket Chrome never opens: run adb shell am set-debug-app --persistent com.android.chrome\n\n   at android-chrome-start.ts:93\n\n  91 |   const found = (await adb(['shell', 'settings', 'get', 'global', 'debug_app'])).trim();\n  92 |   if (found === CHROME) return;\n> 93 |   throw new Error(\n     |         ^\n  94 |     `Chrome is not the debug app (debug_app is \"${found}\"), so Playwright's launch would wait for a socket Chrome never opens: run adb shell am set-debug-app --persistent ${CHROME}`,\n  95 |   );\n  96 | }\n    at requireChromeDebugApp (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/android-chrome-start.ts:93:9)\n    at connect (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/device-fixture.ts:83:7)\n    at Object.session (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/device-fixture.ts:126:24)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T17:33:00.495Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/android-chrome-start.ts",
+                    "column": 9,
+                    "line": 93
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
+          "file": "journey.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T17:33:00.296Z",
+    "duration": 270.354,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

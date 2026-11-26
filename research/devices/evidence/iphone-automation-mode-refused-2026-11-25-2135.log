@@ -1,0 +1,42 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project /Users/shyden/Library/Caches/playwright-devices/wda/src/WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -destination id=00008150-000954D90A20401C -derivedDataPath /Users/shyden/Library/Caches/playwright-devices/wda/derived
+
+2026-11-25 21:35:07.021177+0700 WebDriverAgentRunner-Runner[6053:3547655] [Default] Running tests...
+2026-11-25 21:36:07.136741+0700 WebDriverAgentRunner-Runner[6053:3547655] [Default] Failed to initialize for UI testing: Error Domain=com.apple.dt.XCTest.XCTFuture Code=1000 "Timed out while enabling automation mode." UserInfo={NSLocalizedDescription=Timed out while enabling automation mode.}
+
+
+*** If you believe this error represents a bug, please attach the result bundle at /Users/shyden/Library/Caches/playwright-devices/wda/derived/Logs/Test/Test-WebDriverAgentRunner-2026.11.25_21-35-04-+0700.xcresult
+
+2026-11-25 21:36:08.542 xcodebuild[69254:391274]  IDETestOperationsObserverDebug: Failure collecting diagnostics from devices: Process exited with error 1:
+ ERROR: The operation couldn?t be completed. (CoreDeviceCLISupport.DiagnoseError error 0.)
+This tool generates files that allow Apple to investigate issues with your
+computer and help improve Apple products. The files might contain personal
+information found on your device or associated with your Apple Account(s),
+including but not limited to your name, serial numbers of your device,
+your device name, your device's location over the last one to two days,
+your attached peripheral devices, your user name, your email address and
+email settings, file paths, file names, Siri suggestions, your computer's
+IP addresses, and network connection information.
+
+This information is used by Apple in accordance with its privacy policy
+(www.apple.com/privacy) and is not shared with any other company. By using
+this tool and sending the results to Apple, you consent to Apple using the
+contents of these files to improve Apple products.
+
+An error occurred while running devicectl diagnose. Will archive the diagnostics collected thus far.
+Wrote file to /Users/shyden/Library/Caches/playwright-devices/wda/derived/Logs/Test/Test-WebDriverAgentRunner-2026.11.25_21-35-04-+0700.xcresult/Staging/1_Test/Diagnostics/devicectl_diagnostics.zip
+Partial devicectl diagnose bundle located here: /Users/shyden/Library/Caches/playwright-devices/wda/derived/Logs/Test/Test-WebDriverAgentRunner-2026.11.25_21-35-04-+0700.xcresult/Staging/1_Test/Diagnostics/devicectl_diagnostics.zip
+
+2026-11-25 21:36:08.566 xcodebuild[69254:383415] [MT] IDETestOperationsObserverDebug: 63.574 elapsed -- Testing started completed.
+2026-11-25 21:36:08.566 xcodebuild[69254:383415] [MT] IDETestOperationsObserverDebug: 0.005 sec, +0.005 sec -- start
+2026-11-25 21:36:08.566 xcodebuild[69254:383415] [MT] IDETestOperationsObserverDebug: 63.574 sec, +63.569 sec -- end
+
+Test session results, code coverage, and logs:
+	/Users/shyden/Library/Caches/playwright-devices/wda/derived/Logs/Test/Test-WebDriverAgentRunner-2026.11.25_21-35-04-+0700.xcresult
+
+Testing failed:
+	WebDriverAgentRunner-Runner (6053) encountered an error (The test runner failed to initialize for UI testing. (Underlying Error: Timed out while enabling automation mode.))
+
+** TEST EXECUTE FAILED **
+
+Testing started

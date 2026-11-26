@@ -1,0 +1,34 @@
+# Safari's Files picker on a freshly booted iPhone 18 Pro simulator (iOS 27.2), 2026-11-19 07:46 WIB (shyden-labs/playwright-devices#7)
+## result: the picker is slow, not absent. After the real tap on Choose File, WDA's screen held no picker for 18 s; Browse, Recents, Shared and Cancel were listed from t+26 s and stayed. simctl screenshots agree: a blank white sheet at about t+18 s, the drawn Files picker (Recents, Shared, Browse tabs) at about t+45 s. Run 5's 3000 ms ceiling therefore expired long before the picker could appear.
+## swap: total = 3072.00M  used = 1434.81M  free = 1637.19M  (encrypted) at start; total = 6144.00M  used = 5104.81M  free = 1039.19M  (encrypted) at end (high memory pressure during the run; a warm second opening was not measured).
+## method: throwaway probe spec (not committed) run through run-ios-simulator-journey.zsh: goto journey.html, real tap on File, nativeChoose('Choose File'), then WDA /source polled once per loop (each poll took ~3-5 s) for 30 loops, screenshots at loops 0, 3 and 10. The probe then hit its own 120 s test timeout (expected: the loop outran it), exit 1.
+## probe log
+2026-11-19T00:46:14.340Z tapped File input
+2026-11-19T00:46:16.152Z tapped Choose File
+2026-11-19T00:46:17.358Z t+1s seen=[] app=[Safari] chars=8778
+2026-11-19T00:46:22.832Z t+7s seen=[] app=[Safari] chars=9117
+2026-11-19T00:46:29.219Z t+13s seen=[] app=[Safari] chars=9117
+2026-11-19T00:46:33.823Z t+18s seen=[] app=[Safari] chars=9112
+2026-11-19T00:46:42.178Z t+26s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:46:45.989Z t+30s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:46:50.843Z t+35s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:46:53.770Z t+38s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:46:57.201Z t+41s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:01.110Z t+45s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:04.348Z t+48s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:08.230Z t+52s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:11.091Z t+55s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:14.358Z t+58s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:18.092Z t+62s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:21.716Z t+66s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:24.928Z t+69s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:28.012Z t+72s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:31.400Z t+75s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:34.358Z t+78s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:37.640Z t+81s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:40.582Z t+84s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:43.711Z t+88s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:46.784Z t+91s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:50.650Z t+94s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:54.011Z t+98s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073
+2026-11-19T00:47:57.258Z t+101s seen=[Browse|Recents|Cancel|Shared] app=[Safari] chars=21073

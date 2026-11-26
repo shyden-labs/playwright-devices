@@ -1,0 +1,45 @@
+# shyden-labs/playwright-devices#7 AC 4, the native <select>: journey.spec.ts taps 'Colour', then nativeChoose('Green') touches the phone's own list
+# iPhone: WebDriverAgent finds XCUIElementTypeButton labelled Green in Safari's native menu (iOS 27.2) and touches its centre
+# Android (OnePlus CPH2653, Android 16, Chrome 157): uiautomator dump finds the node with text Green in Chrome's list; adb input tap at its centre
+# Run with research/devices/run-all-devices.zsh, 2026-11-18 ~02:15-02:30 WIB
+
+## red: before the fixture existed (every target: Test has unknown parameter "nativeChoose")
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.1xDn5hUQiC/ios-webkit.log)
+ios-webkit exit=1
+== android-cdp (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.1xDn5hUQiC/android-cdp.log)
+android-cdp exit=1
+== android-playwright (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.1xDn5hUQiC/android-playwright.log)
+android-playwright exit=1
+failed on: ios-webkit android-cdp android-playwright
+
+## first green attempt: Android passed; the iPhone failed its FIRST step (tap-result stayed empty), not the select step.
+## Cause: the exploration run just before had left Safari's native file menu open on the iPhone; the journey's first tap closed it instead of pressing the button.
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.ZTPLI3fSZv/ios-webkit.log)
+  ✘  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (13.9s)
+    Error: expect(locator).toHaveText(expected) failed
+  1 failed
+ios-webkit exit=1
+== android-cdp (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.ZTPLI3fSZv/android-cdp.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (4.6s)
+  1 passed (5.9s)
+android-cdp exit=0
+== android-playwright (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.ZTPLI3fSZv/android-playwright.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (4.1s)
+  1 passed (4.9s)
+android-playwright exit=0
+failed on: ios-webkit
+
+## green, the iPhone starting with no native menu open
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.FrXPKJiVWI/ios-webkit.log)
+  ✓  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (8.9s)
+  1 passed (11.4s)
+ios-webkit exit=0
+== android-cdp (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.FrXPKJiVWI/android-cdp.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (4.3s)
+  1 passed (5.0s)
+android-cdp exit=0
+== android-playwright (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.FrXPKJiVWI/android-playwright.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (4.2s)
+  1 passed (4.9s)
+android-playwright exit=0
+every device passed

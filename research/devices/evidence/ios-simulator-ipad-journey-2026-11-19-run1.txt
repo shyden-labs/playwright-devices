@@ -1,0 +1,74 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (5.2m)
+
+
+  1) journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input ──────────
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByTestId('typed-result')
+    Expected: "Ayu"
+    Received: "A"
+    Timeout:  5000ms
+
+    Call log:
+      - Expect "soft toHaveText" getByTestId('typed-result') with timeout 5000ms
+      - waiting for getByTestId('typed-result')
+        - locator resolved to <p data-testid="typed-result">A</p>
+        - unexpected value "A"
+
+
+      24 |   await page.getByLabel('Name').tap();
+      25 |   await page.keyboard.type('Ayu');
+    > 26 |   await expect.soft(page.getByTestId('typed-result')).toHaveText('Ayu');
+         |                                                       ^
+      27 |
+      28 |   // AC 4: the <select> opens the phone's own list, outside the page; the option is touched there.
+      29 |   await page.getByLabel('Colour').tap();
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:26:55
+
+    Error: no visible native button or text labelled "Browse" appeared within 60000ms
+
+       at wda-input.ts:154
+
+      152 |         }
+      153 |         if (Date.now() >= deadline)
+    > 154 |           throw new Error(`no visible native button or text labelled "${label}" appeared within ${String(nativeCeilingMs)}ms`);
+          |                 ^
+      155 |         await new Promise((resolve) => setTimeout(resolve, nativePollMs));
+      156 |       }
+      157 |     },
+        at Object.tapNative (/Users/shyden/Developer/Repos/playwright-devices/research/devices/wda-input.ts:154:17)
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:289:11
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/device-fixture.ts:351:11
+        at /Users/shyden/Developer/Repos/playwright-devices/research/devices/journey.spec.ts:35:3
+
+    attachment #1: screen when "Browse" was not found (text/plain) ─────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Browse-was-not-found-70406e66ad82fb63c41b7eefdaeb36299bb600f7.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: screen when "Cancel" was not found (text/plain) ─────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Cancel-was-not-found-46fc351ecdc4863223f106255e5dd9629073c340.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: screen when "Done" was not found (text/plain) ───────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/attachments/screen-when-Done-was-not-found-579a389059c8607312a43d0800f264ed75cf70fa.txt
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+    attachment #5: trace (application/zip) ─────────────────────────────────────────────────────────
+    evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip
+    Usage:
+
+        npx playwright show-trace evidence/ios-webkit-output/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  Slow test file: journey.spec.ts (5.2m)
+  Consider running tests from slow files in parallel. See: https://playwright.dev/docs/test-parallel
+  1 failed
+    journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input ───────────
+exit 1

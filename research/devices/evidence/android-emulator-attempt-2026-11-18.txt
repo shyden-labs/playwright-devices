@@ -1,0 +1,25 @@
+# shyden-labs/playwright-devices#7 AC 5, first attempt: Pixel 9 emulator (AVD spike_pixel9_api36_play, android-36 google_apis_playstore arm64-v8a),
+# booted headless (-no-window -gpu swiftshader_indirect), measured 2026-11-18 ~04:05-04:20 WIB in one every-device run (run-all-devices.zsh,
+# ANDROID_SERIALS="3b402284 emulator-5554").
+== ios-webkit (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.eX0NDUasEi/ios-webkit.log)
+  ✘  1 journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (1.3m)
+ios-webkit exit=1
+== android-cdp@3b402284 (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.eX0NDUasEi/android-cdp@3b402284.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (17.1s)
+android-cdp@3b402284 exit=0
+== android-playwright@3b402284 (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.eX0NDUasEi/android-playwright@3b402284.log)
+  ✓  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (17.5s)
+android-playwright@3b402284 exit=0
+== android-cdp@emulator-5554 (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.eX0NDUasEi/android-cdp@emulator-5554.log)
+  ✘  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (24.4s)
+    Error: @chrome_devtools_remote did not open within 5000ms of a cold Chrome start
+android-cdp@emulator-5554 exit=1
+== android-playwright@emulator-5554 (full output: /var/folders/rj/ck5r44k95d913h4jzh2sk1s40000gn/T/tmp.eX0NDUasEi/android-playwright@emulator-5554.log)
+  ✘  1 research/devices/journey.spec.ts:10:1 › a page is read, tapped, typed into and scrolled by real input (1.0m)
+android-playwright@emulator-5554 exit=1
+failed on: ios-webkit android-cdp@emulator-5554 android-playwright@emulator-5554
+# android-playwright@emulator-5554: Test timeout of 60000ms exceeded while setting up "page" (launchBrowser).
+# ios-webkit: Test timeout of 60000ms exceeded (passing iPhone runs now take 56-60 s, shyden-labs/playwright-devices#25).
+# Swap reached 6.6 of 7 GB with the emulator running; a uiautomator dump on the emulator then hung for over 60 s, so the emulator
+# was shut down (sim-use.zsh release) before the cause was read. Not settled: whether Chrome's first-run screens or memory pressure
+# kept Chrome's DevTools socket closed. No tablet or foldable AVD exists, and avdmanager (cmdline-tools) is not installed.

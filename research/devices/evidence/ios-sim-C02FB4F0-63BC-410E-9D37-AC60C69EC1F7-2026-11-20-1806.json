@@ -1,0 +1,181 @@
+{
+  "config": {
+    "argv": [
+      "/Users/shyden/.local/share/node/v26.13.0/bin/node",
+      "/Users/shyden/Developer/Repos/playwright-devices-7tf/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "playwright.devices.config.ts"
+    ],
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices-7tf/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices",
+        "testIgnore": [],
+        "testMatch": "journey.spec.ts",
+        "timeout": 300000,
+        "use": {},
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/devices/ios-webkit.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a page is read, tapped, typed into and scrolled by real input",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 116730,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('photo-result')\nExpected pattern: \u001b[32m/^image\\/.+/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"soft toHaveText\" getByTestId('photo-result') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('photo-result')\u001b[22m\n\u001b[2m    7 × locator resolved to <output data-testid=\"photo-result\"></output>\u001b[22m\n\u001b[2m      - unexpected value \"\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('photo-result')\nExpected pattern: \u001b[32m/^image\\/.+/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"soft toHaveText\" getByTestId('photo-result') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('photo-result')\u001b[22m\n\u001b[2m    7 × locator resolved to <output data-testid=\"photo-result\"></output>\u001b[22m\n\u001b[2m      - unexpected value \"\"\u001b[22m\n\n    at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:35:55",
+                    "location": {
+                      "file": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts",
+                      "column": 55,
+                      "line": 35
+                    },
+                    "snippet": " \u001b[90m 33 |\u001b[39m   \u001b[36mawait\u001b[39m page\u001b[33m.\u001b[39mgetByLabel(\u001b[32m'Photo'\u001b[39m)\u001b[33m.\u001b[39mtap()\u001b[33m;\u001b[39m\n \u001b[90m 34 |\u001b[39m   \u001b[36mawait\u001b[39m nativeChoosePhoto()\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 35 |\u001b[39m   \u001b[36mawait\u001b[39m expect\u001b[33m.\u001b[39msoft(page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'photo-result'\u001b[39m))\u001b[33m.\u001b[39mtoHaveText(\u001b[35m/^image\\/.+/\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                                                       \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 36 |\u001b[39m\n \u001b[90m 37 |\u001b[39m   \u001b[36mawait\u001b[39m fingerScroll()\u001b[33m;\u001b[39m\n \u001b[90m 38 |\u001b[39m   \u001b[36mawait\u001b[39m expect\u001b[33m.\u001b[39msoft(page\u001b[33m.\u001b[39mgetByTestId(\u001b[32m'scroll-result'\u001b[39m))\u001b[33m.\u001b[39mtoHaveText(\u001b[32m'Scrolled'\u001b[39m)\u001b[33m;\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts",
+                        "column": 55,
+                        "line": 35
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: getByTestId('photo-result')\nExpected pattern: \u001b[32m/^image\\/.+/\u001b[39m\nReceived string:  \u001b[31m\"\"\u001b[39m\nTimeout: 5000ms\n\nCall log:\n\u001b[2m  - Expect \"soft toHaveText\" getByTestId('photo-result') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('photo-result')\u001b[22m\n\u001b[2m    7 × locator resolved to <output data-testid=\"photo-result\"></output>\u001b[22m\n\u001b[2m      - unexpected value \"\"\u001b[22m\n\n\n  33 |   await page.getByLabel('Photo').tap();\n  34 |   await nativeChoosePhoto();\n> 35 |   await expect.soft(page.getByTestId('photo-result')).toHaveText(/^image\\/.+/);\n     |                                                       ^\n  36 |\n  37 |   await fingerScroll();\n  38 |   await expect.soft(page.getByTestId('scroll-result')).toHaveText('Scrolled');\n    at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:35:55"
+                    },
+                    {
+                      "location": {
+                        "file": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts",
+                        "column": 56,
+                        "line": 38
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('scroll-result')\nExpected: \u001b[32m\"Scrolled\"\u001b[39m\nReceived: \u001b[31m\"\"\u001b[39m\nTimeout:  5000ms\n\nCall log:\n\u001b[2m  - Expect \"soft toHaveText\" getByTestId('scroll-result') with timeout 5000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('scroll-result')\u001b[22m\n\u001b[2m    13 × locator resolved to <output data-testid=\"scroll-result\"></output>\u001b[22m\n\u001b[2m       - unexpected value \"\"\u001b[22m\n\n\n  36 |\n  37 |   await fingerScroll();\n> 38 |   await expect.soft(page.getByTestId('scroll-result')).toHaveText('Scrolled');\n     |                                                        ^\n  39 | });\n  40 |\n    at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:38:56"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-20T11:07:24.564Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices-7tf/test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts",
+                    "column": 55,
+                    "line": 35
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
+          "file": "journey.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-20T11:07:23.883Z",
+    "duration": 117683.21399999999,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

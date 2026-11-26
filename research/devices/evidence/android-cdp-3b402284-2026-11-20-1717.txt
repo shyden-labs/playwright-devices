@@ -1,0 +1,29 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (12.2s)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    Error: nothing labelled "playwright-devices screen marker" showed within 5000 ms
+
+       at android-native.ts:72
+
+      70 |       const found = await look();
+      71 |       if (found !== undefined) return found;
+    > 72 |       if (clock.now() >= deadline) throw new Error(failure);
+         |                                          ^
+      73 |       await clock.sleep(POLL_MS);
+      74 |     }
+      75 |   }
+        at waitFor (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/android-native.ts:72:42)
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/screen-marker.ts:58:24
+        at tap (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/real-input-page.ts:83:23)
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:18:3
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-cdp-3b402284 exit=1

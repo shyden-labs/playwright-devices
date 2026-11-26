@@ -1,0 +1,1 @@
+A file chosen through the phone's own file picker (shyden-labs/playwright-devices#7 AC 4).

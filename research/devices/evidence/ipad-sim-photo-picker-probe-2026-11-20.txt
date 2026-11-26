@@ -1,0 +1,160 @@
+# iPad Pro 13 simulator (C02FB4F0), photo-picker probe, 2026-11-20 20:38-20:48 WIB, branch 7-devices-test-first at 5aef26a
+# Result: Photo Library > first photo > Done closed the picker in ONE Done tap; page got image/png. The 18:29 review-sheet failure did NOT reproduce.
+# Safari held 3 tabs before and 3 after (SafariTabs.db, http rows): openurl did not add a tab this run.
+# Inspector (:9222/json) registered 118 s after start; swap peaked 7.9 GB. Earlier 150 s timeout: not reproduced; cause still unproven.
+
+## run-journey output
+run-journey: WebDriverAgent answered after 196 s
+run-journey: ios_webkit_debug_proxy (a Safari tab) answered after 118 s
+run-journey: probing ios-sim-C02FB4F0-63BC-410E-9D37-AC60C69EC1F7 with research/devices/probes/probe-ipad-photo.ts
+--- photo library open: 16 visible buttons/bars ---
+--- after tapping the first photo: 9 visible buttons/bars ---
+--- after tapping Done: 16 visible buttons/bars ---
+photo-result: image/png
+exit 0
+
+## probe listing
+--- photo library open: 16 visible buttons/bars ---
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="SidebarButton" label="Show Sidebar" visible="true" x="10" y="32" width="44" height="44" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="BackButton" label="Back" visible="true" x="66" y="32" width="44" height="44" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="SearchFieldItemView?isActive=true&amp;UUID=3BD09099-222E-4FC0-B69E-F8C36DF5FFCD&amp;isPinned=false&amp;isDistractionControlOverlayUp=false" label="Address" visible="true" x="330" y="32" width="372" height="44" traits="Selected, Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="MoreMenuButton" label="Page Menu" visible="true" x="330" y="32" width="44" height="44" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="ReloadButton" label="Reload Page" visible="true" x="662" y="32" width="31" height="44" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="ShareButton" label="Share" visible="true" x="890" y="32" width="44" height="44" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="NewTabButton" label="New tab" visible="true" x="934" y="32" width="44" height="44" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="TabOverviewButton" label="Tabs" visible="true" x="978" y="32" width="44" height="44" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="TabBarTab?isActive=false&amp;UUID=ECB4F91D-18CD-4BEF-91AC-33FD5A170DF7&amp;isPinned=false&amp;isDistractionControlOverlayUp=false" visible="true" x="12" y="88" width="334" height="32" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="TabBarTab?isActive=false&amp;UUID=3294D961-ADC0-4FD7-8B46-527CE6CA4D78&amp;isPinned=false&amp;isDistractionControlOverlayUp=false" visible="true" x="349" y="88" width="334" height="32" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="TabBarTab?isActive=true&amp;UUID=3BD09099-222E-4FC0-B69E-F8C36DF5FFCD&amp;isPinned=false&amp;isDistractionControlOverlayUp=false" visible="true" x="718" y="88" width="302" height="32" traits="Selected, Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="CloseTabBarItemButton" label="Close" visible="true" x="686" y="88" width="32" height="32" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Tap me" label="Tap me" visible="true" x="16" y="235" width="700" height="43" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Colour" label="Colour" visible="true" x="16" y="481" width="700" height="43" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="File" label="File" visible="true" x="16" y="604" width="720" height="43" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Photo" label="Photo" visible="true" x="16" y="726" width="720" height="43" traits="Button"/>
+--- after tapping the first photo: 9 visible buttons/bars ---
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Tap me" label="Tap me" visible="true" x="16" y="235" width="700" height="43" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Colour" label="Colour" visible="true" x="16" y="481" width="700" height="43" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="File" label="File" visible="true" x="16" y="604" width="720" height="43" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Photo" label="Photo" visible="true" x="16" y="726" width="720" height="43" traits="Button"/>
+<XCUIElementTypeNavigationBar type="XCUIElementTypeNavigationBar" name="PhotosUIPrivate.StagingAreaGridView" visible="true" x="226" y="378" width="580" height="54" traits="">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Open Viewer" label="Open Viewer" visible="true" x="240" y="382" width="36" height="36" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Done" label="Done" visible="true" x="756" y="382" width="36" height="36" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Options" label="Options" visible="true" x="240" y="958" width="86" height="36" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Deselect All" label="Deselect All" visible="true" x="675" y="958" width="117" height="36" traits="Button"/>
+--- after tapping Done: 16 visible buttons/bars ---
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="SidebarButton" label="Show Sidebar" visible="true" x="10" y="32" width="44" height="44" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="BackButton" label="Back" visible="true" x="66" y="32" width="44" height="44" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="SearchFieldItemView?isActive=true&amp;UUID=3BD09099-222E-4FC0-B69E-F8C36DF5FFCD&amp;isPinned=false&amp;isDistractionControlOverlayUp=false" label="Address" visible="true" x="330" y="32" width="372" height="44" traits="Selected, Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="MoreMenuButton" label="Page Menu" visible="true" x="330" y="32" width="44" height="44" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="ReloadButton" label="Reload Page" visible="true" x="662" y="32" width="31" height="44" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="ShareButton" label="Share" visible="true" x="890" y="32" width="44" height="44" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="NewTabButton" label="New tab" visible="true" x="934" y="32" width="44" height="44" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="TabOverviewButton" label="Tabs" visible="true" x="978" y="32" width="44" height="44" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="TabBarTab?isActive=false&amp;UUID=ECB4F91D-18CD-4BEF-91AC-33FD5A170DF7&amp;isPinned=false&amp;isDistractionControlOverlayUp=false" visible="true" x="12" y="88" width="334" height="32" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="TabBarTab?isActive=false&amp;UUID=3294D961-ADC0-4FD7-8B46-527CE6CA4D78&amp;isPinned=false&amp;isDistractionControlOverlayUp=false" visible="true" x="349" y="88" width="334" height="32" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="TabBarTab?isActive=true&amp;UUID=3BD09099-222E-4FC0-B69E-F8C36DF5FFCD&amp;isPinned=false&amp;isDistractionControlOverlayUp=false" visible="true" x="718" y="88" width="302" height="32" traits="Selected, Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="CloseTabBarItemButton" label="Close" visible="true" x="686" y="88" width="32" height="32" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Tap me" label="Tap me" visible="true" x="16" y="235" width="700" height="43" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Colour" label="Colour" visible="true" x="16" y="481" width="700" height="43" traits="Button">
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="File" label="File" visible="true" x="16" y="604" width="720" height="43" traits="Button"/>
+<XCUIElementTypeButton type="XCUIElementTypeButton" name="Photo" label="Photo" visible="true" x="16" y="726" width="720" height="43" traits="Button"/>
+photo-result: image/png
+
+## poll: time, tabs on :9222/json, swap used
+20:38:53 0 4408.94M
+20:38:59 0 4475.50M
+20:39:05 0 4606.88M
+20:39:11 0 4665.00M
+20:39:17 0 4716.38M
+20:39:23 0 4834.69M
+20:39:29 0 4853.38M
+20:39:35 0 4894.62M
+20:39:40 0 5150.06M
+20:39:47 0 5125.44M
+20:39:53 0 5211.94M
+20:39:58 0 5229.56M
+20:40:05 0 5400.69M
+20:40:10 0 5507.50M
+20:40:16 0 5706.31M
+20:40:22 0 5707.44M
+20:40:27 0 5982.94M
+20:40:33 0 6368.88M
+20:40:39 0 6479.44M
+20:40:45 0 6135.38M
+20:40:52 0 6047.38M
+20:40:58 0 6283.00M
+20:41:04 0 6623.50M
+20:41:10 0 6980.81M
+20:41:16 0 6822.38M
+20:41:22 0 6957.69M
+20:41:28 0 7098.50M
+20:41:34 0 7071.62M
+20:41:39 0 7147.38M
+20:41:45 0 7086.81M
+20:41:50 0 7116.06M
+20:41:56 0 7191.19M
+20:42:02 0 7287.81M
+20:42:07 0 7151.81M
+20:42:13 0 7119.81M
+20:42:18 0 7128.06M
+20:42:23 0 7291.31M
+20:42:29 0 7243.38M
+20:42:35 0 7375.44M
+20:42:41 0 7521.19M
+20:42:47 0 7513.25M
+20:42:52 0 7518.25M
+20:42:58 0 7563.00M
+20:43:04 0 7687.50M
+20:43:11 0 7847.25M
+20:43:16 0 7911.88M
+20:43:23 0 7895.62M
+20:43:30 0 8073.06M
+20:43:35 0 8491.81M
+20:43:41 0 8613.38M
+20:43:48 0 8357.31M
+20:43:54 0 8117.31M
+20:43:59 0 8021.31M
+20:44:05 0 8342.00M
+20:44:10 0 8450.38M
+20:44:16 0 8543.00M
+20:44:21 0 8423.00M
+20:44:26 0 8335.00M
+20:44:32 0 8183.00M
+20:44:37 0 8110.94M
+20:44:43 0 7974.94M
+20:44:48 1 7910.94M
+20:44:53 1 7878.94M
+20:44:58 1 7912.38M
+20:45:03 1 7896.38M
+20:45:08 1 7970.12M
+20:45:14 1 8032.56M
+20:45:19 1 7984.56M
+20:45:24 1 8167.62M
+20:45:29 1 8063.62M
+20:45:34 1 8018.31M
+20:45:40 1 8014.19M
+20:45:45 1 8131.44M
+20:45:50 1 8079.00M
+20:45:55 1 8088.19M
+20:46:00 1 8146.19M
+20:46:05 1 8162.62M
+20:46:10 1 8022.00M
+20:46:15 1 8022.00M
+20:46:20 1 8018.38M
+20:46:26 1 7928.44M
+20:46:31 1 7822.44M
+20:46:36 1 7806.44M
+20:46:41 1 7911.44M
+20:46:46 1 7863.44M
+20:46:51 1 7989.75M
+20:46:56 1 7789.62M
+20:47:01 1 7901.50M
+20:47:06 1 5498.31M
+20:47:12 1 5662.06M
+20:47:17 1 5868.12M
+20:47:23 1 5965.69M
+20:47:28 1 5977.12M
+20:47:33 1 5983.31M
+20:47:38 1 5946.06M
+20:47:44 1 5906.06M
+20:47:49 1 5888.06M

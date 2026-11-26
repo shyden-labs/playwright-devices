@@ -1,0 +1,29 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (1.2m)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    Error: none of "Green" showed within 60000 ms; nothing was touched
+
+       at android-native.ts:75
+
+      73 |       const found = await look();
+      74 |       if (found !== undefined) return found;
+    > 75 |       if (clock.now() >= deadline) throw new Error(failure);
+         |                                          ^
+      76 |       await clock.sleep(POLL_MS);
+      77 |     }
+      78 |   }
+        at waitFor (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/android-native.ts:75:42)
+        at Object.tapFirstShown (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/android-native.ts:101:19)
+        at androidChooseOption (/Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/android-native.ts:129:3)
+        at /Users/shyden/Developer/Repos/playwright-devices-7tf/research/devices/journey.spec.ts:26:3
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-playwright-3b402284 exit=1

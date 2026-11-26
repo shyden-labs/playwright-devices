@@ -1,0 +1,22 @@
+# #33 AC1: CDP readiness over 20 cold starts, OnePlus 3b402284, 2026-11-20 ~23:25 WIB. Probe: research/devices/probes/probe-cold-start.ts. Each round: force-stop Chrome, remove any command-line file, forward tcp:9230, am start, poll /proc/net/unix until @chrome_devtools_remote, then chromium.connectOverCDP at once (no retry).
+round 1: socket seen 525 ms after am start; connected in 49 ms, contexts 1
+round 2: socket seen 478 ms after am start; connected in 10 ms, contexts 1
+round 3: socket seen 515 ms after am start; connected in 11 ms, contexts 1
+round 4: socket seen 496 ms after am start; connected in 32 ms, contexts 1
+round 5: socket seen 519 ms after am start; connected in 12 ms, contexts 1
+round 6: socket seen 502 ms after am start; connected in 9 ms, contexts 1
+round 7: socket seen 495 ms after am start; connected in 11 ms, contexts 1
+round 8: socket seen 506 ms after am start; connected in 9 ms, contexts 1
+round 9: socket seen 528 ms after am start; connected in 7 ms, contexts 1
+round 10: socket seen 496 ms after am start; connected in 13 ms, contexts 1
+round 11: socket seen 473 ms after am start; connected in 8 ms, contexts 1
+round 12: socket seen 452 ms after am start; connected in 12 ms, contexts 1
+round 13: socket seen 461 ms after am start; connected in 11 ms, contexts 1
+round 14: socket seen 465 ms after am start; connected in 13 ms, contexts 1
+round 15: socket seen 478 ms after am start; connected in 13 ms, contexts 1
+round 16: socket seen 461 ms after am start; connected in 9 ms, contexts 1
+round 17: socket seen 461 ms after am start; connected in 14 ms, contexts 1
+round 18: socket seen 489 ms after am start; connected in 11 ms, contexts 1
+round 19: socket seen 496 ms after am start; connected in 13 ms, contexts 1
+round 20: socket seen 460 ms after am start; connected in 15 ms, contexts 1
+20 of 20 connected at first try

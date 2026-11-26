@@ -1,0 +1,62 @@
+Command line invocation:
+    /Applications/Xcode.app/Contents/Developer/usr/bin/xcodebuild test-without-building -project /Users/shyden/Library/Caches/playwright-devices/wda/src/WebDriverAgent.xcodeproj -scheme WebDriverAgentRunner -destination id=C02FB4F0-63BC-410E-9D37-AC60C69EC1F7 -derivedDataPath /Users/shyden/Library/Caches/playwright-devices/wda/derived-sim
+
+2026-11-20 22:20:45.512700+0700 WebDriverAgentRunner-Runner[53748:1106390] [Default] Running tests...
+2026-11-20 22:20:48.724963+0700 WebDriverAgentRunner-Runner[53748:1106390] [UIKit App Config] Update the Info.plist: Launch screens will soon be required.
+    t =      nans Interface orientation changed to Portrait
+objc[53748]: Class UIAccessibilityLoaderWebShared is implemented in both /private/var/run/com.apple.security.cryptexd/mnt/com.apple.iPhoneOS.SimulatorRuntime-v24.1.434.0.s47Tlv/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebKit.axbundle/WebKit (0x107c40398) and /private/var/run/com.apple.security.cryptexd/mnt/com.apple.iPhoneOS.SimulatorRuntime-v24.1.434.0.s47Tlv/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 27.0.simruntime/Contents/Resources/RuntimeRoot/System/Library/AccessibilityBundles/WebCore.axbundle/WebCore (0x107dc4310). This may cause spurious casting failures and mysterious crashes. One of the duplicates must be removed or renamed.
+Test Suite 'All tests' started at 2026-11-20 22:21:17.004.
+Test Suite 'WebDriverAgentRunner.xctest' started at 2026-11-20 22:21:17.023.
+Test Suite 'UITestingUITests' started at 2026-11-20 22:21:17.023.
+    t =      nans Suite Set Up
+Test Case '-[UITestingUITests testRunner]' started.
+    t =     0.01s Start Test at 2026-11-20 22:21:17.317
+    t =     0.01s Set Up
+2026-11-20 22:21:17.325736+0700 WebDriverAgentRunner-Runner[53748:1106390] Built at Nov 17 2026 23:33:36
+2026-11-20 22:21:17.609615+0700 WebDriverAgentRunner-Runner[53748:1106390] ServerURLHere->http://192.168.1.9:8100<-ServerURLHere
+2026-11-20 22:21:18.020786+0700 WebDriverAgentRunner-Runner[53748:1106390] Using singleton test manager
+2026-11-20 22:22:02.803913+0700 WebDriverAgentRunner-Runner[53748:1106390] Cannot precisely detect the current application. Will use the system's recently active one
+2026-11-20 22:22:02.804146+0700 WebDriverAgentRunner-Runner[53748:1106390] Consider changing the 'defaultActiveApplication' setting to the bundle identifier of the desired application under test
+2026-11-20 22:22:02.804767+0700 WebDriverAgentRunner-Runner[53748:1106390] Getting the most recent active application (out of 2 total items)
+    t =    46.41s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x107ac9920)'
+    t =    46.49s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =    46.87s     Find: Descendants matching type Any
+    t =    46.88s     Find: Elements matching predicate 'BLOCKPREDICATE(0x107ac9920)'
+    t =    46.89s Find the "playwright-devices screen marker" Image
+    t =    46.90s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =    47.07s     Find: Descendants matching type Any
+    t =    47.08s     Find: Elements matching predicate 'BLOCKPREDICATE(0x107ac9920)'
+    t =    47.08s     Find: Identity Binding
+    t =    47.13s Find the "playwright-devices screen marker" Image
+    t =    47.14s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =    47.40s     Find: Descendants matching type Any
+    t =    47.40s     Find: Elements matching predicate 'BLOCKPREDICATE(0x107ac9920)'
+    t =    47.41s     Find: Identity Binding
+2026-11-20 22:22:04.775701+0700 WebDriverAgentRunner-Runner[53748:1106390] Getting the most recent active application (out of 2 total items)
+    t =    47.47s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x107acaac0)'
+    t =    47.47s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =    47.66s     Find: Descendants matching type Any
+    t =    47.66s     Find: Elements matching predicate 'BLOCKPREDICATE(0x107acaac0)'
+    t =    47.67s Find the "playwright-devices screen marker" Image
+    t =    47.68s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =    47.87s     Find: Descendants matching type Any
+    t =    47.88s     Find: Elements matching predicate 'BLOCKPREDICATE(0x107acaac0)'
+    t =    47.88s     Find: Identity Binding
+    t =    47.90s Find the "playwright-devices screen marker" Image
+    t =    47.91s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =    48.09s     Find: Descendants matching type Any
+    t =    48.09s     Find: Elements matching predicate 'BLOCKPREDICATE(0x107acaac0)'
+    t =    48.10s     Find: Identity Binding
+2026-11-20 22:22:05.467998+0700 WebDriverAgentRunner-Runner[53748:1106390] Getting the most recent active application (out of 2 total items)
+    t =    48.17s Find the Application 'com.apple.mobilesafari'
+    t =    48.17s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =    48.27s Find the Application 'com.apple.mobilesafari'
+    t =    48.27s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+2026-11-20 22:22:06.770665+0700 WebDriverAgentRunner-Runner[53748:1106390] Waiting up to 2s until com.apple.mobilesafari is in idle state (including animations)
+    t =    49.46s Wait for com.apple.mobilesafari to idle
+    t =    51.49s     App event loop idle notification not received, will attempt to continue.
+    t =   112.17s Get all elements bound by accessibility element for: Elements matching predicate 'BLOCKPREDICATE(0x107acae20)'
+    t =   112.18s     Requesting snapshot of accessibility hierarchy for app with pid 42511
+    t =   113.03s     Find: Descendants matching type Any
+    t =   113.03s     Find: Elements matching predicate 'BLOCKPREDICATE(0x107acae20)'
+** BUILD INTERRUPTED **
