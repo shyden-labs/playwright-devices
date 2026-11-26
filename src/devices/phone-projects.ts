@@ -14,7 +14,7 @@ export type PhoneProject = (typeof PHONE_PROJECTS)[number];
 /** The device `playwright-devices start` must have started for a project. */
 export type PhoneTarget = 'iphone' | 'android';
 
-function isPhoneProject(name: string): name is PhoneProject {
+export function isPhoneProject(name: string): name is PhoneProject {
   return (PHONE_PROJECTS as readonly string[]).includes(name);
 }
 

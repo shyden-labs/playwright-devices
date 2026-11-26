@@ -1,5 +1,5 @@
 import type { FileChooser, Page } from '@playwright/test';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { desktopPage, desktopSession, focusedSelect } from '../../src/devices/desktop-session.ts';
 
 /** A Playwright locator stand-in; records the calls it answers. */
@@ -153,7 +153,7 @@ describe('desktopSession', () => {
     const session = desktopSession({ page: fakePage(calls).page, files });
 
     await expect(session.nativeChooseFile()).rejects.toThrow(
-      'no file chooser opened within 60000 ms: click the file field before nativeChooseFile; Timeout 60000ms exceeded',
+      'no file chooser opened within 60000 ms: click the file field before nativeChooseFile',
     );
   });
 
@@ -200,6 +200,16 @@ describe('desktopSession', () => {
     expect(calls).toEqual(['on filechooser', 'mouse move 640,400', 'mouse wheel 0,240']);
   });
 
+  it('scrolls over the middle of a 1280 by 800 page where the page has no fixed viewport', async () => {
+    const calls: string[] = [];
+    const fake = fakePage(calls);
+    (fake.page as unknown as { viewportSize: () => null }).viewportSize = () => null;
+
+    await desktopSession({ page: fake.page, files }).fingerScroll();
+
+    expect(calls).toEqual(['on filechooser', 'mouse move 640,400', 'mouse wheel 0,240']);
+  });
+
   it("keeps the browser's screenshot as the failure evidence, and stops listening for choosers on close", async () => {
     const calls: string[] = [];
     const session = desktopSession({ page: fakePage(calls).page, files });
@@ -223,6 +233,18 @@ describe('focusedSelect', () => {
       labels: ['Red', 'Green'],
       selected: 1,
     });
+  });
+
+  it("reads the page's own focused element, a select being an HTMLSelectElement, when run in the page with no view given", () => {
+    class HTMLSelectElement {
+      options = [{ label: 'Red' }];
+      selectedIndex = 0;
+    }
+    vi.stubGlobal('HTMLSelectElement', HTMLSelectElement);
+    vi.stubGlobal('document', { activeElement: new HTMLSelectElement() });
+
+    expect(focusedSelect()).toEqual({ labels: ['Red'], selected: 0 });
+    vi.unstubAllGlobals();
   });
 
   it('answers null when what has focus is not a select', () => {
