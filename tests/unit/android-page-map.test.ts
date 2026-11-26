@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { WdaClock } from '../../research/devices/wda-client.ts';
-import { androidPagePoint, androidScreenPointsOf, readViewport, type PageViewport } from '../../research/devices/android-page-map.ts';
+import type { WdaClock } from '../../src/devices/wda-client.ts';
+import { androidPagePoint, androidScreenPointsOf, type PageViewport } from '../../src/devices/android-page-map.ts';
 
 /** Chrome's page area on the OnePlus CPH2653 (2026-11-20): its top is under the toolbar. */
 const AREA = { x: 0, y: 160, width: 1440, height: 2854 };
@@ -153,22 +153,40 @@ describe('androidScreenPointsOf', () => {
   });
 });
 
-describe('readViewport', () => {
+describe('the viewport read Chrome runs in the page', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it("reads the page's visual viewport and density", () => {
+  /** Runs the read the way Chrome does: in the page, against its window. */
+  const runInPage = { evaluate: (read: () => PageViewport) => Promise.resolve(read()) };
+  const screen = { pageArea: () => Promise.resolve(AREA) };
+
+  it('reads the visual viewport: its offsets, zoom and height, and the device pixel ratio', async () => {
     vi.stubGlobal('window', {
-      devicePixelRatio: 2.625,
-      innerHeight: 790,
-      visualViewport: { offsetLeft: 4, offsetTop: 92, scale: 1.5, height: 430.1 },
+      devicePixelRatio: 2,
+      innerHeight: 999,
+      visualViewport: { offsetLeft: 10, offsetTop: 20, scale: 2, height: 400 },
     });
-    expect(readViewport()).toEqual({ devicePixelRatio: 2.625, offsetLeft: 4, offsetTop: 92, scale: 1.5, height: 430.1 });
+    const point = await androidScreenPointsOf(runInPage, screen, fakeClock())({ x: 50, y: 60, width: 0, height: 0 });
+    expect(point).toEqual(
+      androidPagePoint(
+        { x: 50, y: 60, width: 0, height: 0 },
+        { devicePixelRatio: 2, offsetLeft: 10, offsetTop: 20, scale: 2, height: 400 },
+        AREA,
+      ),
+    );
   });
 
-  it('falls back to the layout viewport, unscrolled and unzoomed, where the browser has no visual viewport', () => {
-    vi.stubGlobal('window', { devicePixelRatio: 3, innerHeight: 800, visualViewport: null });
-    expect(readViewport()).toEqual({ devicePixelRatio: 3, offsetLeft: 0, offsetTop: 0, scale: 1, height: 800 });
+  it('falls back to no offset, no zoom and the window height when the page has no visual viewport', async () => {
+    vi.stubGlobal('window', { devicePixelRatio: 3, innerHeight: 700, visualViewport: null });
+    const point = await androidScreenPointsOf(runInPage, screen, fakeClock())({ x: 5, y: 6, width: 0, height: 0 });
+    expect(point).toEqual(
+      androidPagePoint(
+        { x: 5, y: 6, width: 0, height: 0 },
+        { devicePixelRatio: 3, offsetLeft: 0, offsetTop: 0, scale: 1, height: 700 },
+        AREA,
+      ),
+    );
   });
 });

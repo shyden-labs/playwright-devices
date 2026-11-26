@@ -9,6 +9,9 @@ import type { ScreenPoint, ScreenRect } from './wda-client.ts';
 
 const ENTITIES = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'" } as const;
 
+/** A match's first group: the patterns below require it, so it is always there. */
+const firstGroup = (match: RegExpMatchArray): string => match[1] as string;
+
 function unescapeXml(text: string): string {
   return text.replace(/&(amp|lt|gt|quot|apos);/g, (_match, name: keyof typeof ENTITIES) => ENTITIES[name]);
 }
@@ -22,7 +25,7 @@ const NODE = /<node\b[^>]*?\btext="([^"]*)"[^>]*?\bbounds="\[(\d+),(\d+)\]\[(\d+
  * twice (run 45007095925).
  */
 export function centreOfText(dump: string, text: string): ScreenPoint | undefined {
-  const matches = [...dump.matchAll(NODE)].filter((node) => unescapeXml(String(node[1])) === text);
+  const matches = [...dump.matchAll(NODE)].filter((node) => unescapeXml(firstGroup(node)) === text);
   const hits = [...new Map(matches.map((node) => [node.slice(2, 6).join(','), node])).values()];
   if (hits.length > 1) throw new Error(`${hits.length} nodes on the screen read "${text}": cannot tell which to touch`);
   const [hit] = hits;
@@ -41,7 +44,7 @@ const DESCRIBED = /<node\b[^>]*?\bcontent-desc="([^"]*)"[^>]*?\bbounds="\[(\d+),
  */
 export function centreOfFirstDescribed(dump: string, prefix: string): ScreenPoint | undefined {
   const boxes = [...dump.matchAll(DESCRIBED)]
-    .filter((node) => unescapeXml(String(node[1])).startsWith(prefix))
+    .filter((node) => unescapeXml(firstGroup(node)).startsWith(prefix))
     .map((node) => node.slice(2, 6).map(Number) as [number, number, number, number])
     .sort(([leftA, topA], [leftB, topB]) => topA - topB || leftA - leftB);
   const [first] = boxes;

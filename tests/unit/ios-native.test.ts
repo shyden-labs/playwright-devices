@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PHOTO_GRID_IMAGE, iosChooseFile, iosChooseOption, iosChoosePhoto, iosClosePicker } from '../../research/devices/ios-native.ts';
+import { PHOTO_GRID_IMAGE, iosChooseFile, iosChooseOption, iosChoosePhoto, iosClosePicker } from '../../src/devices/ios-native.ts';
 
 /** A native screen stand-in: each look answers the first listed label that is "shown", and records every step. */
 function fakeScreen(shown: string[]) {

@@ -1,0 +1,14 @@
+import { expect, test } from '@shyden-labs/playwright-devices/phones';
+
+test('a clean install taps, types and chooses a file on the phone', async ({ page, nativeChooseFile }) => {
+  await page.goto('/');
+  await expect(page.getByRole('heading', { name: 'Clean install' })).toBeVisible();
+  await page.getByRole('button', { name: 'Press me' }).click();
+  await expect.soft(page.getByTestId('pressed')).toHaveText('Pressed');
+  await page.getByLabel('Name').tap();
+  await page.keyboard.type('Ana');
+  await expect.soft(page.getByTestId('hello')).toHaveText('Hello, Ana');
+  await page.getByLabel('Brief').tap();
+  await nativeChooseFile();
+  await expect.soft(page.getByTestId('chosen')).toHaveText('device-journey.txt');
+});

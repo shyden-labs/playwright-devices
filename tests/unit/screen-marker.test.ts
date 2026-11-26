@@ -1,10 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import type { WdaClock } from '../../research/devices/wda-client.ts';
-import { MARKER_LABEL, screenPointsOf, type MarkerPage } from '../../research/devices/screen-marker.ts';
-import { MARKER_CSS_SIZE, type Box } from '../../research/devices/screen-map.ts';
+import type { WdaClock } from '../../src/devices/wda-client.ts';
+import { MARKER_LABEL, screenPointsOf, type MarkerPage } from '../../src/devices/screen-marker.ts';
+import { MARKER_CSS_SIZE, type Box } from '../../src/devices/screen-map.ts';
+
+/**
+ * Where the page is scrolled, and where the marker's own client rect says it sits: by default where it was
+ * drawn less the scroll, as a browser reports it; set to model a browser that reports it elsewhere.
+ */
+interface FakeView {
+  scrollX: number;
+  scrollY: number;
+  markerClient?: { x: number; y: number };
+}
+
+const UNSCROLLED: FakeView = { scrollX: 0, scrollY: 0 };
 
 /** A page stand-in: runs each evaluated function against a tiny fake DOM and records what it did. */
-function fakePage(log: string[], scroll: { scrollX: number; scrollY: number } = { scrollX: 0, scrollY: 0 }): MarkerPage {
+function fakePage(log: string[], view: FakeView = UNSCROLLED): MarkerPage {
   const body = {
     children: [] as Record<string, unknown>[],
     append(el: Record<string, unknown>) {
@@ -15,7 +27,14 @@ function fakePage(log: string[], scroll: { scrollX: number; scrollY: number } = 
   const document = {
     body,
     createElement: () => {
-      const el: Record<string, unknown> = { style: {} };
+      const el: Record<string, unknown> = {
+        style: {},
+        getBoundingClientRect: () => {
+          const style = el.style as { left: string; top: string };
+          const drawn = { x: Number.parseFloat(style.left) - view.scrollX, y: Number.parseFloat(style.top) - view.scrollY };
+          return { ...(view.markerClient ?? drawn), width: MARKER_CSS_SIZE, height: MARKER_CSS_SIZE };
+        },
+      };
       el.setAttribute = (name: string, value: string) => {
         el[name === 'aria-label' ? 'ariaLabel' : name] = value;
       };
@@ -32,7 +51,7 @@ function fakePage(log: string[], scroll: { scrollX: number; scrollY: number } = 
       const g = globalThis as Record<string, unknown>;
       const before = { document: g.document, window: g.window };
       g.document = document;
-      g.window = scroll;
+      g.window = { scrollX: view.scrollX, scrollY: view.scrollY };
       try {
         return Promise.resolve(fn(arg));
       } finally {
@@ -97,12 +116,34 @@ describe('screenPointsOf', () => {
     const log: string[] = [];
     const reader = { rectOf: () => Promise.resolve({ x: 16, y: 257.23, width: 100, height: 100 }) };
     const colour: Box = { x: 16, y: 257.23, width: 245, height: 42 };
+    const view = { scrollX: 3, scrollY: 92, markerClient: { x: 16, y: 257.23 } };
 
-    const point = await screenPointsOf(fakePage(log, { scrollX: 3, scrollY: 92 }), reader)(colour);
+    const point = await screenPointsOf(fakePage(log, view), reader)(colour);
 
     expect(log[0]).toContain('"position":"absolute","left":"19px","top":"349.23px"');
     expect(point.x).toBeCloseTo(16 + 122.5, 5);
     expect(point.y).toBeCloseTo(257.23 + 21, 5);
+  });
+
+  it('taps where the page is after typing scrolled it: a fixed marker sat 49 px off on the iPhone Air', async () => {
+    // Measured 2026-11-26 (research/devices/evidence/probe-type-then-file-*): with the keyboard up Safari
+    // scrolled the page by 49 px and drew a fixed marker at screen y 19, so the tap landed on the line
+    // above the file input. An absolute marker read back 68 px below its client top; here it is drawn at
+    // the file input, at the same 68 px offset.
+    const log: string[] = [];
+    const reader = { rectOf: () => Promise.resolve({ x: 69.59375, y: 369.59375, width: 100, height: 100 }) };
+    const view = { scrollX: 0, scrollY: 49, markerClient: { x: 69.59375, y: 301.59375 } };
+    const fileInput: Box = { x: 69.59375, y: 301.59375, width: 266, height: 20 };
+
+    expect(await screenPointsOf(fakePage(log, view), reader)(fileInput)).toEqual({ x: 202.59375, y: 379.59375 });
+    expect(log[0]).toContain('"position":"absolute","left":"69.59375px","top":"350.59375px"');
+  });
+
+  it('maps by the client rect the marker reports, not by where it was asked to sit', async () => {
+    const reader = { rectOf: () => Promise.resolve({ x: 0, y: 68, width: 100, height: 100 }) };
+    const view = { scrollX: 30, scrollY: 200, markerClient: { x: -4, y: 12 } };
+
+    expect(await screenPointsOf(fakePage([], view), reader)(box)).toEqual({ x: 68, y: 172 });
   });
 
   it('measures again on every call, so a Safari toolbar that moved after a scroll is followed', async () => {

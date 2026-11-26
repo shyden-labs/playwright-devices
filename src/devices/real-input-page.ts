@@ -10,7 +10,8 @@
  */
 import type { Locator, Page } from '@playwright/test';
 import type { Box } from './screen-map.ts';
-import { realClock, type ScreenPoint, type WdaClock } from './wda-client.ts';
+import type { ScreenPoint, WdaClock } from './wda-client.ts';
+import { realClock } from './clock.ts';
 
 /** The real input this stand-in sends. */
 export interface RealInput {

@@ -19,7 +19,7 @@ export default {
       // Code that runs only against a phone, simulator or emulator, which the unit suite cannot reach
       // (shyden-labs/playwright-devices#44): the fixture that connects to a device, the journey spec
       // and the probes. Each module they call is unit-tested and counted. Sonar excludes the same list.
-      exclude: ['research/devices/device-fixture.ts', 'research/devices/journey.spec.ts', 'research/devices/probes/**'],
+      exclude: ['research/devices/journey-fixture.ts', 'research/devices/journey.spec.ts', 'research/devices/probes/**'],
       reporter: ['text-summary', 'lcov'],
       thresholds: { lines: 100, branches: 100, functions: 100, statements: 100 },
     },

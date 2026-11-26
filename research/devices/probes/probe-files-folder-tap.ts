@@ -3,9 +3,9 @@
 // tapCellIcon does, and keeps the screen 1 s and 3 s after the tap. Measurement only.
 import { writeFileSync } from 'node:fs';
 import { webkit } from '@playwright/test';
-import { iosSession } from '../device-session.ts';
+import { iosSession } from '../../../src/devices/device-session.ts';
 import { startJourneyServer } from '../serve.ts';
-import { connectWda } from '../wda-client.ts';
+import { connectWda } from '../../../src/devices/wda-client.ts';
 
 const out = process.env.PROBE_OUT ?? 'research/devices/evidence/probe-files-folder-tap';
 const wdaUrl = process.env.WDA_URL ?? 'http://127.0.0.1:8100';

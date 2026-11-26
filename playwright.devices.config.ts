@@ -1,13 +1,16 @@
 import { defineConfig } from '@playwright/test';
+import { phoneProjects } from './src/devices/phone-projects.ts';
 
 // The unchanged journey on phones, tablets, simulators and emulators
 // (shyden-labs/playwright-devices#7). One device at a time, no retries: a
-// failure is found and fixed, never re-run away. The run scripts set
-// DEVICE_ROUTE and start the device side first.
+// failure is found and fixed, never re-run away. The phone projects come from
+// the package (shyden-labs/playwright-devices#54); run-journey.zsh picks one
+// with --project and starts the device side first.
 export default defineConfig({
   testDir: './research/devices',
   // DEVICE_SPEC runs a probe spec on the same fixture instead (research/devices/run-journey.zsh).
   testMatch: process.env.DEVICE_SPEC ?? 'journey.spec.ts',
+  projects: phoneProjects(),
   workers: 1,
   retries: 0,
   // The slowest native picker took 26 s to open on the simulator; three pickers and their ceilings fit.
@@ -17,5 +20,5 @@ export default defineConfig({
   expect: { timeout: 30_000 },
   // The run script copies the report into research/devices/evidence/ once a run is kept: a listing or a
   // probe must never overwrite kept evidence.
-  reporter: [['list'], ['json', { outputFile: `test-results/devices/${process.env.DEVICE_ROUTE ?? 'unknown'}.json` }]],
+  reporter: [['list'], ['json', { outputFile: `test-results/devices/${process.env.JOURNEY_REPORT ?? 'unknown'}.json` }]],
 });

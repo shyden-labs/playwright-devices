@@ -2,10 +2,11 @@
 // emulators and the iPhone Duo simulator the colour list never showed (round 7, 2026-11-21); the Duo's
 // screen showed the Name field's edit menu instead. Keeps the device's screen with the keyboard up, just
 // after the tap and three seconds later, and the page's geometry at each, in the report.
-import { adbFor, test } from '../device-fixture.ts';
-import { androidPagePoint, readViewport } from '../android-page-map.ts';
-import { connectAndroidScreen, DUMP_COMMAND } from '../android-native.ts';
-import { MARKER_LABEL, screenPointsOf } from '../screen-marker.ts';
+import { test } from '../journey-fixture.ts';
+import { REAL_EFFECTS } from '../../../src/devices/phone-effects.ts';
+import { androidPagePoint, readViewport } from '../../../src/devices/android-page-map.ts';
+import { connectAndroidScreen, DUMP_COMMAND } from '../../../src/devices/android-native.ts';
+import { MARKER_LABEL, screenPointsOf } from '../../../src/devices/screen-marker.ts';
 
 // Round 11 (Android only): Chrome's page area, the viewport the map reads and the screen point it aims
 // at, plus the keyboard window's frame, so round 10's misses (pixel_9 landed 47 CSS px below Colour;
@@ -82,7 +83,7 @@ test('the Colour tap after typing', async ({ page, session }, testInfo) => {
       testInfo.annotations.push({ type: `${stage}: ios map`, description: JSON.stringify(await iosMap(page, colour)) });
     }
     if (onAndroid && colour !== null) {
-      const adb = adbFor(serial);
+      const adb = REAL_EFFECTS.adbFor(serial);
       // Round 13: once Colour opens Chrome's option list, the page area is off the screen; say so and go on.
       const area = await connectAndroidScreen({ adb }).pageArea().catch(String);
       if (typeof area === 'string') {

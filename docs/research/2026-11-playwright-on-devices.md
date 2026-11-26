@@ -21,7 +21,7 @@ Measured with Playwright 1.65.1, macOS 27.2.1 and Xcode 27.2. iPhone: iPhone18,4
 - Playwright has no iOS device support of its own. `webkit.connectOverCDP` to ios_webkit_debug_proxy is accepted ([ios-iphone-cdp.txt](../../research/devices/evidence/ios-iphone-cdp.txt)); `chromium.connectOverCDP` is refused (`Browser.getVersion` not found).
 - Over that connection Playwright cannot create a context or a page ("Not supported"), so the test is given Safari's one open tab. It must be the only tab: Playwright waits on every tab the proxy lists, and a background tab never answers ([ios-webkit-background-tab-hang.txt](../../research/devices/evidence/ios-webkit-background-tab-hang.txt)).
 - Playwright's input on this route is page JavaScript faking events, not real input ([ios-webkit-input-is-synthetic.txt](../../research/devices/evidence/ios-webkit-input-is-synthetic.txt)). So taps, typing and the finger scroll are sent as real touches and keys by WebDriverAgent, while Playwright still navigates, reads and asserts. The test body is unchanged; the fixture (`research/devices/device-fixture.ts`) chooses the route from `DEVICE_ROUTE`.
-- ios_webkit_debug_proxy listens on every network address and has no option to stop that, so a pf rule keeps ports 9221-9322 to the Mac (shyden-labs/playwright-devices#19, `research/devices/mac-setup/`).
+- ios_webkit_debug_proxy listens on every network address and has no option to stop that, so a pf rule keeps ports 9221-9322 to the Mac (shyden-labs/playwright-devices#19, `mac-setup/`).
 
 ## Android
 
