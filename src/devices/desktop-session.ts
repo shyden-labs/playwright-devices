@@ -77,6 +77,13 @@ export function desktopSession({ page, files }: DesktopSessionOptions): DeviceSe
   const opened: FileChooser[] = [];
   const keep = (chooser: FileChooser) => {
     opened.push(chooser);
+    // TEMPORARY diagnostic (shyden-labs/playwright-devices#68): which input each chooser opened for.
+    void chooser
+      .element()
+      .getAttribute('id')
+      .then((id) => {
+        console.log(`DIAG filechooser for #${String(id)}, ${String(opened.length)} waiting`);
+      });
   };
   page.on('filechooser', keep);
 
