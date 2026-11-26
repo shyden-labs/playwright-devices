@@ -48,6 +48,20 @@
     <input id="name" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
     <output data-testid="typed-result"></output>
 
+    <label for="email">Email</label>
+    <input id="email" type="email" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+    <output data-testid="email-result"></output>
+
+    <input type="checkbox" id="agree" />
+    <label for="agree">Agree</label>
+    <output data-testid="agree-result"></output>
+
+    <form id="search-form">
+      <label for="search">Search</label>
+      <input id="search" type="search" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" />
+    </form>
+    <output data-testid="search-result"></output>
+
     <label for="colour">Colour</label>
     <select id="colour">
       <option value="">Choose one</option>
@@ -73,12 +87,49 @@
       const show = (id, text) => (document.querySelector(`[data-testid="${id}"]`).textContent = text);
       document.getElementById('tap').addEventListener('click', () => show('tap-result', 'Tapped'));
       document.getElementById('name').addEventListener('input', (event) => show('typed-result', `Hello, ${event.target.value}`));
+      document.getElementById('email').addEventListener('input', (event) => show('email-result', event.target.value));
+      document
+        .getElementById('agree')
+        .addEventListener('change', (event) => show('agree-result', event.target.checked ? 'Agreed' : 'Not agreed'));
+      document.getElementById('search-form').addEventListener('submit', (event) => {
+        event.preventDefault();
+        show('search-result', `Searched ${document.getElementById('search').value}`);
+        document.getElementById('search').blur();
+      });
       document.getElementById('colour').addEventListener('change', (event) => show('colour-result', event.target.value));
       document.getElementById('file').addEventListener('change', (event) => show('file-result', event.target.files[0]?.name ?? ''));
       document.getElementById('photo').addEventListener('change', (event) => show('photo-result', event.target.files[0]?.type ?? ''));
       addEventListener('scroll', () => {
         if (scrollY > 0) show('scroll-result', 'Scrolled');
       });
+      // Every touch the page sees, for the device screen at failure (run 45007095925: the pixel_tablet's Colour tap
+      // opened nothing, and nothing said where it landed).
+      window.touchesSeen = [];
+      // touchend, touchcancel and pointercancel say whether Chrome cancelled a touch the page began to see; the
+      // visual viewport's resize and scroll say when the keyboard moved the page (run 45023335822: the
+      // pixel_tablet's Colour tap reached Chrome but the page saw nothing, and the pixel_9's viewport height
+      // changed from 742 to 430 inside the 5 s settle wait).
+      for (const type of ['touchstart', 'touchend', 'touchcancel', 'pointerdown', 'pointercancel', 'click', 'focusin', 'scroll']) {
+        document.addEventListener(
+          type,
+          (event) => {
+            const point = event.changedTouches?.[0] ?? (event instanceof MouseEvent ? event : undefined);
+            const at = point === undefined ? `scrollY ${Math.round(scrollY)}` : `${Math.round(point.clientX)},${Math.round(point.clientY)}`;
+            const target = event.target instanceof Element ? event.target.id || event.target.tagName : 'document';
+            const view = visualViewport === null ? '' : ` view ${Math.round(visualViewport.height)}`;
+            window.touchesSeen.push(`${Math.round(performance.now())} ms ${type} at ${at} on ${target}${view}`);
+          },
+          true,
+        );
+      }
+      for (const type of ['resize', 'scroll']) {
+        visualViewport?.addEventListener(type, () => {
+          const { height, offsetTop, pageTop } = visualViewport;
+          window.touchesSeen.push(
+            `${Math.round(performance.now())} ms viewport ${type} height ${Math.round(height)} offsetTop ${Math.round(offsetTop)} pageTop ${Math.round(pageTop)}`,
+          );
+        });
+      }
     </script>
   </body>
 </html>

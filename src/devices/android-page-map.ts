@@ -21,13 +21,18 @@ export interface PageViewport {
   height: number;
 }
 
-/** The centre of `box` (CSS pixels in the page's viewport) in the phone's pixels. */
+/**
+ * The centre of `box` in the phone's pixels. Playwright's box on Android Chrome is already measured from what
+ * shows, the visual viewport's offset taken off (OnePlus CPH2653, 2026-11-27: panned 279.43 px under the
+ * keyboard, a box at page y 454.23 read 174.80), so the offset is not taken off again
+ * (shyden-labs/playwright-devices#67).
+ */
 export function androidPagePoint(box: Box, viewport: PageViewport, area: ScreenRect): ScreenPoint {
   const pixels = viewport.scale * viewport.devicePixelRatio;
   const contentTop = area.y + area.height - viewport.height * pixels;
   return {
-    x: area.x + (box.x + box.width / 2 - viewport.offsetLeft) * pixels,
-    y: contentTop + (box.y + box.height / 2 - viewport.offsetTop) * pixels,
+    x: area.x + (box.x + box.width / 2) * pixels,
+    y: contentTop + (box.y + box.height / 2) * pixels,
   };
 }
 

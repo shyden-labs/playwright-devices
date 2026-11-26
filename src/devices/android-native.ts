@@ -8,7 +8,7 @@
  */
 import { basename } from 'node:path';
 import { centreOfFirstDescribed, centreOfText, rectOfResourceId } from './android-screen.ts';
-import type { Adb } from './finger-scroll.ts';
+import { androidSwipeArgs, type Adb } from './finger-scroll.ts';
 import type { ScreenPoint, ScreenRect, WdaClock } from './wda-client.ts';
 import { realClock } from './clock.ts';
 
@@ -29,6 +29,12 @@ export const PAGE_AREA_ID = 'com.android.chrome:id/compositor_view_holder';
 
 /** Chrome is open before any tap, so its page area is listed at once; a short ceiling. */
 const PAGE_AREA_CEILING_MS = 5_000;
+
+/** Playwright key names and the Android key events `adb shell input keyevent` sends for them. */
+const KEY_EVENTS = new Map([
+  ['Enter', 'KEYCODE_ENTER'],
+  ['Escape', 'KEYCODE_ESCAPE'],
+]);
 
 /** Printable ASCII: all `adb shell input text` can type. */
 const TYPABLE = /^[\x20-\x7e]*$/;
@@ -90,6 +96,20 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
     /** Types `text` into the focused field through Android's input service. */
     async typeText(text: string): Promise<void> {
       await adb(['shell', 'input', 'text', inputTextArgument(text)]);
+    },
+
+    /** One real finger dragged from `from` to `to`, in the phone's pixels. */
+    async swipe(from: ScreenPoint, to: ScreenPoint): Promise<void> {
+      await adb(androidSwipeArgs(from, to));
+    },
+
+    /** Presses a key as Android's own key event (shyden-labs/playwright-devices#67); a key with none routed is refused, naming it. */
+    async pressKey(key: string): Promise<void> {
+      const code = KEY_EVENTS.get(key);
+      if (code === undefined) {
+        throw new Error(`no key event routed for "${key}" on Android; keys routed: ${[...KEY_EVENTS.keys()].join(', ')}`);
+      }
+      await adb(['shell', 'input', 'keyevent', code]);
     },
 
     /** Where Chrome draws the page on the screen, read afresh: its toolbar moves as the page scrolls. */
