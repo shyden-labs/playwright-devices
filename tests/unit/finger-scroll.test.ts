@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { androidFingerScroll, iosFingerScroll, parseWmSize, scrollSpan } from '../../research/devices/finger-scroll.ts';
+import { androidFingerScroll, iosFingerScroll, parseWmSize, scrollSpan } from '../../src/devices/finger-scroll.ts';
 
 describe('scrollSpan', () => {
   it('drags up the middle of the screen from 45% to 15% of its height (the measured Android span)', () => {

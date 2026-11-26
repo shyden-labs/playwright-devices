@@ -3,7 +3,7 @@
  * every phone, tablet, simulator and emulator, every input real. One journey,
  * all its assertions, soft so one failure does not hide the rest.
  */
-import { expect, test } from './device-fixture.ts';
+import { expect, test } from './journey-fixture.ts';
 
 test('a page is read, tapped, typed into and scrolled by real input', async ({
   page,

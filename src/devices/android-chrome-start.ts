@@ -10,19 +10,17 @@
  */
 import type { Adb } from './finger-scroll.ts';
 import type { WdaClock } from './wda-client.ts';
+import { realClock } from './clock.ts';
 
 const CHROME = 'com.android.chrome';
 const COMMAND_LINE = '/data/local/tmp/chrome-command-line';
+/** Playwright's Android launch flags that skip Chrome's first-run screen; the leading `_` stands for the program name. */
+const FIRST_RUN_FLAGS = '_ --disable-fre --no-default-browser-check --no-first-run';
 /** The socket appeared 452-528 ms after `am start` in 20 cold starts; 30 s leaves room for a busy phone. */
 const READY_CEILING_MS = 30_000;
 const POLL_MS = 250;
 /** One look at the endpoint may not hang the wait. */
 const LOOK_CEILING_MS = 2_000;
-
-const realClock: WdaClock = {
-  now: () => Date.now(),
-  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-};
 
 export interface ChromeStartOptions {
   adb: Adb;
@@ -50,7 +48,7 @@ async function look(fetchFn: typeof fetch, url: string): Promise<{ ready: boolea
   }
 }
 
-/** Starts Chrome cold, without a leftover command-line file, and waits until its DevTools endpoint names the browser. */
+/** Starts Chrome cold, with only the first-run flags in its command-line file, and waits until its DevTools endpoint names the browser. */
 export async function startChromeCold({
   adb,
   fetchFn = fetch,
@@ -59,7 +57,10 @@ export async function startChromeCold({
   ceilingMs = READY_CEILING_MS,
 }: ChromeStartOptions): Promise<StartedChrome> {
   await adb(['shell', 'am', 'force-stop', CHROME]);
-  await adb(['shell', 'rm', '-f', COMMAND_LINE]);
+  // Replaces a leftover file (Playwright's renames the socket) with Playwright's own first-run flags and no
+  // socket name: a fresh emulator's Chrome otherwise sat on its first-run screen, which opens no DevTools
+  // socket (shyden-labs/playwright-devices#47). Chrome reads the file only as the debug app.
+  await adb(['shell', `echo "${FIRST_RUN_FLAGS}" > ${COMMAND_LINE}`]);
   // Chrome opens its DevTools socket only once it runs in the foreground.
   await adb(['shell', 'am', 'start', '-n', `${CHROME}/com.google.android.apps.chrome.Main`, '-d', 'http://127.0.0.1:9/']);
   await adb(['forward', `tcp:${port}`, 'localabstract:chrome_devtools_remote']);
@@ -69,14 +70,35 @@ export async function startChromeCold({
   };
   const url = `http://127.0.0.1:${port}/json/version`;
   const started = clock.now();
-  for (;;) {
+  // Each look waits for the one before: a recursive wait, not a loop.
+  const attempt = async (): Promise<StartedChrome> => {
     const { ready, seen } = await look(fetchFn, url);
     const waited = clock.now() - started;
     if (ready) return { readyAfterMs: waited, stop };
+    await refuseFirstRunScreen(adb);
     if (waited >= ceilingMs) {
       throw new Error(`Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}`);
     }
     await clock.sleep(POLL_MS);
+    return attempt();
+  };
+  return attempt();
+}
+
+/** Chrome's first-run screen: while it shows, Chrome opens no DevTools socket. */
+const FIRST_RUN_ACTIVITY = 'org.chromium.chrome.browser.firstrun.FirstRunActivity';
+
+/**
+ * Fails at once when the phone shows Chrome's first-run screen: it opens no
+ * DevTools socket, so waiting out the ceiling would only end in UND_ERR_SOCKET
+ * (CI run 45727815519, pixel_9, 2026-11-26; shyden-labs/playwright-devices#47).
+ */
+async function refuseFirstRunScreen(adb: Adb): Promise<void> {
+  const top = (await adb(['shell', 'dumpsys', 'activity', 'activities'])).split('\n').find((line) => line.includes('topResumedActivity='));
+  if (top?.includes(FIRST_RUN_ACTIVITY)) {
+    throw new Error(
+      `Chrome shows its first-run screen (${FIRST_RUN_ACTIVITY}), which opens no DevTools socket: open Chrome on the phone once and finish its first run, then run again`,
+    );
   }
 }
 

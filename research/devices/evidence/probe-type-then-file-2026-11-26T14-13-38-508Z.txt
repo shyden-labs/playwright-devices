@@ -1,0 +1,27 @@
+14:13:41.719 after typing: active INPUT#name, scrollY 49, visualViewport top,height,scale 49,397,1
+14:13:41.720   event pointerdown on BUTTON#b at 77,152
+14:13:41.720   event touchstart on BUTTON#b at 77,152
+14:13:41.720   event pointerup on BUTTON#b at 77,152
+14:13:41.720   event touchend on BUTTON#b at 77,152
+14:13:41.720   event click on BUTTON#b at 77,152
+14:13:41.720   event pointerdown on INPUT#name at 213,261
+14:13:41.720   event touchstart on INPUT#name at 213,261
+14:13:41.720   event pointerup on INPUT#name at 213,261
+14:13:41.720   event touchend on INPUT#name at 213,261
+14:13:41.720   event focusin on INPUT#name
+14:13:41.720   event click on INPUT#name at 213,261
+14:13:42.398 tap 1: file input page box {"x":69.59375,"y":301.59375,"width":266,"height":20}, screen point {"x":202.59375,"y":330.59375}
+14:13:46.164 3 s after tap 1: active BODY#, scrollY 0, visualViewport top,height,scale 0,746,1
+14:13:46.164   event pointerdown on P# at 203,263
+14:13:46.164   event touchstart on P# at 203,263
+14:13:46.164   event pointerup on P# at 203,263
+14:13:46.165   event touchend on P# at 203,263
+14:13:46.165   event focusout on INPUT#name
+14:13:46.165   event click on P# at 203,263
+14:13:46.990 tap 2: file input page box {"x":69.59375,"y":350.59375,"width":266,"height":20}, screen point {"x":202.59375,"y":428.59375}
+14:13:51.205 3 s after tap 2: active BODY#, scrollY 0, visualViewport top,height,scale 0,746,1
+14:13:51.205   event pointerdown on INPUT#file at 203,361
+14:13:51.205   event touchstart on INPUT#file at 203,361
+14:13:51.205   event pointerup on INPUT#file at 203,361
+14:13:51.205   event touchend on INPUT#file at 203,361
+14:13:51.205   event click on INPUT#file at 203,361

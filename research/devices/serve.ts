@@ -6,7 +6,8 @@
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import { networkInterfaces, type NetworkInterfaceInfo } from 'node:os';
+import { networkInterfaces } from 'node:os';
+import { lanAddress } from '../../src/devices/lan.ts';
 
 export interface JourneyResponse {
   status: number;
@@ -20,16 +21,6 @@ export function journeyResponse(path: string, html: string): JourneyResponse {
     return { status: 200, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' }, body: html };
   }
   return { status: 404, headers: { 'content-type': 'text/plain' }, body: 'not found' };
-}
-
-/** The Mac's Wi-Fi IPv4 address: the iPhone reaches the Mac over Wi-Fi, and simulators and emulators share it. */
-export function lanAddress(interfaces: NodeJS.Dict<NetworkInterfaceInfo[]>): string {
-  const found = interfaces.en0?.find((info) => info.family === 'IPv4' && !info.internal);
-  if (found === undefined) {
-    const seen = Object.keys(interfaces).join(', ');
-    throw new Error(`no IPv4 address on en0 (the Wi-Fi) to serve the journey to the phones; interfaces seen: ${seen}`);
-  }
-  return found.address;
 }
 
 /** Starts serving `htmlPath` on the Wi-Fi address and a free port; answers the page's URL and how to stop. */

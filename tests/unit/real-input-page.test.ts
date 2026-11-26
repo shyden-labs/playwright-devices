@@ -1,8 +1,8 @@
 import type { Locator, Page } from '@playwright/test';
 import { describe, expect, it } from 'vitest';
-import { realInputPage, type RealInput } from '../../research/devices/real-input-page.ts';
-import type { Box } from '../../research/devices/screen-map.ts';
-import type { ScreenPoint } from '../../research/devices/wda-client.ts';
+import { realInputPage, type RealInput } from '../../src/devices/real-input-page.ts';
+import type { Box } from '../../src/devices/screen-map.ts';
+import type { ScreenPoint } from '../../src/devices/wda-client.ts';
 
 /** A Playwright locator stand-in with a fixed box; records the calls it answers itself. */
 function fakeLocator(name: string, box: Box | null, calls: string[]): Locator {
@@ -113,6 +113,25 @@ describe('realInputPage', () => {
 
     expect(await page.title()).toBe('Journey');
     expect(await page.getByTestId('t').textContent()).toBe('text of testid=t');
+  });
+
+  it("passes a locator's plain properties through unchanged", () => {
+    const { page } = build();
+    expect((page.getByTestId('t') as unknown as { name: string }).name).toBe('testid=t');
+  });
+
+  it('names a real Playwright locator, which has no name of its own, by its description when it cannot tap it', async () => {
+    const bare = { boundingBox: () => Promise.resolve(null), toString: () => "locator('#gone')" };
+    const input: RealInput = { tapAt: () => Promise.resolve(), typeText: () => Promise.resolve() };
+    const page = realInputPage({ locator: () => bare } as unknown as Page, {
+      input,
+      toScreen: () => Promise.resolve({ x: 0, y: 0 }),
+      baseURL: 'http://127.0.0.1:4321',
+    });
+
+    await expect(page.locator('#gone').click()).rejects.toThrow(
+      "cannot tap locator('#gone'): it has no box on the page (hidden or detached)",
+    );
   });
 
   it('refuses a tap on a locator with no box, naming it', async () => {

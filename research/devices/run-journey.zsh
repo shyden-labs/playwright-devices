@@ -18,7 +18,7 @@ set -euo pipefail
 repo=${0:A:h:h:h}
 wda=$HOME/Library/Caches/playwright-devices/wda
 runner_id=uk.co.shyden.WebDriverAgentRunner.xctrunner
-fixtures=$repo/research/devices/fixtures
+fixtures=$repo/src/devices/phone-files
 evidence=$repo/research/devices/evidence
 stamp=$(date +%F-%H%M)
 pids=()
@@ -41,13 +41,13 @@ wait_for() {
 }
 
 # ios_webkit_debug_proxy listens on every address and has no option to stop that;
-# the pf rule in research/devices/mac-setup/ (shyden-labs/playwright-devices#19)
+# the pf rule in mac-setup/ (shyden-labs/playwright-devices#19)
 # keeps its ports to this Mac. Refuse to start it unless that rule was loaded.
 require_pf_rule() {
   grep -q 'port 9221:9322' /etc/pf.shyden.conf 2>/dev/null ||
-    die "/etc/pf.shyden.conf does not block ports 9221-9322; install research/devices/mac-setup/ first"
+    die "/etc/pf.shyden.conf does not block ports 9221-9322; install mac-setup/ first"
   launchctl print system/uk.co.shyden.pf 2>/dev/null | grep -q 'last exit code = 0' ||
-    die "the pf rule's launchd job (uk.co.shyden.pf) has not loaded it; install research/devices/mac-setup/ first"
+    die "the pf rule's launchd job (uk.co.shyden.pf) has not loaded it; install mac-setup/ first"
 }
 
 # Starts WebDriverAgent with the cached build in `derived`, logging to `logs`.
@@ -59,40 +59,21 @@ start_wda() {
   pids+=$!
 }
 
-# Opens one Safari tab through WebDriverAgent; the journey navigates it.
-open_tab_through_wda() {
-  local session
-  session=$(curl -sf -X POST -H 'content-type: application/json' -d '{"capabilities":{}}' http://127.0.0.1:8100/session |
-    node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).sessionId))')
-  curl -sf -X POST -H 'content-type: application/json' -d '{"url":"http://127.0.0.1:9/"}' http://127.0.0.1:8100/session/$session/url >/dev/null
-  curl -sf -X DELETE http://127.0.0.1:8100/session/$session >/dev/null
-}
-
 target=${1:-}
 case $target in
   iphone)
     udid=${2:-}; [[ -n $udid ]] || die "usage: run-journey.zsh iphone <udid>"
-    route=ios-webkit label=iphone-$udid
-    iproxy 8100 8100 -u $udid >$wda/logs/iproxy.log 2>&1 &
-    pids+=$!
-    start_wda $udid $wda/derived $wda/logs
-    wait_for http://127.0.0.1:8100/status '"ready"' 180 WebDriverAgent
-    xcrun devicectl device copy to --device $udid --domain-type appDataContainer --domain-identifier $runner_id \
-      --source $fixtures/device-journey.txt --destination Documents/device-journey.txt >/dev/null
-    require_pf_rule
-    ios_webkit_debug_proxy -c $udid:9222 >$wda/logs/iwdp.log 2>&1 &
-    pids+=$!
-    open_tab_through_wda
-    wait_for http://127.0.0.1:9222/json webSocketDebuggerUrl 30 'ios_webkit_debug_proxy (a Safari tab)'
+    route=ios-webkit label=iphone-$udid project=iphone
+    # The packaged command starts and stops the iPhone's side (shyden-labs/playwright-devices#54).
+    launcher=(node $repo/src/devices/cli/main.ts start iphone $udid --)
     ;;
   ios-sim)
     udid=${2:-}; [[ -n $udid ]] || die "usage: run-journey.zsh ios-sim <udid>"
-    route=ios-webkit label=ios-sim-$udid
+    route=ios-webkit label=ios-sim-$udid project=iphone launcher=()
     xcrun simctl bootstatus $udid -b >/dev/null
     xcrun simctl addmedia $udid $fixtures/device-journey.png
     start_wda $udid $wda/derived-sim $wda/logs-sim
     wait_for http://127.0.0.1:8100/status '"ready"' 300 WebDriverAgent
-    cp $fixtures/device-journey.txt "$(xcrun simctl get_app_container $udid $runner_id data)/Documents/device-journey.txt"
     socket=$(xcrun simctl getenv $udid RWI_LISTEN_SOCKET)
     require_pf_rule
     # The proxy also attaches every iPhone on USB, and cannot name the simulator (it reads only hex
@@ -105,14 +86,16 @@ case $target in
     xcrun simctl openurl $udid http://127.0.0.1:9/
     # A cold inspector and Safari took 51 s to register at 4-5 GB swap (evidence/ios-simulator-inspector-cold-start-2026-11-19.txt).
     wait_for http://127.0.0.1:9222/json webSocketDebuggerUrl 150 'ios_webkit_debug_proxy (a Safari tab)'
+    # What `playwright-devices start iphone` would set; the fixture puts the document into the simulator's runner.
+    export PLAYWRIGHT_DEVICES_TARGET=iphone IOS_UDID=$udid IOS_RUNNER_ID=$runner_id IOS_SIMULATOR=1
     ;;
   android)
     serial=${2:-} route=${3:-}
     [[ -n $serial && ( $route == android-cdp || $route == android-playwright ) ]] ||
       die "usage: run-journey.zsh android <serial> <android-cdp|android-playwright>"
-    label=$route-$serial
-    export ANDROID_SERIAL=$serial
-    # The fixture starts and stops Chrome itself (research/devices/android-chrome-start.ts).
+    label=$route-$serial project=$route
+    # The packaged command checks the phone; the fixture starts and stops Chrome itself.
+    launcher=(node $repo/src/devices/cli/main.ts start android $serial --)
     ;;
   *) die "usage: run-journey.zsh iphone <udid> | ios-sim <udid> | android <serial> <route>" ;;
 esac
@@ -120,14 +103,14 @@ esac
 # PROBE=<script.ts> runs a measurement against the same device side instead of the journey.
 if [[ -n ${PROBE:-} ]]; then
   print "run-journey: probing $label with $PROBE"
-  (cd $repo && DEVICE_ROUTE=$route node $PROBE)
+  (cd $repo && DEVICE_ROUTE=$route $launcher node $PROBE)
   exit $?
 fi
 
 out=$evidence/$label-$stamp.txt
 print "run-journey: $label, route $route, output $out"
 set +e
-(cd $repo && DEVICE_ROUTE=$route npx playwright test --config playwright.devices.config.ts) 2>&1 | tee $out
+(cd $repo && JOURNEY_REPORT=$route $launcher npx playwright test --config playwright.devices.config.ts --project $project) 2>&1 | tee $out
 result=${pipestatus[1]}
 set -e
 cp $repo/test-results/devices/$route.json $evidence/$label-$stamp.json

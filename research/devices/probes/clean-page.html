@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Clean install</title>
+  </head>
+  <body style="font: 20px system-ui; padding: 16px">
+    <h1>Clean install</h1>
+    <button id="b" style="font-size: 20px; padding: 12px">Press me</button>
+    <p data-testid="pressed"></p>
+    <label>Name <input id="name" style="font-size: 20px" /></label>
+    <p data-testid="hello"></p>
+    <label>Brief <input id="file" type="file" /></label>
+    <p data-testid="chosen"></p>
+    <script>
+      b.onclick = () => (document.querySelector('[data-testid=pressed]').textContent = 'Pressed');
+      document.getElementById('name').oninput = (e) =>
+        (document.querySelector('[data-testid=hello]').textContent = 'Hello, ' + e.target.value);
+      file.onchange = (e) => (document.querySelector('[data-testid=chosen]').textContent = e.target.files[0]?.name ?? '');
+    </script>
+  </body>
+</html>

@@ -2,7 +2,7 @@
  * Page coordinates to screen points on iOS (shyden-labs/playwright-devices#7).
  *
  * Safari's toolbar and zoom sit between the page and the screen, so the page
- * draws a fixed square marker and WebDriverAgent reads where it landed: that
+ * draws a square marker and WebDriverAgent reads where it landed: that
  * gives the page's origin on the screen and its scale.
  */
 

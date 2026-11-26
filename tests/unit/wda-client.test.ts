@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { connectWda, type WdaClock } from '../../research/devices/wda-client.ts';
+import { connectWda, type WdaClock } from '../../src/devices/wda-client.ts';
 
 /** One HTTP call the client made to WebDriverAgent. */
 interface Call {
@@ -513,5 +513,45 @@ describe('waitGone', () => {
 
     await expect(client.waitGone('label == "Done"')).rejects.toThrow('label == "Done" was still on the screen after 60000 ms');
     expect(clock.now()).toBe(60_000);
+  });
+});
+
+describe("WebDriverAgent's answers in their other shapes", () => {
+  /** WebDriverAgent answering `path` with `status` and `value`, and everything else as `fakeWda(session)` does. */
+  function answering(path: string, status: number, value: unknown) {
+    const rest = fakeWda(session);
+    return (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const url = new URL(input instanceof Request ? input.url : input);
+      if (url.pathname === path) return Promise.resolve(Response.json({ value }, { status }));
+      return rest.fetchFn(input, init);
+    };
+  }
+
+  it('names the error WebDriverAgent gives when its refusal has no message', async () => {
+    const fetchFn = answering('/session/s1/elements', 500, { error: 'unknown error' });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn, clock: fakeClock() });
+    await expect(client.typeText('a')).rejects.toThrow('WebDriverAgent refused POST /session/s1/elements (500): unknown error');
+  });
+
+  it('says "no message" when the refusal carries neither a message nor an error', async () => {
+    const fetchFn = answering('/session/s1/elements', 500, null);
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn, clock: fakeClock() });
+    await expect(client.typeText('a')).rejects.toThrow('WebDriverAgent refused POST /session/s1/elements (500): no message');
+  });
+
+  it('reads an element id given under the W3C key', async () => {
+    const wda = fakeWda({
+      ...session,
+      'POST /session/s1/elements': () => [{ 'element-6066-11e4-a52e-4f735466cecf': 'w3c-1' }],
+      'GET /session/s1/element/w3c-1/rect': () => ({ x: 1, y: 2, width: 3, height: 4 }),
+    });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+    expect(await client.rectOf('marker')).toEqual({ x: 1, y: 2, width: 3, height: 4 });
+  });
+
+  it('fails naming it when WebDriverAgent lists an element with no id', async () => {
+    const wda = fakeWda({ ...session, 'POST /session/s1/elements': () => [{}] });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+    await expect(client.rectOf('marker')).rejects.toThrow('WebDriverAgent listed an element with no id: {}');
   });
 });

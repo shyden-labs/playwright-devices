@@ -1,6 +1,6 @@
 {
   "name": "@shyden-labs/playwright-devices",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Shared Playwright checks that one test suite ran unchanged on every phone, tablet and desktop browser, and the shared desktop browser projects.",
   "license": "Apache-2.0",
   "repository": {
@@ -23,13 +23,19 @@
     "./desktop": {
       "types": "./dist/src/desktop/browsers.d.ts",
       "default": "./dist/src/desktop/browsers.js"
+    },
+    "./phones": {
+      "types": "./dist/src/devices/phones.d.ts",
+      "default": "./dist/src/devices/phones.js"
     }
   },
   "bin": {
-    "one-suite": "dist/src/one-suite/cli.js"
+    "one-suite": "dist/src/one-suite/cli.js",
+    "playwright-devices": "dist/src/devices/cli/main.js"
   },
   "files": [
     "dist/",
+    "mac-setup/",
     "NOTICE"
   ],
   "engines": {
@@ -43,7 +49,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "git config core.hooksPath .githooks",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "postbuild": "node scripts/copy-phone-files.ts src/devices/phone-files dist/src/devices/phone-files"
   },
   "peerDependencies": {
     "@playwright/test": "^1.65.1"

@@ -10,6 +10,7 @@ import { basename } from 'node:path';
 import { centreOfFirstDescribed, centreOfText, rectOfResourceId } from './android-screen.ts';
 import type { Adb } from './finger-scroll.ts';
 import type { ScreenPoint, ScreenRect, WdaClock } from './wda-client.ts';
+import { realClock } from './clock.ts';
 
 /**
  * Prints the dump to adb's output instead of a file on the phone.
@@ -36,13 +37,10 @@ const TYPABLE = /^[\x20-\x7e]*$/;
 function inputTextArgument(text: string): string {
   if (!TYPABLE.test(text)) throw new Error(`adb input text types printable ASCII only; cannot type "${text}"`);
   if (text.includes('%s')) throw new Error(`adb input text reads %s as a space; cannot type "${text}"`);
-  return `'${text.replaceAll(' ', '%s').replaceAll("'", "'\\''")}'`;
+  const quoteEscape = String.raw`'\''`;
+  const escaped = text.replaceAll(' ', '%s').replaceAll("'", quoteEscape);
+  return `'${escaped}'`;
 }
-
-const realClock: WdaClock = {
-  now: () => Date.now(),
-  sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-};
 
 export interface AndroidScreenOptions {
   adb: Adb;
@@ -69,12 +67,15 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
   /** Asks `look` until it answers, failing at the ceiling with `failure`. */
   async function waitFor<T>(look: () => Promise<T | undefined>, failure: string, ceilingMs = NATIVE_CEILING_MS): Promise<T> {
     const deadline = clock.now() + ceilingMs;
-    for (;;) {
+    // Each look waits for the one before: a recursive wait, not a loop.
+    const attempt = async (): Promise<T> => {
       const found = await look();
       if (found !== undefined) return found;
       if (clock.now() >= deadline) throw new Error(failure);
       await clock.sleep(POLL_MS);
-    }
+      return attempt();
+    };
+    return attempt();
   }
 
   return {
