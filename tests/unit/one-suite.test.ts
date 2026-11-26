@@ -90,6 +90,32 @@ describe('testsByTarget', () => {
         ?.tests.map((t) => t.id),
     ).toEqual(['a.spec.ts › outer › inner']);
   });
+
+  it("leaves an untitled describe out of a test's id, as Playwright's titlePath and the assertion counter do", () => {
+    const untitled = {
+      config: { projects: [{ name: 'chromium' }] },
+      suites: [
+        {
+          title: 'a.spec.ts',
+          file: 'a.spec.ts',
+          specs: [],
+          suites: [
+            {
+              title: '',
+              file: 'a.spec.ts',
+              specs: report(['chromium'], [{ title: 'inner', file: 'a.spec.ts' }]).suites[0]?.specs ?? [],
+            },
+          ],
+        },
+      ],
+    } as unknown as JSONReport;
+    // The counter's id for this test: Playwright's titlePath ['', 'chromium', 'a.spec.ts', 'inner'] minus root and project.
+    expect(
+      testsByTarget(untitled, '')
+        .get('chromium')
+        ?.tests.map((t) => t.id),
+    ).toEqual(['a.spec.ts › inner']);
+  });
 });
 
 describe('checkOneSuite', () => {

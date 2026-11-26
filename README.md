@@ -112,7 +112,7 @@ The one-suite checks (shyden-labs/playwright-devices#16) and the desktop browser
 
 1. `npm install --save-dev --save-exact @shyden-labs/playwright-devices`. It needs `@playwright/test` 1.65.1 or later in the project, and runs no install script.
 2. Count each test's assertions per target with the reporter, next to the JSON reporter: `reporter: [['json'], ['@shyden-labs/playwright-devices/assertion-counter', { outputFile: '<target>-assertions.json', unnamedTarget: '<target>' }]]` (`unnamedTarget` names a run whose project has no name, such as a device run).
-3. Check the runs: `npx one-suite --group phones=<targets> --group desktop=<targets> --list <list.json>[=<target>] --report <report.json>[=<target>] --assertions <assertions.json>`. It prints one total per target and every problem, and exits 1 on any problem.
+3. Check the runs: `npx one-suite --group phones=<targets> --group desktop=<targets> --list <list.json>[=<target>] --report <report.json>[=<target>] --assertions <assertions.json>`. It prints one total per target and every problem, and exits 1 on any problem. Write the `--list` JSON outside any folder the run empties when it starts (such as Playwright's `outputDir`, or one a global setup clears): it is written before the run, so the run would delete it before `one-suite` reads it.
 4. In code: `import { checkOneSuite, testsByTarget } from '@shyden-labs/playwright-devices'`, and `desktopProjects` and `desktopGroup` from `@shyden-labs/playwright-devices/desktop`.
 
 ### Publishing a version
