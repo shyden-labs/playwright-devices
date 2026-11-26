@@ -19,7 +19,8 @@ const fixture = (name: string) => definitions[name] as Fixture;
 /** A connected phone whose every step and teardown is recorded. */
 function connected(calls: string[]) {
   const session = {
-    page: 'phone page',
+    // The page the journey records each touch it saw on, as `window.touchesSeen`.
+    page: { evaluate: () => Promise.resolve(['touch at 12,34', 'touch at 56,78']) as Promise<unknown> },
     nativeChoose: (option: string) => {
       calls.push(`choose ${option}`);
       return Promise.resolve();
@@ -28,6 +29,8 @@ function connected(calls: string[]) {
     nativeChoosePhoto: () => Promise.resolve(),
     fingerScroll: () => Promise.resolve(),
     screenshot: () => Promise.resolve(Buffer.from('phone screen')),
+    screenSource: () => Promise.resolve('<hierarchy/>'),
+    moreEvidence: () => Promise.resolve([{ name: 'touches sent', body: '0 ms tap at 1,2' }]),
     close: () => {
       calls.push('session close');
       return Promise.resolve();
@@ -103,6 +106,44 @@ describe('the session fixture', () => {
 
     expect(info.attach).toHaveBeenCalledWith('device screen at failure', { body: Buffer.from('phone screen'), contentType: 'image/png' });
     expect(calls).toEqual(['session close', 'disconnect']);
+  });
+
+  it("attaches, on failure, the phone's description of its screen, the touches the page saw and the route's further evidence (shyden-labs/playwright-devices#38)", async () => {
+    const calls: string[] = [];
+    connectPhone.mockResolvedValue(connected(calls));
+    const info = testInfo('failed');
+
+    await fixture('session')({ baseURL: 'http://192.168.1.3:4173', phoneFiles: {} }, () => Promise.resolve(), info);
+
+    expect(info.attach).toHaveBeenCalledWith('device screen source at failure', { body: '<hierarchy/>', contentType: 'text/xml' });
+    expect(info.attach).toHaveBeenCalledWith('touches the page saw', { body: 'touch at 12,34\ntouch at 56,78', contentType: 'text/plain' });
+    expect(info.attach).toHaveBeenCalledWith('touches sent', { body: '0 ms tap at 1,2', contentType: 'text/plain' });
+    expect(calls).toEqual(['session close', 'disconnect']);
+  });
+
+  it('says why when the page could not be read for the touches it saw, and attaches the rest', async () => {
+    const calls: string[] = [];
+    const phone = connected(calls);
+    phone.session.page.evaluate = () => Promise.reject(new Error('Target closed'));
+    connectPhone.mockResolvedValue(phone);
+    const info = testInfo('failed');
+
+    await fixture('session')({ baseURL: 'http://192.168.1.3:4173', phoneFiles: {} }, () => Promise.resolve(), info);
+
+    expect(info.attach).toHaveBeenCalledWith('touches the page saw', {
+      body: 'the page could not be read: Error: Target closed',
+      contentType: 'text/plain',
+    });
+    expect(info.attach).toHaveBeenCalledWith('touches sent', { body: '0 ms tap at 1,2', contentType: 'text/plain' });
+  });
+
+  it('attaches no evidence when the test passed', async () => {
+    connectPhone.mockResolvedValue(connected([]));
+    const info = testInfo('passed');
+
+    await fixture('session')({ baseURL: 'http://192.168.1.3:4173', phoneFiles: {} }, () => Promise.resolve(), info);
+
+    expect(info.attach).not.toHaveBeenCalled();
   });
 
   it('disconnects even when closing the session fails', async () => {

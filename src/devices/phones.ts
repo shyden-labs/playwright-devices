@@ -7,7 +7,7 @@
  */
 import { fileURLToPath } from 'node:url';
 import { test as base } from '@playwright/test';
-import { withNamedSteps, type DeviceSession } from './device-session.ts';
+import { touchesSeen, withNamedSteps, type DeviceSession } from './device-session.ts';
 import { connectPhone, type PhoneFiles } from './phone-connect.ts';
 import { REAL_EFFECTS } from './phone-effects.ts';
 
@@ -42,6 +42,14 @@ export const test = base.extend<PhoneFixtures>({
       // The phone's own screen, before teardown closes anything: Playwright's screenshot shows only the page.
       if (testInfo.status !== testInfo.expectedStatus) {
         await testInfo.attach('device screen at failure', { body: await session.screenshot(), contentType: 'image/png' });
+        await testInfo.attach('device screen source at failure', { body: await session.screenSource(), contentType: 'text/xml' });
+        // The touches a page records as `window.touchesSeen` (the journey does), so a missed tap shows where it went.
+        const touches = await session.page.evaluate(touchesSeen, undefined).then(
+          (seen) => seen.join('\n'),
+          (error: unknown) => `the page could not be read: ${String(error)}`,
+        );
+        await testInfo.attach('touches the page saw', { body: touches, contentType: 'text/plain' });
+        for (const { name, body } of await session.moreEvidence()) await testInfo.attach(name, { body, contentType: 'text/plain' });
       }
     } finally {
       try {

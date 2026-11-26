@@ -134,3 +134,8 @@ export function withNamedSteps(session: DeviceSession, step: NamedStep): DeviceS
 /** The ways the journey reaches a phone's browser. */
 /** How a phone is driven: Safari through WebDriverAgent, or Chrome over CDP or Playwright's Android support. */
 export type Route = 'ios-webkit' | 'android-cdp' | 'android-playwright';
+
+/** The touches a page recorded as `window.touchesSeen`, none if it records none; run in the page by `page.evaluate`. */
+export function touchesSeen(view: { touchesSeen?: string[] } = window as unknown as { touchesSeen?: string[] }): string[] {
+  return view.touchesSeen ?? [];
+}

@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { describe, expect, it } from 'vitest';
-import { androidSession, iosSession, withNamedSteps } from '../../src/devices/device-session.ts';
+import { androidSession, iosSession, touchesSeen, withNamedSteps } from '../../src/devices/device-session.ts';
 import { PHOTO_GRID_IMAGE } from '../../src/devices/ios-native.ts';
 
 /** A WebDriverAgent stand-in recording each step; `shown` is what the screen lists. */
@@ -266,5 +266,15 @@ describe('withNamedSteps', () => {
     expect(stepped.page).toBe(session.page);
     expect(stepped.screenshot).toBe(session.screenshot);
     expect(stepped.close).toBe(session.close);
+  });
+});
+
+describe('touchesSeen', () => {
+  it('reads the touches a page recorded as window.touchesSeen, in the page', () => {
+    expect(touchesSeen({ touchesSeen: ['touch at 1,2'] })).toEqual(['touch at 1,2']);
+  });
+
+  it('answers none where the page records no touches', () => {
+    expect(touchesSeen({})).toEqual([]);
   });
 });
