@@ -13,6 +13,7 @@
  */
 import { spawnSync } from 'node:child_process';
 import { runIfEntry } from './cli.ts';
+import { trustedBin } from './trusted-bin.ts';
 
 export interface AuditException {
   /** The GitHub advisory id, e.g. GHSA-fc5q-39xc-vjpf. */
@@ -85,7 +86,7 @@ export function auditProblems(report: unknown, exceptions: AuditException[], tod
 /** Runs `npm audit` and checks its report against `exceptions`; 0 passes, 1 fails. */
 export function check(exceptions: AuditException[]): number {
   // `npm audit` exits 1 whenever it finds anything, excepted or not, so its JSON is the verdict.
-  const run = spawnSync('npm', ['audit', '--json'], { encoding: 'utf8' }); // NOSONAR: npm is found on PATH by design, its folder differs on the Mac and on CI (shyden-labs/playwright-devices#12)
+  const run = spawnSync(trustedBin('npm'), ['audit', '--json'], { encoding: 'utf8' });
   let report: unknown;
   try {
     report = JSON.parse(run.stdout);
