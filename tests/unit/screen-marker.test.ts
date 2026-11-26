@@ -3,8 +3,17 @@ import type { WdaClock } from '../../src/devices/wda-client.ts';
 import { MARKER_LABEL, screenPointsOf, type MarkerPage } from '../../src/devices/screen-marker.ts';
 import { MARKER_CSS_SIZE, type Box } from '../../src/devices/screen-map.ts';
 
+/** Where the page is scrolled, and where the marker's own client rect says it sits. */
+interface FakeView {
+  scrollX: number;
+  scrollY: number;
+  markerClient: { x: number; y: number };
+}
+
+const UNSCROLLED: FakeView = { scrollX: 0, scrollY: 0, markerClient: { x: 0, y: 0 } };
+
 /** A page stand-in: runs each evaluated function against a tiny fake DOM and records what it did. */
-function fakePage(log: string[]): MarkerPage {
+function fakePage(log: string[], view: FakeView = UNSCROLLED): MarkerPage {
   const body = {
     children: [] as Record<string, unknown>[],
     append(el: Record<string, unknown>) {
@@ -15,7 +24,10 @@ function fakePage(log: string[]): MarkerPage {
   const document = {
     body,
     createElement: () => {
-      const el: Record<string, unknown> = { style: {} };
+      const el: Record<string, unknown> = {
+        style: {},
+        getBoundingClientRect: () => ({ ...view.markerClient, width: MARKER_CSS_SIZE, height: MARKER_CSS_SIZE }),
+      };
       el.setAttribute = (name: string, value: string) => {
         el[name === 'aria-label' ? 'ariaLabel' : name] = value;
       };
@@ -30,12 +42,14 @@ function fakePage(log: string[]): MarkerPage {
   return {
     evaluate: <R, A>(fn: (arg: A) => R, arg: A) => {
       const g = globalThis as Record<string, unknown>;
-      const before = g.document;
+      const before = { document: g.document, window: g.window };
       g.document = document;
+      g.window = { scrollX: view.scrollX, scrollY: view.scrollY };
       try {
         return Promise.resolve(fn(arg));
       } finally {
-        g.document = before;
+        g.document = before.document;
+        g.window = before.window;
       }
     },
   };
@@ -57,7 +71,7 @@ function fakeClock(): WdaClock {
 }
 
 describe('screenPointsOf', () => {
-  it('draws the fixed marker, reads it back through WebDriverAgent, removes it, and maps the box centre', async () => {
+  it('draws the marker at the scroll position, reads it back through WebDriverAgent, removes it, and maps the box centre', async () => {
     const log: string[] = [];
     const reader = {
       rectOf: (label: string) => {
@@ -71,7 +85,7 @@ describe('screenPointsOf', () => {
     expect(point).toEqual({ x: 64, y: 184 });
     expect(log).toEqual([
       `drawn ${MARKER_LABEL} ${JSON.stringify({
-        position: 'fixed',
+        position: 'absolute',
         left: '0px',
         top: '0px',
         width: `${MARKER_CSS_SIZE}px`,
@@ -85,6 +99,26 @@ describe('screenPointsOf', () => {
       `read ${MARKER_LABEL}`,
       `removed ${MARKER_LABEL}`,
     ]);
+  });
+
+  it('taps where the page is after typing scrolled it: a fixed marker sat 49 px off on the iPhone Air', async () => {
+    // Measured 2026-11-26 (research/devices/evidence/probe-type-then-file-*): with the keyboard up Safari
+    // scrolled the page by 49 px and drew a fixed marker at screen y 19, so the tap landed on the line
+    // above the file input. The marker drawn at the scroll position read back at screen y 68.
+    const log: string[] = [];
+    const reader = { rectOf: () => Promise.resolve({ x: 0, y: 68, width: 100, height: 100 }) };
+    const view = { scrollX: 0, scrollY: 49, markerClient: { x: 0, y: 0 } };
+    const fileInput: Box = { x: 69.59375, y: 301.59375, width: 266, height: 20 };
+
+    expect(await screenPointsOf(fakePage(log, view), reader)(fileInput)).toEqual({ x: 202.59375, y: 379.59375 });
+    expect(log[0]).toContain('"position":"absolute","left":"0px","top":"49px"');
+  });
+
+  it('maps by the client rect the marker reports, not by where it was asked to sit', async () => {
+    const reader = { rectOf: () => Promise.resolve({ x: 0, y: 68, width: 100, height: 100 }) };
+    const view = { scrollX: 30, scrollY: 200, markerClient: { x: -4, y: 12 } };
+
+    expect(await screenPointsOf(fakePage([], view), reader)(box)).toEqual({ x: 68, y: 172 });
   });
 
   it('measures again on every call, so a Safari toolbar that moved after a scroll is followed', async () => {
