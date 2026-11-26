@@ -35,7 +35,7 @@ function fakeFetch(replies: (string | Error)[]) {
 const VERSION = JSON.stringify({ Browser: 'Chrome/157.0.8103.50' });
 
 describe('startChromeCold', () => {
-  it('stops Chrome, removes a leftover command-line file, starts Chrome and forwards its socket, in that order', async () => {
+  it('stops Chrome, replaces any leftover command-line file with first-run flags only, starts Chrome and forwards its socket, in that order', async () => {
     const { adb, calls } = fakeAdb();
     const { fetchFn } = fakeFetch([VERSION]);
 
@@ -43,7 +43,9 @@ describe('startChromeCold', () => {
 
     expect(calls).toEqual([
       'shell am force-stop com.android.chrome',
-      'shell rm -f /data/local/tmp/chrome-command-line',
+      // Playwright's own first-run flags, and no socket name, so the socket stays chrome_devtools_remote
+      // (shyden-labs/playwright-devices#47: a fresh emulator's Chrome sat on its first-run screen).
+      'shell echo "_ --disable-fre --no-default-browser-check --no-first-run" > /data/local/tmp/chrome-command-line',
       'shell am start -n com.android.chrome/com.google.android.apps.chrome.Main -d http://127.0.0.1:9/',
       'forward tcp:9230 localabstract:chrome_devtools_remote',
     ]);

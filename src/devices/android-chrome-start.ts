@@ -14,6 +14,8 @@ import { realClock } from './clock.ts';
 
 const CHROME = 'com.android.chrome';
 const COMMAND_LINE = '/data/local/tmp/chrome-command-line';
+/** Playwright's Android launch flags that skip Chrome's first-run screen; the leading `_` stands for the program name. */
+const FIRST_RUN_FLAGS = '_ --disable-fre --no-default-browser-check --no-first-run';
 /** The socket appeared 452-528 ms after `am start` in 20 cold starts; 30 s leaves room for a busy phone. */
 const READY_CEILING_MS = 30_000;
 const POLL_MS = 250;
@@ -46,7 +48,7 @@ async function look(fetchFn: typeof fetch, url: string): Promise<{ ready: boolea
   }
 }
 
-/** Starts Chrome cold, without a leftover command-line file, and waits until its DevTools endpoint names the browser. */
+/** Starts Chrome cold, with only the first-run flags in its command-line file, and waits until its DevTools endpoint names the browser. */
 export async function startChromeCold({
   adb,
   fetchFn = fetch,
@@ -55,7 +57,10 @@ export async function startChromeCold({
   ceilingMs = READY_CEILING_MS,
 }: ChromeStartOptions): Promise<StartedChrome> {
   await adb(['shell', 'am', 'force-stop', CHROME]);
-  await adb(['shell', 'rm', '-f', COMMAND_LINE]);
+  // Replaces a leftover file (Playwright's renames the socket) with Playwright's own first-run flags and no
+  // socket name: a fresh emulator's Chrome otherwise sat on its first-run screen, which opens no DevTools
+  // socket (shyden-labs/playwright-devices#47). Chrome reads the file only as the debug app.
+  await adb(['shell', `echo "${FIRST_RUN_FLAGS}" > ${COMMAND_LINE}`]);
   // Chrome opens its DevTools socket only once it runs in the foreground.
   await adb(['shell', 'am', 'start', '-n', `${CHROME}/com.google.android.apps.chrome.Main`, '-d', 'http://127.0.0.1:9/']);
   await adb(['forward', `tcp:${port}`, 'localabstract:chrome_devtools_remote']);
