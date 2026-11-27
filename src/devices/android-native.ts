@@ -55,6 +55,12 @@ function pageAreaIn(screen: string): PageArea | undefined {
 /** Chrome is open before any tap, so its page area is listed at once; a short ceiling. */
 const PAGE_AREA_CEILING_MS = 5_000;
 
+/** Playwright key names and the Android key events `adb shell input keyevent` sends for them. */
+const KEY_EVENTS = new Map([
+  ['Enter', 'KEYCODE_ENTER'],
+  ['Escape', 'KEYCODE_ESCAPE'],
+]);
+
 /** Printable ASCII: all `adb shell input text` can type. */
 const TYPABLE = /^[\x20-\x7e]*$/;
 
@@ -147,6 +153,15 @@ export function connectAndroidScreen({ adb, clock = realClock }: AndroidScreenOp
     async typeText(text: string): Promise<void> {
       record(`type ${JSON.stringify(text)}`);
       await adb(['shell', 'input', 'text', inputTextArgument(text)]);
+    },
+
+    /** Presses a key as Android's own key event (shyden-labs/playwright-devices#67); a key with none routed is refused, naming it. */
+    async pressKey(key: string): Promise<void> {
+      const code = KEY_EVENTS.get(key);
+      if (code === undefined) {
+        throw new Error(`no key event routed for "${key}" on Android; keys routed: ${[...KEY_EVENTS.keys()].join(', ')}`);
+      }
+      await adb(['shell', 'input', 'keyevent', code]);
     },
 
     /** Where Chrome draws the page on the screen, read afresh: its toolbar moves as the page scrolls. */

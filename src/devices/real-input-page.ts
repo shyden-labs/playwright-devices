@@ -19,6 +19,8 @@ export interface RealInput {
   typeText(text: string): Promise<void>;
   /** One real finger dragged across the screen. */
   swipe(from: ScreenPoint, to: ScreenPoint): Promise<void>;
+  /** Presses a key by its Playwright name (`Enter`), as the phone's own key. */
+  pressKey(key: string): Promise<void>;
 }
 
 /** Where an element's centre is, and what of the page shows, in the same page (client) coordinates. */
@@ -38,6 +40,11 @@ export function readPlace(element: Element): Place {
         ? { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight }
         : { left: visual.offsetLeft, top: visual.offsetTop, width: visual.width, height: visual.height },
   };
+}
+
+/** Whether `element` has focus in its page; run in the page by `locator.evaluate`. */
+export function hasFocus(element: Element): boolean {
+  return element === element.ownerDocument.activeElement;
 }
 
 /**
@@ -90,12 +97,7 @@ const LOCATOR_MAKERS = new Set([
 const UNROUTED_LOCATOR_INPUT = new Set([
   'fill',
   'clear',
-  'press',
-  'pressSequentially',
   'type',
-  'check',
-  'uncheck',
-  'setChecked',
   'hover',
   'dblclick',
   'dragTo',
@@ -193,10 +195,43 @@ export function realInputPage(page: Page, { input, toScreen, baseURL, clock = re
     return tapFrom(locator, await settledBox(locator), aims, drags + 1);
   }
 
+  /** Types into a field as a person does: one real tap on it, then the phone's own typing (shyden-labs/playwright-devices#67). */
+  async function pressSequentially(locator: Locator, text: string): Promise<void> {
+    await tap(locator);
+    await input.typeText(text);
+  }
+
+  /** Ticks or unticks a box with one real tap when it is not already so, then checks the tap took. */
+  async function setChecked(locator: Locator, checked: boolean): Promise<void> {
+    if ((await locator.isChecked()) === checked) return;
+    await tap(locator);
+    if ((await locator.isChecked()) !== checked) {
+      throw new Error(`${locator.toString()} is still ${checked ? 'unchecked' : 'checked'} after a real tap`);
+    }
+  }
+
+  /**
+   * Presses a key on a locator that already has focus. A phone gives focus only by a real tap,
+   * which would also press what it lands on, so a locator without focus is refused, naming why.
+   */
+  async function press(locator: Locator, key: string): Promise<void> {
+    if (!(await locator.evaluate(hasFocus))) {
+      throw new Error(
+        `cannot press ${key} on ${locator.toString()}: it does not have focus, and on a phone only a real tap gives focus; tap it instead, or tap a field first`,
+      );
+    }
+    await input.pressKey(key);
+  }
+
   function wrapLocator(locator: Locator): Locator {
     return new Proxy(locator, {
       get(target, prop, receiver) {
         if (prop === 'tap' || prop === 'click') return () => tap(target);
+        if (prop === 'pressSequentially') return (text: string) => pressSequentially(target, text);
+        if (prop === 'check') return () => setChecked(target, true);
+        if (prop === 'uncheck') return () => setChecked(target, false);
+        if (prop === 'setChecked') return (checked: boolean) => setChecked(target, checked);
+        if (prop === 'press') return (key: string) => press(target, key);
         if (typeof prop === 'string' && UNROUTED_LOCATOR_INPUT.has(prop)) return refuse(prop);
         const value: unknown = Reflect.get(target, prop, receiver);
         if (typeof prop === 'string' && LOCATOR_MAKERS.has(prop)) {
@@ -210,7 +245,11 @@ export function realInputPage(page: Page, { input, toScreen, baseURL, clock = re
   const keyboard = new Proxy(
     {},
     {
-      get: (_target, prop) => (prop === 'type' ? (text: string) => input.typeText(text) : refuse(`keyboard.${String(prop)}`)),
+      get: (_target, prop) => {
+        if (prop === 'type') return (text: string) => input.typeText(text);
+        if (prop === 'press') return (key: string) => input.pressKey(key);
+        return refuse(`keyboard.${String(prop)}`);
+      },
     },
   );
 

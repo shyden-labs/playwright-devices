@@ -28,6 +28,27 @@ test('a page is read, tapped, typed into and scrolled by real input', async ({
     await expect.soft(page.getByTestId('typed-result')).toHaveText('Hello, Ana');
   });
 
+  // shyden-labs/playwright-devices#67: the rest of Playwright's text, checkbox and key input, routed to the phone's own.
+  await test.step('type into a field in one go', async () => {
+    await page.getByLabel('Email').pressSequentially('ana@example.test');
+    await expect.soft(page.getByTestId('email-result')).toHaveText('ana@example.test');
+  });
+
+  await test.step('tick and untick a box', async () => {
+    await page.getByLabel('Agree').check();
+    await expect.soft(page.getByTestId('agree-result')).toHaveText('Agreed');
+    await expect.soft(page.getByLabel('Agree')).toBeChecked();
+    await page.getByLabel('Agree').uncheck();
+    await expect.soft(page.getByTestId('agree-result')).toHaveText('Not agreed');
+  });
+
+  await test.step('press Enter', async () => {
+    await page.getByLabel('Search').tap();
+    await page.keyboard.type('tea');
+    await page.getByLabel('Search').press('Enter');
+    await expect.soft(page.getByTestId('search-result')).toHaveText('Searched tea');
+  });
+
   await test.step('choose a colour', async () => {
     await page.getByLabel('Colour').tap();
     await nativeChoose('Green');

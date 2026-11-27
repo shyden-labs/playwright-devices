@@ -1,0 +1,7 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 [android-playwright] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (1.5m)
+
+  1 passed (1.5m)
+run-journey: android-playwright-3b402284 exit=0

@@ -205,6 +205,26 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
       await call('POST', `${base}/wda/keys`, { value: graphemes(text) });
     },
 
+    /**
+     * Presses a key on the on-screen keyboard, once it is listed (shyden-labs/playwright-devices#67).
+     * Only Enter is routed: it is the keyboard's return key. The iPhone's keyboard has no Escape key,
+     * and any other key is refused, naming it, with nothing sent.
+     */
+    async pressKey(key: string): Promise<void> {
+      if (key === 'Escape') {
+        throw new Error(
+          'the iPhone has no Escape key: its on-screen keyboard has none; close what Escape would close by a real tap instead',
+        );
+      }
+      if (key !== 'Enter') throw new Error(`no real key on the iPhone for "${key}"; keys routed: Enter`);
+      await waitFor(
+        keyboardShown,
+        KEYBOARD_CEILING_MS,
+        `the on-screen keyboard did not show within ${KEYBOARD_CEILING_MS} ms; Enter was not pressed`,
+      );
+      await call('POST', `${base}/wda/keys`, { value: ['\n'] });
+    },
+
     /** The screen rectangle, in points, of the element with this accessibility id, once it is listed. */
     async rectOf(accessibilityId: string): Promise<ScreenRect> {
       let id: string | undefined;

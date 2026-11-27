@@ -1,6 +1,6 @@
 import type { Locator, Page } from '@playwright/test';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { readPlace, realInputPage, type Place, type RealInput } from '../../src/devices/real-input-page.ts';
+import { hasFocus, readPlace, realInputPage, type Place, type RealInput } from '../../src/devices/real-input-page.ts';
 import type { Box } from '../../src/devices/screen-map.ts';
 import type { ScreenPoint, WdaClock } from '../../src/devices/wda-client.ts';
 
@@ -25,10 +25,25 @@ function fakeClock(): WdaClock {
 /** What shows of a 400 by 800 page with nothing covering it. */
 const WHOLE_VIEW = { left: 0, top: 0, width: 400, height: 800 };
 
-/** A Playwright locator stand-in with a fixed box; records the calls it answers itself. */
 type View = typeof WHOLE_VIEW;
 
-function fakeLocator(name: string, box: Box | null | (() => Box | null), calls: string[], view: View | (() => View) = WHOLE_VIEW): Locator {
+/** What a fake locator reports: its checked state (changed by a real tap when `flips`) and whether it has focus. */
+interface FakeState {
+  checked: boolean;
+  flips: boolean;
+  focused: boolean;
+}
+
+const UNTOUCHED = (): FakeState => ({ checked: false, flips: true, focused: false });
+
+/** A Playwright locator stand-in with a fixed box; records the calls it answers itself. */
+function fakeLocator(
+  name: string,
+  box: Box | null | (() => Box | null),
+  calls: string[],
+  view: View | (() => View) = WHOLE_VIEW,
+  state: FakeState = UNTOUCHED(),
+): Locator {
   const boxNow = typeof box === 'function' ? box : () => box;
   const viewNow = typeof view === 'function' ? view : () => view;
   let last: Box | null = null;
@@ -37,7 +52,12 @@ function fakeLocator(name: string, box: Box | null | (() => Box | null), calls: 
     selector: name,
     boundingBox: () => Promise.resolve((last = boxNow())),
     // The place is read in the page; here it is the box last read, seen against `view`.
-    evaluate: () => Promise.resolve({ centreY: (last?.y ?? 0) + (last?.height ?? 0) / 2, view: viewNow() } satisfies Place),
+    isChecked: () => Promise.resolve(state.checked),
+    // Focus and the place are read in the page; here focus is the state's, the place the box last read, seen against `view`.
+    evaluate: (read: unknown) =>
+      Promise.resolve(
+        read === hasFocus ? state.focused : ({ centreY: (last?.y ?? 0) + (last?.height ?? 0) / 2, view: viewNow() } satisfies Place),
+      ),
     textContent: () => Promise.resolve(`text of ${name}`),
     click: () => {
       calls.push(`playwright click ${name}`);
@@ -48,9 +68,9 @@ function fakeLocator(name: string, box: Box | null | (() => Box | null), calls: 
       return Promise.resolve();
     },
     fill: () => Promise.resolve(),
-    first: () => fakeLocator(`${name}.first`, box, calls, view),
-    locator: (selector: string) => fakeLocator(`${name} >> ${selector}`, box, calls, view),
-    getByRole: (role: string) => fakeLocator(`${name} >> role=${role}`, box, calls, view),
+    first: () => fakeLocator(`${name}.first`, box, calls, view, state),
+    locator: (selector: string) => fakeLocator(`${name} >> ${selector}`, box, calls, view, state),
+    getByRole: (role: string) => fakeLocator(`${name} >> role=${role}`, box, calls, view, state),
   };
   return locator as unknown as Locator;
 }
@@ -59,6 +79,7 @@ function fakePage(
   calls: string[],
   box: Box | null | (() => Box | null) = { x: 10, y: 20, width: 30, height: 40 },
   view: View | (() => View) = WHOLE_VIEW,
+  state: FakeState = UNTOUCHED(),
 ): Page {
   const page: Record<string, unknown> = {
     goto: (url: string) => {
@@ -66,10 +87,10 @@ function fakePage(
       return Promise.resolve(null);
     },
     title: () => Promise.resolve('Journey'),
-    getByRole: (role: string) => fakeLocator(`role=${role}`, box, calls, view),
-    getByLabel: (label: string) => fakeLocator(`label=${label}`, box, calls, view),
-    getByTestId: (id: string) => fakeLocator(`testid=${id}`, box, calls, view),
-    locator: (selector: string) => fakeLocator(selector, box, calls, view),
+    getByRole: (role: string) => fakeLocator(`role=${role}`, box, calls, view, state),
+    getByLabel: (label: string) => fakeLocator(`label=${label}`, box, calls, view, state),
+    getByTestId: (id: string) => fakeLocator(`testid=${id}`, box, calls, view, state),
+    locator: (selector: string) => fakeLocator(selector, box, calls, view, state),
     keyboard: { type: () => Promise.resolve(), press: () => Promise.resolve() },
     mouse: { click: () => Promise.resolve() },
     touchscreen: { tap: () => Promise.resolve() },
@@ -77,10 +98,15 @@ function fakePage(
   return page as unknown as Page;
 }
 
-function fakeInput(calls: string[]): RealInput {
+function fakeInput(calls: string[], state?: FakeState): RealInput {
   return {
+    pressKey: (key: string) => {
+      calls.push(`wda key ${key}`);
+      return Promise.resolve();
+    },
     tapAt: (point: ScreenPoint) => {
       calls.push(`wda tap ${point.x},${point.y}`);
+      if (state?.flips) state.checked = !state.checked;
       return Promise.resolve();
     },
     typeText: (text: string) => {
@@ -97,11 +123,11 @@ function fakeInput(calls: string[]): RealInput {
 /** Screen point = page box centre, shifted down by a 100-point toolbar. */
 const toScreen = (box: Box) => Promise.resolve({ x: box.x + box.width / 2, y: 100 + box.y + box.height / 2 });
 
-function build(box?: Box | null | (() => Box | null), view = WHOLE_VIEW) {
+function build(box?: Box | null | (() => Box | null), view = WHOLE_VIEW, state?: FakeState) {
   const calls: string[] = [];
   const clock = fakeClock();
-  const page = realInputPage(fakePage(calls, box, view), {
-    input: fakeInput(calls),
+  const page = realInputPage(fakePage(calls, box, view, state), {
+    input: fakeInput(calls, state),
     toScreen,
     baseURL: 'http://127.0.0.1:4173/',
     clock,
@@ -156,6 +182,84 @@ describe('realInputPage', () => {
     expect(calls).toEqual(['wda type hello']);
   });
 
+  it("types a locator's text the way a person does: one real tap on the field, then the phone's own typing (shyden-labs/playwright-devices#67)", async () => {
+    const { calls, page } = build();
+
+    await page.getByLabel('Email').pressSequentially('ana@example.test');
+
+    expect(calls).toEqual(['wda tap 25,140', 'wda type ana@example.test']);
+  });
+
+  it('checks an unchecked box with one real tap, and leaves a checked one alone', async () => {
+    const state = { checked: false, flips: true, focused: false };
+    const { calls, page } = build(undefined, WHOLE_VIEW, state);
+
+    await page.getByLabel('Agree').check();
+    await page.getByLabel('Agree').check();
+    await page.getByLabel('Agree').setChecked(true);
+
+    expect(calls).toEqual(['wda tap 25,140']);
+    expect(state.checked).toBe(true);
+  });
+
+  it('unchecks a checked box with one real tap, and leaves an unchecked one alone', async () => {
+    const state = { checked: true, flips: true, focused: false };
+    const { calls, page } = build(undefined, WHOLE_VIEW, state);
+
+    await page.getByLabel('Agree').uncheck();
+    await page.getByLabel('Agree').setChecked(false);
+
+    expect(calls).toEqual(['wda tap 25,140']);
+    expect(state.checked).toBe(false);
+  });
+
+  it('fails by name when a real tap did not change the box', async () => {
+    const { page } = build(undefined, WHOLE_VIEW, { checked: false, flips: false, focused: false });
+
+    await expect(page.getByLabel('Agree').check()).rejects.toThrow('label=Agree is still unchecked after a real tap');
+  });
+
+  it('fails by name when a real tap did not untick the box', async () => {
+    const { page } = build(undefined, WHOLE_VIEW, { checked: true, flips: false, focused: false });
+
+    await expect(page.getByLabel('Agree').uncheck()).rejects.toThrow('label=Agree is still checked after a real tap');
+  });
+
+  it("reads focus in the page as the element being its document's active element", () => {
+    const doc = { activeElement: null as unknown };
+    const element = { ownerDocument: doc } as unknown as Element;
+
+    expect(hasFocus(element)).toBe(false);
+    doc.activeElement = element;
+    expect(hasFocus(element)).toBe(true);
+  });
+
+  it('presses a key on the phone through keyboard.press', async () => {
+    const { calls, page } = build();
+
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Escape');
+
+    expect(calls).toEqual(['wda key Enter', 'wda key Escape']);
+  });
+
+  it('presses a key on a locator that has focus, as a person would after tapping into it', async () => {
+    const { calls, page } = build(undefined, WHOLE_VIEW, { checked: false, flips: false, focused: true });
+
+    await page.getByLabel('Search').press('Enter');
+
+    expect(calls).toEqual(['wda key Enter']);
+  });
+
+  it('refuses a key on a locator without focus, naming why, since a phone gives focus only by a tap that would also press it', async () => {
+    const { calls, page } = build();
+
+    await expect(page.getByRole('button').press('Enter')).rejects.toThrow(
+      'cannot press Enter on role=button: it does not have focus, and on a phone only a real tap gives focus; tap it instead, or tap a field first',
+    );
+    expect(calls).toEqual([]);
+  });
+
   it('passes every read through to the real page and locator', async () => {
     const { page } = build();
 
@@ -171,7 +275,12 @@ describe('realInputPage', () => {
 
   it('names a real Playwright locator, which has no name of its own, by its description when it cannot tap it', async () => {
     const bare = { boundingBox: () => Promise.resolve(null), toString: () => "locator('#gone')" };
-    const input: RealInput = { tapAt: () => Promise.resolve(), typeText: () => Promise.resolve(), swipe: () => Promise.resolve() };
+    const input: RealInput = {
+      tapAt: () => Promise.resolve(),
+      typeText: () => Promise.resolve(),
+      swipe: () => Promise.resolve(),
+      pressKey: () => Promise.resolve(),
+    };
     const page = realInputPage({ locator: () => bare } as unknown as Page, {
       input,
       toScreen: () => Promise.resolve({ x: 0, y: 0 }),
@@ -320,7 +429,7 @@ describe('realInputPage', () => {
 
   it.each([
     ['locator fill', (page: Page) => page.getByLabel('Name').fill('x'), 'fill'],
-    ['keyboard press', (page: Page) => page.keyboard.press('Enter'), 'keyboard.press'],
+    ['keyboard down', (page: Page) => page.keyboard.down('Shift'), 'keyboard.down'],
     ['mouse', (page: Page) => page.mouse.click(1, 2), 'mouse.click'],
     ['touchscreen', (page: Page) => page.touchscreen.tap(1, 2), 'touchscreen.tap'],
   ])('refuses %s, which is not routed to real input yet, rather than fake it', (_name, act, method) => {

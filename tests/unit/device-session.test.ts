@@ -32,6 +32,7 @@ function fakeWda(shown: string[] = []) {
     },
     tapAt: () => Promise.resolve(),
     typeText: () => Promise.resolve(),
+    pressKey: () => Promise.resolve(),
     rectOf: () => Promise.resolve({ x: 0, y: 0, width: 100, height: 100 }),
     windowSize: () => Promise.resolve({ width: 400, height: 800 }),
     swipe: (from: { x: number; y: number }, to: { x: number; y: number }) => {

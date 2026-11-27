@@ -21,7 +21,17 @@ describe('androidPagePoint', () => {
     expect(point.y).toBeCloseTo(3014 - 815.43 * 3.5, 6);
   });
 
-  it("allows for pinch zoom, and takes the box as already relative to what shows: Chrome's boxes follow a pan", () => {
+  it('takes the box as Playwright gives it on Android, already measured from what shows: a visual viewport panned under the keyboard is not subtracted again (shyden-labs/playwright-devices#67)', () => {
+    // OnePlus CPH2653, Chrome, 2026-11-27 (evidence/probe-agree-tap-android-cdp-*): after a finger drag the
+    // visual viewport sat 279.43 px down the page, and Agree's box read y 174.80, its page y 454.23 less that
+    // offset. Subtracting the offset again put the tap 279 px too high, off the page, and the box stayed unticked.
+    const panned: PageViewport = { devicePixelRatio: 3.5, offsetLeft: 0, offsetTop: 279.43, scale: 1, height: 437.43 };
+    const point = androidPagePoint({ x: 16, y: 174.8, width: 265.6, height: 16 }, panned, AREA);
+    expect(point.x).toBeCloseTo((16 + 132.8) * 3.5, 6);
+    expect(point.y).toBeCloseTo(3014 - 437.43 * 3.5 + (174.8 + 8) * 3.5, 6);
+  });
+
+  it('allows for pinch zoom, the box again measured from what shows', () => {
     const point = androidPagePoint(
       { x: 50, y: 60, width: 0, height: 0 },
       { devicePixelRatio: 2, offsetLeft: 10, offsetTop: 20, scale: 2, height: 400 },
