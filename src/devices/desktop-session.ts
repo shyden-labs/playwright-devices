@@ -84,7 +84,10 @@ export function desktopSession({ page, files }: DesktopSessionOptions): DeviceSe
     const waiting = opened.shift();
     if (waiting !== undefined) return waiting;
     try {
-      return await page.waitForEvent('filechooser', { timeout: CHOOSER_CEILING_MS });
+      const chooser = await page.waitForEvent('filechooser', { timeout: CHOOSER_CEILING_MS });
+      // `keep` was handed this chooser too; left queued, the next step would take it again (CI run 45993980442).
+      opened.splice(0, opened.length, ...opened.filter((kept) => kept !== chooser));
+      return chooser;
     } catch (error) {
       throw new Error(`no file chooser opened within ${CHOOSER_CEILING_MS} ms: click the file field before nativeChooseFile`, {
         cause: error,

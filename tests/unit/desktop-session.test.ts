@@ -44,7 +44,10 @@ function fakePage(calls: string[], select: FakeSelect | null = null, chooserOnWa
     },
     waitForEvent: (event: string, options: { timeout: number }) => {
       calls.push(`wait for ${event} up to ${String(options.timeout)} ms`);
-      return chooserOnWait === null ? Promise.reject(new Error('Timeout 60000ms exceeded')) : Promise.resolve(chooserOnWait);
+      if (chooserOnWait === null) return Promise.reject(new Error('Timeout 60000ms exceeded'));
+      // As Playwright does, the chooser a wait resolves with is also handed to every 'filechooser' listener.
+      for (const listener of listeners) listener(chooserOnWait);
+      return Promise.resolve(chooserOnWait);
     },
     evaluate: () => Promise.resolve(select),
     keyboard: {
@@ -145,6 +148,25 @@ describe('desktopSession', () => {
       'first chooser set /files/device-journey.txt',
       'wait for filechooser up to 60000 ms',
       'late chooser set /files/device-journey.png',
+    ]);
+  });
+
+  it('never hands a waited-for chooser on again: the next step gets the chooser its own click opened', async () => {
+    // CI run 45993980442 (Chromium, Chrome, Edge): the photo was set on the file field's chooser, the one the
+    // document step had waited for, so the photo field's change never ran.
+    const calls: string[] = [];
+    const fake = fakePage(calls, null, fakeChooser('file chooser', calls));
+    const session = desktopSession({ page: fake.page, files });
+
+    await session.nativeChooseFile();
+    fake.chooserOpens(fakeChooser('photo chooser', calls));
+    await session.nativeChoosePhoto();
+
+    expect(calls).toEqual([
+      'on filechooser',
+      'wait for filechooser up to 60000 ms',
+      'file chooser set /files/device-journey.txt',
+      'photo chooser set /files/device-journey.png',
     ]);
   });
 
