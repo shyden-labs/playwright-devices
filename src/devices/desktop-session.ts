@@ -106,7 +106,19 @@ export function desktopSession({ page, files }: DesktopSessionOptions): DeviceSe
     },
     nativeChoosePhoto: async () => {
       const chooser = await nextChooser();
+      // TEMPORARY diagnostic (shyden-labs/playwright-devices#68): which events reach each file input around setFiles.
+      await page.evaluate(() => {
+        const seen: string[] = [];
+        (window as unknown as { diagEvents: string[] }).diagEvents = seen;
+        for (const id of ['file', 'photo'])
+          for (const type of ['input', 'change', 'cancel', 'click', 'focus', 'blur'])
+            document.getElementById(id)?.addEventListener(type, () => seen.push(`${id}:${type}`), true);
+      });
       await chooser.setFiles(files.photo);
+      await page.waitForTimeout(1000);
+      console.log(
+        `DIAG events after photo setFiles: ${JSON.stringify(await page.evaluate(() => (window as unknown as { diagEvents: string[] }).diagEvents))}`,
+      );
       // TEMPORARY diagnostic (shyden-labs/playwright-devices#68): what the input holds after setFiles.
       const held = await chooser
         .element()
