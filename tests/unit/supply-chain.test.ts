@@ -121,7 +121,7 @@ const splitPins = (uses: Use[]) => {
 describe('the CI supply chain is pinned', () => {
   it('pins each action at one SHA in every workflow, judged over every pinned use', () => {
     const uses = externalUses();
-    expect({ pinned: uses.length, split: splitPins(uses) }).toEqual({ pinned: 17, split: [] });
+    expect({ pinned: uses.length, split: splitPins(uses) }).toEqual({ pinned: 24, split: [] });
   });
 
   it('names an action whose bump reached one workflow and missed another', () => {
@@ -272,8 +272,16 @@ const runnersIn = (file: string, source: string): Runner[] => {
   return found;
 };
 
+/**
+ * The one job that cannot run on Linux: the iOS Simulator needs macOS, and `xcode-27` is the only
+ * image with Xcode 27.2 and the iOS 27.2 simulators the laptop measured (shyden-labs/playwright-devices#38).
+ */
+const MAC_RUNNER: Runner = { where: 'devices-sim.yml ios-sim', value: 'xcode-27' };
+
 const floating = (runners: Runner[]) =>
-  runners.filter(({ value }) => value !== RUNNER).map(({ where, value }) => `${where} runs-on: ${value}`);
+  runners
+    .filter(({ where, value }) => value !== RUNNER && !(where === MAC_RUNNER.where && value === MAC_RUNNER.value))
+    .map(({ where, value }) => `${where} runs-on: ${value}`);
 
 const workflowFiles = () => readdirSync(WORKFLOWS).filter((f) => /\.ya?ml$/.test(f));
 const workflow = (file: string) => readFileSync(join(WORKFLOWS, file), 'utf8');
@@ -347,10 +355,17 @@ const nodePin = (text: string): { version: string } | { wrong: string } => {
 describe('the template runs one Node and one runner, pinned exactly', () => {
   it(`every job runs on ${RUNNER}, judged over every runs-on read`, () => {
     const runners = workflowFiles().flatMap((f) => runnersIn(f, workflow(f)));
-    expect({ read: runners.length, floating: floating(runners) }).toEqual({ read: 7, floating: [] });
+    expect({ read: runners.length, floating: floating(runners) }).toEqual({ read: 9, floating: [] });
   });
 
   const job = (runsOn: string) => ['jobs:', '  build:', `    runs-on:${runsOn}`, '    steps:', '      - run: true', ''].join('\n');
+
+  it('lets only the iOS simulator job run on xcode-27, the one image with Xcode 27.2 and its simulators', () => {
+    const iosJob = ['jobs:', '  ios-sim:', '    runs-on: xcode-27', '    steps:', '      - run: true', ''].join('\n');
+    expect(floating(runnersIn('devices-sim.yml', iosJob))).toEqual([]);
+    expect(floating(runnersIn('ci.yml', job(' xcode-27')))).toEqual(['ci.yml build runs-on: xcode-27']);
+    expect(floating(runnersIn('devices-sim.yml', job(' xcode-27')))).toEqual(['devices-sim.yml build runs-on: xcode-27']);
+  });
 
   it.each([
     [' ubuntu-latest', 'ubuntu-latest'],
@@ -378,7 +393,7 @@ describe('the template runs one Node and one runner, pinned exactly', () => {
 
   it("every setup-node step takes the read step's version and follows it, judged over every step read", () => {
     const steps = workflowFiles().flatMap((f) => setupNodeSteps(f, workflow(f)));
-    expect({ read: steps.length, wrong: steps.filter(({ wrong }) => wrong.length > 0) }).toEqual({ read: 7, wrong: [] });
+    expect({ read: steps.length, wrong: steps.filter(({ wrong }) => wrong.length > 0) }).toEqual({ read: 9, wrong: [] });
   });
 
   const steps = (...lines: string[]) => ['    steps:', ...lines, ''].join('\n');

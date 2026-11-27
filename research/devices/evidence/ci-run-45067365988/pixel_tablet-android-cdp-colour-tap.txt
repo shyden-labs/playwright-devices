@@ -1,0 +1,49 @@
+
+Running 2 tests using 1 worker
+
+  ✘  1 research/devices/probes/colour-tap.probe.ts:66:1 › the Colour tap after typing (30.2s)
+  ✘  2 research/devices/probes/colour-tap.probe.ts:150:1 › the Colour tap straight after typing, as the journey does (30.7s)
+
+
+  1) research/devices/probes/colour-tap.probe.ts:66:1 › the Colour tap after typing ────────────────
+
+    Error: Chrome's DevTools endpoint http://127.0.0.1:9230/json/version did not name a browser within 30000 ms; it last answered: UND_ERR_SOCKET
+
+       at android-chrome-start.ts:72
+
+      70 |     if (ready) return { readyAfterMs: waited, stop };
+      71 |     if (waited >= ceilingMs) {
+    > 72 |       throw new Error(`Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}`);
+         |             ^
+      73 |     }
+      74 |     await clock.sleep(POLL_MS);
+      75 |   }
+        at startChromeCold (/home/runner/work/playwright-devices/playwright-devices/research/devices/android-chrome-start.ts:72:13)
+        at connect (/home/runner/work/playwright-devices/playwright-devices/research/devices/device-fixture.ts:63:22)
+        at Object.session (/home/runner/work/playwright-devices/playwright-devices/research/devices/device-fixture.ts:126:24)
+
+    Error Context: test-results/probes-colour-tap.probe.ts-the-Colour-tap-after-typing/error-context.md
+
+  2) research/devices/probes/colour-tap.probe.ts:150:1 › the Colour tap straight after typing, as the journey does 
+
+    Error: Chrome's DevTools endpoint http://127.0.0.1:9230/json/version did not name a browser within 30000 ms; it last answered: UND_ERR_SOCKET
+
+       at android-chrome-start.ts:72
+
+      70 |     if (ready) return { readyAfterMs: waited, stop };
+      71 |     if (waited >= ceilingMs) {
+    > 72 |       throw new Error(`Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}`);
+         |             ^
+      73 |     }
+      74 |     await clock.sleep(POLL_MS);
+      75 |   }
+        at startChromeCold (/home/runner/work/playwright-devices/playwright-devices/research/devices/android-chrome-start.ts:72:13)
+        at connect (/home/runner/work/playwright-devices/playwright-devices/research/devices/device-fixture.ts:63:22)
+        at Object.session (/home/runner/work/playwright-devices/playwright-devices/research/devices/device-fixture.ts:126:24)
+
+    Error Context: test-results/probes-colour-tap.probe.ts-2ebed--typing-as-the-journey-does/error-context.md
+
+  2 failed
+    research/devices/probes/colour-tap.probe.ts:66:1 › the Colour tap after typing ─────────────────
+    research/devices/probes/colour-tap.probe.ts:150:1 › the Colour tap straight after typing, as the journey does 
+run-journey: android-cdp-emulator-5554-colour-tap exit=1

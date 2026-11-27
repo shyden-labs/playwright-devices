@@ -39,6 +39,38 @@ describe('androidPagePoint', () => {
     );
     expect(point).toEqual({ x: 50 * 2 * 2, y: 2000 - 400 * 2 * 2 + 60 * 2 * 2 });
   });
+
+  it("aims at the part of a box above where Chrome's keyboard accessory covers the page", () => {
+    // pixel_tablet emulator, run 45040015654: Colour ran 709.5 to 795.5 on the screen, the accessory view
+    // covered from 752, and the box's centre (752.5) went to Chrome; the uncovered part's centre is 730.8.
+    const point = androidPagePoint(
+      { x: 16, y: 234.765625, width: 873.59375, height: 43 },
+      { devicePixelRatio: 2, offsetLeft: 0, offsetTop: 116.5, scale: 1, height: 264 },
+      { x: 0, y: 48, width: 2560, height: 720, coveredFrom: 752 },
+    );
+    expect(point.x).toBeCloseTo(905.59, 2);
+    expect(point.y).toBeCloseTo((240 + 234.765625 * 2 + 752) / 2, 6);
+  });
+
+  it('aims at the centre when the covered part starts below the box', () => {
+    const point = androidPagePoint(
+      { x: 16, y: 100, width: 200, height: 40 },
+      { devicePixelRatio: 2, offsetLeft: 0, offsetTop: 0, scale: 1, height: 264 },
+      { x: 0, y: 48, width: 2560, height: 720, coveredFrom: 752 },
+    );
+    expect(point.y).toBeCloseTo(240 + 120 * 2, 6);
+  });
+
+  it('aims at Colour on the pixel_tablet emulator after a finger drag panned the page 176.5 px', () => {
+    // Run 44993134413: the box read centre y 196.25 with offsetTop 176.5; subtracting the pan again aimed
+    // at screen y 279.5 and the touch landed on the label at client y 197, 175 px above Colour.
+    const point = androidPagePoint(
+      { x: 16, y: 174.75, width: 873.59, height: 43 },
+      { devicePixelRatio: 2, offsetLeft: 0, offsetTop: 176.5, scale: 1, height: 312 },
+      { x: 0, y: 48, width: 2560, height: 816 },
+    );
+    expect(point.y).toBeCloseTo(240 + 196.25 * 2, 6);
+  });
 });
 
 /** A clock that only moves when the code sleeps; past 5 s means a wait without its ceiling. */
@@ -71,6 +103,20 @@ describe('androidScreenPointsOf', () => {
     const point = await androidScreenPointsOf(page, screen, fakeClock())({ x: 16, y: 355, width: 265.6, height: 44.3 });
 
     expect(point.y).toBeCloseTo(160 + 1727 - 437.43 * 3.5 + (355 + 22.15) * 3.5, 1);
+  });
+
+  it('notes the box, viewport and page area each aim used, so a failed tap shows what it was aimed from', async () => {
+    // pixel_tablet emulator, run 45035234085: the Colour tap went to 906,753 and the page saw nothing; the
+    // failure's dump came 60 s later, after the viewport changed, so the aim could not be rebuilt.
+    const notes: string[] = [];
+    const page = { evaluate: inTurn([VIEWPORT]) };
+    const screen = { pageArea: inTurn([AREA]), note: (what: string) => notes.push(what) };
+
+    await androidScreenPointsOf(page, screen, fakeClock())({ x: 16, y: 355, width: 265.6, height: 44.3 });
+
+    expect(notes).toEqual([
+      `aim at box ${JSON.stringify({ x: 16, y: 355, width: 265.6, height: 44.3 })} from viewport ${JSON.stringify(VIEWPORT)} and page area ${JSON.stringify(AREA)}`,
+    ]);
   });
 
   it('fails at 5 s when the page never settles, naming the last two reads', async () => {

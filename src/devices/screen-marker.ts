@@ -2,7 +2,7 @@
  * Page boxes to screen points, measured afresh for every tap
  * (shyden-labs/playwright-devices#7).
  *
- * The page draws a 100x100 marker at its scroll position, reads the marker's
+ * The page draws a 100x100 marker at the box's top left, reads the marker's
  * own client rect, the phone's accessibility tree says where it landed
  * (WebDriverAgent on iOS, a uiautomator dump on Android), and the marker is
  * removed again. Measuring on every call follows the browser's toolbar, which
@@ -35,15 +35,20 @@ interface MarkerSpec {
   size: number;
 }
 
-/** Draws the marker at the page's scroll position and answers where its own client rect says it is. */
-function drawMarker({ label, size }: MarkerSpec): MarkerPlace {
+/**
+ * Draws the marker on the page itself (not fixed to the screen) at the box's top left, and answers where
+ * its own client rect says it is. On the iOS simulators WebDriverAgent read a fixed marker at the same
+ * screen point however far down it was drawn (iPhone 18 Pro: y 62 at top 0 and at top 42; iPhone Duo: y 0
+ * at top 92; run 44991089861), while what scrolls with the page it lists where it shows.
+ */
+function drawMarker({ label, size, box }: MarkerSpec & { box: Box }): MarkerPlace {
   const marker = document.createElement('div');
   marker.setAttribute('role', 'img');
   marker.setAttribute('aria-label', label);
   Object.assign(marker.style, {
     position: 'absolute',
-    left: `${window.scrollX}px`,
-    top: `${window.scrollY}px`,
+    left: `${box.x + window.scrollX}px`,
+    top: `${box.y + window.scrollY}px`,
     width: `${size}px`,
     height: `${size}px`,
     zIndex: '2147483647',
@@ -92,7 +97,7 @@ async function settledRect(reader: MarkerReader, clock: WdaClock): Promise<Box> 
 export function screenPointsOf(page: MarkerPage, reader: MarkerReader, clock: WdaClock = realClock): (box: Box) => Promise<ScreenPoint> {
   const spec: MarkerSpec = { label: MARKER_LABEL, size: MARKER_CSS_SIZE };
   return async (box) => {
-    const place = await page.evaluate(drawMarker, spec);
+    const place = await page.evaluate(drawMarker, { ...spec, box });
     try {
       return screenMap(place, await settledRect(reader, clock)).centreOf(box);
     } finally {

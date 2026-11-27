@@ -1,0 +1,148 @@
+# The unchanged journey on the iOS Simulator and the Android emulator, on GitHub-hosted runners
+# (shyden-labs/playwright-devices#38, Shyden's choice 2026-11-21: off the 8 GB laptop, where every
+# simulator run stalled at 7-8 GB swap). Standard runners are free on public repositories. Real phones
+# stay on the laptop. Every third-party `uses:` is a full commit SHA with its tag in a comment.
+name: devices-sim
+
+on:
+  pull_request:
+    paths:
+      - 'research/devices/**'
+      - 'playwright.devices.config.ts'
+      - '.github/workflows/devices-sim.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  ios-sim:
+    # The only image with Xcode 27.2 and the iOS 27.2 simulators the laptop measured (runner-images
+    # xcode-27-arm64-Readme.md, image 20261104): 3 CPU, 7 GB, nothing else running on it.
+    runs-on: xcode-27
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        # The runtimes the laptop measured each device on (xcrun simctl list, 2026-11-21): iOS 27.0, and
+        # iPhone Duo on 27.1. On this image's iOS 27.2 simulators the Files picker's folder opened by no
+        # press at all (run 44887028405), while 27.1 opened it at the first tap.
+        # No iPads (Shyden, 2026-11-24, shyden-labs/playwright-devices#38): 5 of 22 iPad boots froze as
+        # SimRenderServer reached about 6.3 GB of the runner's 7 GB (shyden-labs/playwright-devices#46); the laptop's simulator runs them.
+        include:
+          - { device: 'iPhone 18 Pro', runtime: 'iOS-27-0' }
+          - { device: 'iPhone Duo', runtime: 'iOS-27-1' }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: node
+        run: |
+          version=$(sed -nE 's/^FROM node:([0-9]+\.[0-9]+\.[0-9]+)$/\1/p' docker/node/Dockerfile)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+          cache: 'npm'
+      - run: node scripts/npm-ci.ts
+      - run: sudo xcode-select -s /Applications/Xcode_27.2.app
+      - run: brew install ios-webkit-debug-proxy
+      # A boot takes 1.5-3.6 min; run 45054025779's iPad Pro took 9.1 min and the job was then cancelled
+      # with no reason (shyden-labs/playwright-devices#46): a hung boot now fails at 6 min, saying so.
+      - id: sim
+        timeout-minutes: 6
+        env:
+          DEVICE: ${{ matrix.device }}
+          RUNTIME: com.apple.CoreSimulator.SimRuntime.${{ matrix.runtime }}
+        run: |
+          udid=$(xcrun simctl list devices available -j | node -e '
+            let s = ""; process.stdin.on("data", (d) => (s += d)).on("end", () => {
+              const { devices } = JSON.parse(s);
+              const found = (devices[process.env.RUNTIME] ?? []).find((d) => d.name === process.env.DEVICE);
+              if (!found) {
+                const where = Object.entries(devices).filter(([, list]) => list.some((d) => d.name === process.env.DEVICE)).map(([k]) => k);
+                console.error(`no ${process.env.DEVICE} on ${process.env.RUNTIME}; it is on: ${where.join(", ") || "no runtime"}`);
+                process.exit(1);
+              }
+              console.log(found.udid);
+            });')
+          echo "udid=$udid" >> "$GITHUB_OUTPUT"
+          # Memory and disk every 30 s while it boots, with the five processes holding most memory: run
+          # 45064693169's iPad mini boot hung as free memory fell from 60% to 13% (shyden-labs/playwright-devices#46), with nothing else running.
+          ( while :; do echo "resources: $(memory_pressure -Q | tail -1); $(df -h / | awk 'NR==2 {print $4 " free on /"}'); top: $(top -l 1 -o mem -n 5 -stats command,mem | tail -5 | tr -s ' ' | tr '\n' ',')"; sleep 30; done ) &
+          monitor=$!
+          xcrun simctl boot "$udid"
+          xcrun simctl bootstatus "$udid" -b
+          kill $monitor
+      # shyden-labs/playwright-devices#46: cancelled twice with no output; the probes below then ran on a device
+      # that was never set up. They run only after this step succeeded.
+      - id: setup
+        run: zsh research/devices/ci/setup-ios-sim.zsh ${{ steps.sim.outputs.udid }}
+      - run: zsh research/devices/run-journey.zsh ios-sim ${{ steps.sim.outputs.udid }}
+      # Times each WebDriverAgent call of the photo step and the finger scroll after it (shyden-labs/playwright-devices#38).
+      - if: always() && steps.setup.outcome == 'success'
+        env:
+          PROBE: research/devices/probes/probe-photo-timing.ts
+        run: zsh research/devices/run-journey.zsh ios-sim ${{ steps.sim.outputs.udid }}
+      # Where the Colour tap lands after typing (shyden-labs/playwright-devices#38).
+      - if: always() && steps.setup.outcome == 'success'
+        env:
+          DEVICE_SPEC: colour-tap.probe.ts
+        run: zsh research/devices/run-journey.zsh ios-sim ${{ steps.sim.outputs.udid }}
+      # This run's evidence only (the folder also holds the committed evidence), and the WebDriverAgent
+      # log, which exists only once setup got as far as starting it.
+      - if: always()
+        run: |
+          mkdir -p ci-evidence
+          find research/devices/evidence -type f -newer research/devices/journey.spec.ts | while read -r f; do cp "$f" ci-evidence/; done
+          logs=~/Library/Caches/playwright-devices/wda/logs-sim
+          if [ -d "$logs" ]; then for f in "$logs"/*.log; do cp "$f" "ci-evidence/wda-$(basename "$f")"; done; fi
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ios-sim-${{ matrix.device }}
+          path: ci-evidence/
+          if-no-files-found: warn
+
+  android-emulator:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: ['pixel_9', 'pixel_tablet']
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: node
+        run: |
+          version=$(sed -nE 's/^FROM node:([0-9]+\.[0-9]+\.[0-9]+)$/\1/p' docker/node/Dockerfile)
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ steps.node.outputs.version }}
+          cache: 'npm'
+      - run: node scripts/npm-ci.ts
+      - run: sudo apt-get install -y zsh
+      # The emulator needs KVM (android-emulator-runner's README).
+      - run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
+        with:
+          api-level: 36
+          # The Play Store image carries Chrome, as the phone does.
+          target: playstore
+          arch: x86_64
+          profile: ${{ matrix.profile }}
+          script: zsh research/devices/ci/run-android-emulator.zsh emulator-5554
+      - if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: android-emulator-${{ matrix.profile }}
+          path: |
+            research/devices/evidence/android-*-emulator-5554-*
+            research/devices/evidence/android-emulator-after-*
+            research/devices/evidence/android-emulator-pickers*.txt
+            research/devices/evidence/android-emulator-play-updates.txt
+            research/devices/evidence/android-emulator-packages-*.txt
+          if-no-files-found: warn

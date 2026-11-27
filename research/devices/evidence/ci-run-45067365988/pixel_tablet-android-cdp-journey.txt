@@ -1,0 +1,28 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (30.3s)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    Error: Chrome's DevTools endpoint http://127.0.0.1:9230/json/version did not name a browser within 30000 ms; it last answered: UND_ERR_SOCKET
+
+       at android-chrome-start.ts:72
+
+      70 |     if (ready) return { readyAfterMs: waited, stop };
+      71 |     if (waited >= ceilingMs) {
+    > 72 |       throw new Error(`Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}`);
+         |             ^
+      73 |     }
+      74 |     await clock.sleep(POLL_MS);
+      75 |   }
+        at startChromeCold (/home/runner/work/playwright-devices/playwright-devices/research/devices/android-chrome-start.ts:72:13)
+        at connect (/home/runner/work/playwright-devices/playwright-devices/research/devices/device-fixture.ts:63:22)
+        at Object.session (/home/runner/work/playwright-devices/playwright-devices/research/devices/device-fixture.ts:126:24)
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-cdp-emulator-5554 exit=1

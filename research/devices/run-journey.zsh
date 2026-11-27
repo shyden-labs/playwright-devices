@@ -6,6 +6,7 @@
 #   run-journey.zsh ios-sim <udid>                 booted iOS Simulator
 #   run-journey.zsh android <serial> <route>       phone or emulator; route android-cdp or android-playwright
 #   PROBE=<script.ts> run-journey.zsh …            the same device side, a measurement script instead of the journey
+#   DEVICE_SPEC=<file.ts> run-journey.zsh …        a probe spec on the journey's own fixture, kept as <target>-<spec>-<date>-<time>
 #
 # Claim first: the USB phones through ~/.claude/locks/usb-devices (a simulator run too: its
 # inspector proxy attaches every iPhone on USB), a simulator or
@@ -107,6 +108,7 @@ if [[ -n ${PROBE:-} ]]; then
   exit $?
 fi
 
+[[ -n ${DEVICE_SPEC:-} ]] && label=$label-${DEVICE_SPEC:t:r:r}
 out=$evidence/$label-$stamp.txt
 print "run-journey: $label, route $route, output $out"
 set +e

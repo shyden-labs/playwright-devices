@@ -1,0 +1,197 @@
+{
+  "config": {
+    "argv": [
+      "/Users/shyden/.local/share/node/v26.13.0/bin/node",
+      "/Users/shyden/Developer/Repos/playwright-devices-38/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "playwright.devices.config.ts"
+    ],
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices-38/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices-38/research/devices",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-38/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-38/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-38/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-38/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices-38/research/devices",
+        "testIgnore": [],
+        "testMatch": "journey.spec.ts",
+        "timeout": 300000,
+        "use": {},
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": ""
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/devices/android-cdp.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a page is read, tapped, typed into and scrolled by real input",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 64338,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "open the page",
+                      "duration": 85
+                    },
+                    {
+                      "title": "tap",
+                      "duration": 4700
+                    },
+                    {
+                      "title": "type",
+                      "duration": 4820
+                    },
+                    {
+                      "title": "choose a colour",
+                      "duration": 17144,
+                      "steps": [
+                        {
+                          "title": "native: choose \"Green\"",
+                          "duration": 2301
+                        }
+                      ]
+                    },
+                    {
+                      "title": "choose a file",
+                      "duration": 18922,
+                      "steps": [
+                        {
+                          "title": "native: choose a file",
+                          "duration": 4556
+                        }
+                      ]
+                    },
+                    {
+                      "title": "choose a photo",
+                      "duration": 12136,
+                      "steps": [
+                        {
+                          "title": "native: choose a photo",
+                          "duration": 7068
+                        }
+                      ]
+                    },
+                    {
+                      "title": "finger scroll",
+                      "duration": 558,
+                      "steps": [
+                        {
+                          "title": "native: finger scroll",
+                          "duration": 553
+                        }
+                      ]
+                    }
+                  ],
+                  "startTime": "2026-11-24T16:59:47.384Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-1e8168a3360124e1dd41",
+          "file": "journey.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-24T16:59:47.082Z",
+    "duration": 64671.621,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

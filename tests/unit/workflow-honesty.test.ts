@@ -37,7 +37,7 @@ describe('every workflow', () => {
   });
 
   it('is judged', () => {
-    expect(files).toEqual(['check-release-cut.yml', 'ci.yml', 'publish.yml', 'sonarcloud.yml']);
+    expect(files).toEqual(['check-release-cut.yml', 'ci.yml', 'devices-sim.yml', 'publish.yml', 'sonarcloud.yml']);
   });
 
   it.each(files)('%s swallows no failure and gates no step on the token', (file) => {
@@ -126,5 +126,45 @@ describe('the checks', () => {
 
   it('passes a workflow that does not scan', () => {
     expect(scanWithoutVerdict('w.yml', 'steps:\n      - run: npm ci\n')).toEqual([]);
+  });
+});
+
+/** Each `- ` step of a workflow, as its text. */
+const stepsOf = (text: string) => text.split(/\n(?=\s+- (?:if|run|uses|name|id|env):)/).slice(1);
+
+describe('devices-sim.yml', () => {
+  it('runs a journey only after its setup succeeded, never after a cancelled or failed setup', () => {
+    // shyden-labs/playwright-devices#46: round 14 (run 44995686112) ran two journeys on always() after the
+    // iPad mini's setup was cancelled; one failed after 5.6 min as if the device were ready.
+    const journeys = stepsOf(read('devices-sim.yml')).filter((step) => step.includes('run-journey.zsh'));
+    expect(journeys.length).toBeGreaterThan(0);
+    for (const step of journeys) {
+      const condition = /\bif: (.*)/.exec(step)?.[1] ?? '';
+      if (condition === '') continue;
+      expect(condition, step).toMatch(/steps\.(setup|emulator)\.outcome == 'success'|^\$\{\{ success\(\) \}\}$|^success\(\)$/);
+    }
+  });
+});
+
+describe('devices-sim.yml simulators', () => {
+  it('runs the iPhone simulators only, with no iPad, which hosted runners cannot boot reliably', () => {
+    // Shyden, 2026-11-24 (shyden-labs/playwright-devices#38, comment 7126358945): the iPads leave CI. 5 of 22
+    // iPad boots froze as SimRenderServer reached about 6.3 GB on the runner's 7 GB (shyden-labs/playwright-devices#46); the laptop's
+    // simulator runs them instead.
+    const devices = [...read('devices-sim.yml').matchAll(/- \{ device: '([^']+)'/g)].map((match) => match[1]);
+    expect(devices).toEqual(['iPhone 18 Pro', 'iPhone Duo']);
+  });
+});
+
+describe('devices-sim.yml simulator boot', () => {
+  it('fails a hung simulator boot at its own limit, naming it, rather than leaving it to a silent cancel', () => {
+    // shyden-labs/playwright-devices#46: run 45054025779's iPad Pro boot took 9.1 min (others 1.5-3.6 min),
+    // then GitHub cancelled the job with no reason.
+    const boot = stepsOf(read('devices-sim.yml')).find((step) => step.includes('xcrun simctl bootstatus'));
+    expect(boot).toBeDefined();
+    const minutes = Number(/\btimeout-minutes: (\d+)/.exec(boot ?? '')?.[1]);
+    expect(minutes).toBeGreaterThanOrEqual(4);
+    expect(minutes).toBeLessThanOrEqual(6);
+    expect(boot).toContain('memory_pressure');
   });
 });

@@ -1,0 +1,47 @@
+
+Running 2 tests using 1 worker
+
+  ✘  1 research/devices/probes/colour-tap.probe.ts:66:1 › the Colour tap after typing (30.3s)
+  ✘  2 research/devices/probes/colour-tap.probe.ts:150:1 › the Colour tap straight after typing, as the journey does (30.8s)
+
+
+  1) research/devices/probes/colour-tap.probe.ts:66:1 › the Colour tap after typing ────────────────
+
+    Error: adb shell ls /data/local/tmp/chrome-command-line failed: ls: /data/local/tmp/chrome-command-line: No such file or directory
+
+
+       at device-fixture.ts:32
+
+      30 |       execFile('adb', ['-s', serial, ...args], { timeout: ADB_CEILING_MS, maxBuffer: 16 * 1024 * 1024 }, (error, stdout, stderr) => {
+      31 |         if (error)
+    > 32 |           reject(new Error(`adb ${args.join(' ')} failed${error.killed ? ` after ${ADB_CEILING_MS} ms` : ''}: ${stderr || error.message}`));
+         |                  ^
+      33 |         else resolve(stdout);
+      34 |       });
+      35 |     });
+        at /home/runner/work/playwright-devices/playwright-devices/research/devices/device-fixture.ts:32:18
+
+    Error Context: test-results/probes-colour-tap.probe.ts-the-Colour-tap-after-typing/error-context.md
+
+  2) research/devices/probes/colour-tap.probe.ts:150:1 › the Colour tap straight after typing, as the journey does 
+
+    Error: adb shell ls /data/local/tmp/chrome-command-line failed: ls: /data/local/tmp/chrome-command-line: No such file or directory
+
+
+       at device-fixture.ts:32
+
+      30 |       execFile('adb', ['-s', serial, ...args], { timeout: ADB_CEILING_MS, maxBuffer: 16 * 1024 * 1024 }, (error, stdout, stderr) => {
+      31 |         if (error)
+    > 32 |           reject(new Error(`adb ${args.join(' ')} failed${error.killed ? ` after ${ADB_CEILING_MS} ms` : ''}: ${stderr || error.message}`));
+         |                  ^
+      33 |         else resolve(stdout);
+      34 |       });
+      35 |     });
+        at /home/runner/work/playwright-devices/playwright-devices/research/devices/device-fixture.ts:32:18
+
+    Error Context: test-results/probes-colour-tap.probe.ts-2ebed--typing-as-the-journey-does/error-context.md
+
+  2 failed
+    research/devices/probes/colour-tap.probe.ts:66:1 › the Colour tap after typing ─────────────────
+    research/devices/probes/colour-tap.probe.ts:150:1 › the Colour tap straight after typing, as the journey does 
+run-journey: android-cdp-emulator-5554-colour-tap exit=1

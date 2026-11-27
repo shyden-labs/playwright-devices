@@ -187,28 +187,16 @@ describe('tapAt', () => {
 });
 
 describe('swipe', () => {
-  it('drags one finger from the start point to the end point over 300 ms', async () => {
-    const wda = fakeWda({ ...session, 'POST /session/s1/actions': () => null });
+  // W3C /actions went unanswered for 30 s after the iPad photo picker closed, while this endpoint answered
+  // in 1.8 s (iPad Pro 13) and 3.3 s (iPad mini) and the page scrolled (run 44974365844, 2026-11-22).
+  it("drags one finger from the start point to the end point over 0.3 s through WebDriverAgent's drag endpoint", async () => {
+    const wda = fakeWda({ ...session, 'POST /session/s1/wda/dragfromtoforduration': () => null });
     const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
 
-    await client.swipe({ x: 200, y: 600 }, { x: 200, y: 200 });
+    await client.swipe({ x: 200.4, y: 600.6 }, { x: 200, y: 200 });
 
-    expect(wda.calls.filter((c) => c.path === '/session/s1/actions').map((c) => c.body)).toEqual([
-      {
-        actions: [
-          {
-            type: 'pointer',
-            id: 'finger',
-            parameters: { pointerType: 'touch' },
-            actions: [
-              { type: 'pointerMove', duration: 0, x: 200, y: 600 },
-              { type: 'pointerDown', button: 0 },
-              { type: 'pointerMove', duration: 300, x: 200, y: 200 },
-              { type: 'pointerUp', button: 0 },
-            ],
-          },
-        ],
-      },
+    expect(wda.calls.filter((c) => c.path.startsWith('/session/s1/')).map((c) => [c.path, c.body])).toEqual([
+      ['/session/s1/wda/dragfromtoforduration', { fromX: 200, fromY: 601, toX: 200, toY: 200, duration: 0.3 }],
     ]);
   });
 });
@@ -444,6 +432,45 @@ describe('tapCellIcon', () => {
     expect(wda.calls.find((c) => c.path === '/session/s1/actions')?.body).toEqual(touchTap(346, 244));
   });
 
+  it('taps only once the cell has stopped moving: a view sliding in moves its cells (CI, 2026-11-21)', async () => {
+    // On a fast runner the folder cell was found 0.4 s after On My iPhone opened, still sliding in, and
+    // the tap at its first position opened nothing (devices-sim run 44882233599, shyden-labs/playwright-devices#38).
+    const positions = [{ x: 700 }, { x: 420 }, { x: 282 }, { x: 282 }];
+    let reads = 0;
+    const wda = fakeWda({
+      ...session,
+      'POST /session/s1/elements': () => [{ ELEMENT: 'cell-1' }],
+      'GET /session/s1/element/cell-1/rect': () => ({
+        ...positions[Math.min(reads++, positions.length - 1)],
+        y: 200,
+        width: 128,
+        height: 176,
+      }),
+      'POST /session/s1/actions': () => null,
+    });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await client.tapCellIcon('WebDriverAgentRunner-Runner');
+
+    const taps = wda.calls.filter((c) => c.path === '/session/s1/actions');
+    expect(taps.map((c) => c.body)).toEqual([touchTap(346, 244)]);
+  });
+
+  it('fails naming the cell when it never stops moving within 10 s, tapping nothing', async () => {
+    let reads = 0;
+    const wda = fakeWda({
+      ...session,
+      'POST /session/s1/elements': () => [{ ELEMENT: 'cell-1' }],
+      'GET /session/s1/element/cell-1/rect': () => ({ x: (reads += 1), y: 200, width: 128, height: 176 }),
+    });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await expect(client.tapCellIcon('device-journey')).rejects.toThrow(
+      'the cell named "device-journey" was still moving after 10000 ms; nothing was tapped',
+    );
+    expect(wda.calls.some((c) => c.path.endsWith('/actions'))).toBe(false);
+  });
+
   it('waits while the folder lists, and fails at 60 s naming the cell, tapping nothing', async () => {
     const slow = filesGrid(50);
     const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: slow.fetchFn, clock: fakeClock() });
@@ -509,6 +536,15 @@ describe('screenshot', () => {
   });
 });
 
+describe('source', () => {
+  it("answers WebDriverAgent's description of the whole screen", async () => {
+    const wda = fakeWda({ ...session, 'GET /session/s1/source': () => '<XCUIElementTypeApplication/>' });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    expect(await client.source()).toBe('<XCUIElementTypeApplication/>');
+  });
+});
+
 describe('waitGone', () => {
   it('waits until nothing matches the predicate: a picker still closing swallows the next swipe', async () => {
     let looks = 0;
@@ -535,6 +571,42 @@ describe('waitGone', () => {
 
     await expect(client.waitGone('label == "Done"')).rejects.toThrow('label == "Done" was still on the screen after 60000 ms');
     expect(clock.now()).toBe(60_000);
+  });
+});
+
+describe('a refusal’s message', () => {
+  /** WebDriverAgent refusing every command after the session with `value` as the body. */
+  function refusingWith(value: unknown) {
+    const answered = fakeWda(session);
+    return (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
+      const path = new URL(input instanceof Request ? input.url : input).pathname;
+      if (path === '/session') return answered.fetchFn(input, init);
+      return Promise.resolve(new Response(JSON.stringify({ value }), { status: 500 }));
+    };
+  }
+
+  it('uses WebDriverAgent’s message when it gives one', async () => {
+    const client = await connectWda({
+      url: 'http://127.0.0.1:8100',
+      fetchFn: refusingWith({ error: 'unknown error', message: 'element not visible' }),
+      clock: fakeClock(),
+    });
+    await expect(client.typeText('a')).rejects.toThrow('WebDriverAgent refused POST /session/s1/elements (500): element not visible');
+  });
+
+  it('says there was no message when the refusal carries none', async () => {
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: refusingWith(null), clock: fakeClock() });
+    await expect(client.typeText('a')).rejects.toThrow('WebDriverAgent refused POST /session/s1/elements (500): no message');
+  });
+});
+
+describe('an element listed with no id', () => {
+  it('fails naming what WebDriverAgent listed, and taps nothing', async () => {
+    const wda = fakeWda({ ...session, 'POST /session/s1/elements': () => [{ rect: 'no id here' }] });
+    const client = await connectWda({ url: 'http://127.0.0.1:8100', fetchFn: wda.fetchFn, clock: fakeClock() });
+
+    await expect(client.tapFirstShown(['Browse'])).rejects.toThrow('WebDriverAgent listed an element with no id: {"rect":"no id here"}');
+    expect(wda.calls.filter((c) => c.path.endsWith('/click'))).toEqual([]);
   });
 });
 

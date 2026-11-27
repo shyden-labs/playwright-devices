@@ -1,0 +1,7 @@
+
+Running 1 test using 1 worker
+
+  ✓  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (1.2m)
+
+  1 passed (1.3m)
+run-journey: ios-sim-0A1B5EC5-2485-4F8E-B06B-1185D8E186C0 exit=0

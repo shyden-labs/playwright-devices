@@ -48,6 +48,32 @@ async function look(fetchFn: typeof fetch, url: string): Promise<{ ready: boolea
   }
 }
 
+/**
+ * What the phone shows when Chrome's endpoint never names the browser: the DevTools sockets open, Chrome's
+ * pid, any command-line file (which renames the socket) and the app on screen. On the pixel_tablet emulator
+ * (run 45067365988) the endpoint answered UND_ERR_SOCKET for 30 s twice, with nothing saying why.
+ */
+async function phoneState(adb: Adb): Promise<string> {
+  // pidof, grep and ls exit non-zero when nothing is there, and adb then rejects (run 45353878042): that
+  // answer means none, and must not replace the endpoint's failure.
+  const lookUp = (args: string[]) => adb(args).catch(() => '');
+  const sockets = (await lookUp(['shell', 'grep', '-a', 'devtools', '/proc/net/unix']))
+    .split('\n')
+    .map((line) => line.trim().replace(/^.*\s/, ''))
+    .filter((name) => name !== '');
+  const pid = (await lookUp(['shell', 'pidof', CHROME])).trim();
+  const commandLine = (await lookUp(['shell', 'ls', COMMAND_LINE])).trim();
+  const screen = (await lookUp(['shell', 'dumpsys', 'activity', 'activities']))
+    .split('\n')
+    .find((line) => line.includes('topResumedActivity'));
+  return [
+    `devtools sockets: ${sockets.join(', ') || 'none'};`,
+    `Chrome pid: ${pid || 'none'};`,
+    `command line file: ${commandLine || 'none'};`,
+    `on screen: ${screen?.trim() ?? 'unknown'}`,
+  ].join(' ');
+}
+
 /** Starts Chrome cold, with only the first-run flags in its command-line file, and waits until its DevTools endpoint names the browser. */
 export async function startChromeCold({
   adb,
@@ -77,7 +103,9 @@ export async function startChromeCold({
     if (ready) return { readyAfterMs: waited, stop };
     await refuseFirstRunScreen(adb);
     if (waited >= ceilingMs) {
-      throw new Error(`Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}`);
+      throw new Error(
+        `Chrome's DevTools endpoint ${url} did not name a browser within ${ceilingMs} ms; it last answered: ${seen}. The phone showed: ${await phoneState(adb)}`,
+      );
     }
     await clock.sleep(POLL_MS);
     return attempt();

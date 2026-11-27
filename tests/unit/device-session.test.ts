@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test';
 import { describe, expect, it } from 'vitest';
-import { androidSession, iosSession, withNamedSteps } from '../../src/devices/device-session.ts';
+import { androidSession, iosSession, touchesSeen, withNamedSteps } from '../../src/devices/device-session.ts';
 import { PHOTO_GRID_IMAGE } from '../../src/devices/ios-native.ts';
 
 /** A WebDriverAgent stand-in recording each step; `shown` is what the screen lists. */
@@ -40,6 +40,7 @@ function fakeWda(shown: string[] = []) {
       return Promise.resolve();
     },
     screenshot: () => Promise.resolve(Buffer.from('ios screen')),
+    source: () => Promise.resolve('<ios screen/>'),
     close: () => {
       steps.push('close');
       return Promise.resolve();
@@ -94,6 +95,16 @@ describe('iosSession', () => {
     expect(await session.screenshot()).toEqual(Buffer.from('ios screen'));
   });
 
+  it("describes the device's screen through WebDriverAgent, for a failure's evidence", async () => {
+    const session = iosSession({ page, wda: fakeWda(), baseURL: 'http://mac.local:4321', file });
+    expect(await session.screenSource()).toBe('<ios screen/>');
+  });
+
+  it('answers no further failure evidence: WebDriverAgent keeps its own log', async () => {
+    const session = iosSession({ page, wda: fakeWda(), baseURL: 'http://mac.local:4321', file });
+    expect(await session.moreEvidence()).toEqual([]);
+  });
+
   it('gives the test a page stand-in, not the real page', () => {
     const session = iosSession({ page, wda: fakeWda(), baseURL: 'http://mac.local:4321', file });
     expect(session.page).not.toBe(page);
@@ -115,6 +126,7 @@ function fakeAdb(shown: string[] = []) {
       return Promise.resolve(`<hierarchy>${nodes.join('')}</hierarchy>`);
     }
     if (call === 'shell wm size') return Promise.resolve('Physical size: 1080x2400\n');
+    if (call.startsWith('logcat -d')) return Promise.resolve('am_crash: com.android.chrome\n');
     if (call === 'exec-out screencap -p | base64') return Promise.resolve(Buffer.from('android screen').toString('base64'));
     return Promise.resolve('');
   };
@@ -130,8 +142,10 @@ describe('androidSession', () => {
     await androidSession({ page, adb: device.adb, baseURL: 'http://127.0.0.1:4321', files });
     expect(device.kept()).toEqual([
       'push /repo/fixtures/device-journey.txt /sdcard/Download/device-journey.txt',
+      'shell touch /sdcard/Download/device-journey.txt',
       `${BROADCAST}/sdcard/Download/device-journey.txt`,
       'push /repo/fixtures/device-journey.png /sdcard/Pictures/device-journey.png',
+      'shell touch /sdcard/Pictures/device-journey.png',
       `${BROADCAST}/sdcard/Pictures/device-journey.png`,
     ]);
   });
@@ -172,6 +186,21 @@ describe('androidSession', () => {
   it('screenshots the phone through adb', async () => {
     const session = await androidSession({ page, adb: fakeAdb().adb, baseURL: 'http://127.0.0.1:4321', files });
     expect(await session.screenshot()).toEqual(Buffer.from('android screen'));
+  });
+
+  it("answers the touches it sent and the phone's crash and event logs, for a failure's evidence", async () => {
+    const session = await androidSession({ page, adb: fakeAdb(['Green']).adb, baseURL: 'http://127.0.0.1:4321', files });
+    await session.nativeChoose('Green');
+    expect(await session.moreEvidence()).toEqual([
+      { name: 'touches sent', body: expect.stringMatching(/^\d+ ms tap at 50,50$/) as unknown },
+      { name: 'device log', body: 'am_crash: com.android.chrome\n' },
+      { name: 'memory killer log', body: 'am_crash: com.android.chrome\n' },
+    ]);
+  });
+
+  it("describes the phone's screen with a uiautomator dump, for a failure's evidence", async () => {
+    const session = await androidSession({ page, adb: fakeAdb(['Green']).adb, baseURL: 'http://127.0.0.1:4321', files });
+    expect(await session.screenSource()).toContain('text="Green"');
   });
 
   it('close shuts a picker left open, then removes both staged files', async () => {
@@ -238,5 +267,15 @@ describe('withNamedSteps', () => {
     expect(stepped.page).toBe(session.page);
     expect(stepped.screenshot).toBe(session.screenshot);
     expect(stepped.close).toBe(session.close);
+  });
+});
+
+describe('touchesSeen', () => {
+  it('reads the touches a page recorded as window.touchesSeen, in the page', () => {
+    expect(touchesSeen({ touchesSeen: ['touch at 1,2'] })).toEqual(['touch at 1,2']);
+  });
+
+  it('answers none where the page records no touches', () => {
+    expect(touchesSeen({})).toEqual([]);
   });
 });

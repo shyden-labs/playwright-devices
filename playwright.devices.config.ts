@@ -8,7 +8,8 @@ import { phoneProjects } from './src/devices/phone-projects.ts';
 // with --project and starts the device side first.
 export default defineConfig({
   testDir: './research/devices',
-  testMatch: 'journey.spec.ts',
+  // DEVICE_SPEC runs a probe spec on the same fixture instead (research/devices/run-journey.zsh).
+  testMatch: process.env.DEVICE_SPEC ?? 'journey.spec.ts',
   projects: phoneProjects(),
   workers: 1,
   retries: 0,

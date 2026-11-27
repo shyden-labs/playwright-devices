@@ -1,0 +1,27 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (30.3s)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    Error: adb shell ls /data/local/tmp/chrome-command-line failed: ls: /data/local/tmp/chrome-command-line: No such file or directory
+
+
+       at device-fixture.ts:32
+
+      30 |       execFile('adb', ['-s', serial, ...args], { timeout: ADB_CEILING_MS, maxBuffer: 16 * 1024 * 1024 }, (error, stdout, stderr) => {
+      31 |         if (error)
+    > 32 |           reject(new Error(`adb ${args.join(' ')} failed${error.killed ? ` after ${ADB_CEILING_MS} ms` : ''}: ${stderr || error.message}`));
+         |                  ^
+      33 |         else resolve(stdout);
+      34 |       });
+      35 |     });
+        at /home/runner/work/playwright-devices/playwright-devices/research/devices/device-fixture.ts:32:18
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-cdp-emulator-5554 exit=1

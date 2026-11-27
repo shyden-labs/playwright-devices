@@ -1,0 +1,63 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (1.9m)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input › choose a file › native: choose a file 
+
+    Error: none of "device-journey.txt" showed within 60000 ms; nothing was touched
+
+       at android-native.ts:101
+
+       99 |       const found = await look();
+      100 |       if (found !== undefined) return found;
+    > 101 |       if (clock.now() >= deadline) throw new Error(failure);
+          |                                          ^
+      102 |       await clock.sleep(POLL_MS);
+      103 |     }
+      104 |   }
+        at waitFor (/Users/shyden/Developer/Repos/playwright-devices-38/research/devices/android-native.ts:101:42)
+        at Object.tapFirstShown (/Users/shyden/Developer/Repos/playwright-devices-38/research/devices/android-native.ts:158:19)
+        at androidChooseFile (/Users/shyden/Developer/Repos/playwright-devices-38/research/devices/android-native.ts:239:3)
+        at /Users/shyden/Developer/Repos/playwright-devices-38/research/devices/journey.spec.ts:39:5
+        at /Users/shyden/Developer/Repos/playwright-devices-38/research/devices/journey.spec.ts:37:3
+
+    attachment #2: device screen source at failure (text/xml) ──────────────────────────────────────
+    <?xml version='1.0' encoding='UTF-8' standalone='yes' ?><displays><display id="0"><window index="0" title="Navigation bar" bounds="[3014,251][3168,1192]" active="false" focused="false" accessibility-focused="false" id="193209" layer="2" type="TYPE_SYSTEM"><hierarchy rotation="1"><node index="0" text...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: touches the page saw (text/plain) ───────────────────────────────────────────────
+    96 ms viewport resize height 310 offsetTop 0 pageTop 0
+    4746 ms pointerdown at 290,126 on tap view 310
+    4747 ms touchstart at 290,126 on tap view 310
+    4747 ms touchend at 290,126 on tap view 310
+    4748 ms focusin at scrollY 0 on tap view 310
+    4748 ms click at 290,126 on tap view 310
+    9561 ms pointerdown at...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: touches sent (text/plain) ───────────────────────────────────────────────────────
+    4793 ms aim at box {"x":16,"y":103.67411041259766,"width":548.3973388671875,"height":44.857139587402344} from viewport {"devicePixelRatio":3.5,"offsetLeft":0,"offsetTop":0,"scale":1,"height":309.71429443359375} and page area {"x":160,"y":160,"width":2854,"height":1280}
+    4827 ms tap at 1176,797
+    9686 m...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: device log (text/plain) ─────────────────────────────────────────────────────────
+    --------- beginning of events
+    11-24 23:34:15.633  3399  3476 I input_focus: [Focus request 9febb03 PopupWindow:b605f4b,reason=UpdateInputWindows]
+    11-24 23:34:15.645 21259 21259 I viewroot_draw_event: [VRI[PopupWindow:b605f4b],reportDrawFinished seqId=0]
+    11-24 23:34:15.655  3399  4741 I input_focus: ...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #6: memory killer log (text/plain) ──────────────────────────────────────────────────
+    --------- beginning of system
+    11-24 23:54:54.376  3399  7718 I ActivityManager: Process com.heytap.mcs.biz.message (pid 13006) has died: fg  SVC 
+    11-24 23:54:54.389  3399  6163 W ActivityManager: Receiver with filter android.content.IntentFilter@33d6ca1 already registered for pid 13000, callerPackag...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-cdp-3b402284 exit=1

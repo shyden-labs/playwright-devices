@@ -29,6 +29,10 @@ export interface DeviceSession {
   fingerScroll: () => Promise<void>;
   /** The device's screen as PNG bytes, kept as evidence when a test fails. */
   screenshot: () => Promise<Buffer>;
+  /** The device's own description of its screen (WebDriverAgent's source, or a uiautomator dump). */
+  screenSource: () => Promise<string>;
+  /** Further evidence for a failure, each a named text: Android's touches sent and its crash and event logs. */
+  moreEvidence: () => Promise<{ name: string; body: string }[]>;
   /** Shuts a picker a failed step left open, then releases the device; call it in the fixture's teardown. */
   close: () => Promise<void>;
 }
@@ -43,7 +47,10 @@ async function thenAlways(first: () => Promise<void>, last: () => Promise<void>)
 }
 
 /** The WebDriverAgent client, as the iOS session uses it. */
-export type IosDevice = RealInput & MarkerReader & IosSwiper & NativeScreen & { screenshot(): Promise<Buffer>; close(): Promise<void> };
+export type IosDevice = RealInput &
+  MarkerReader &
+  IosSwiper &
+  NativeScreen & { screenshot(): Promise<Buffer>; source(): Promise<string>; close(): Promise<void> };
 
 export interface IosSessionOptions {
   /** Safari's one tab, reached through ios_webkit_debug_proxy. */
@@ -62,6 +69,8 @@ export function iosSession({ page, wda, baseURL, file }: IosSessionOptions): Dev
     nativeChoosePhoto: () => iosChoosePhoto(wda),
     fingerScroll: () => iosFingerScroll(wda),
     screenshot: () => wda.screenshot(),
+    screenSource: () => wda.source(),
+    moreEvidence: () => Promise.resolve([]),
     close: () =>
       thenAlways(
         () => iosClosePicker(wda),
@@ -91,6 +100,12 @@ export async function androidSession({ page, adb, baseURL, files }: AndroidSessi
     nativeChoosePhoto: () => androidChoosePhoto(screen),
     fingerScroll: () => androidFingerScroll(adb),
     screenshot: () => screen.screenshot(),
+    screenSource: () => screen.source(),
+    moreEvidence: async () => [
+      { name: 'touches sent', body: screen.touchesSent().join('\n') },
+      { name: 'device log', body: await screen.deviceLog() },
+      { name: 'memory killer log', body: await screen.memoryLog() },
+    ],
     close: () =>
       thenAlways(
         () => androidClosePicker(screen),
@@ -119,3 +134,8 @@ export function withNamedSteps(session: DeviceSession, step: NamedStep): DeviceS
 /** The ways the journey reaches a phone's browser. */
 /** How a phone is driven: Safari through WebDriverAgent, or Chrome over CDP or Playwright's Android support. */
 export type Route = 'ios-webkit' | 'android-cdp' | 'android-playwright';
+
+/** The touches a page recorded as `window.touchesSeen`, none if it records none; run in the page by `page.evaluate`. */
+export function touchesSeen(view: { touchesSeen?: string[] } = window as unknown as { touchesSeen?: string[] }): string[] {
+  return view.touchesSeen ?? [];
+}

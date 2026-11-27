@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { requireChromeDebugApp, startChromeCold, stopChromeAfterPlaywright } from '../../src/devices/android-chrome-start.ts';
 
-/** An adb stand-in recording each call; `answers` gives the output for a call by its joined arguments. */
-function fakeAdb(answers: Record<string, string> = {}) {
+/**
+ * An adb stand-in recording each call; `answers` gives the output for a call by its joined arguments, and
+ * `failures` the error a call rejects with, as the real adb does when the phone's command exits non-zero.
+ */
+function fakeAdb(answers: Record<string, string> = {}, failures: Record<string, string> = {}) {
   const calls: string[] = [];
   const adb = (args: string[]) => {
     const call = args.join(' ');
     calls.push(call);
+    if (call in failures) return Promise.reject(new Error(failures[call]));
     return Promise.resolve(answers[call] ?? '');
   };
   return { adb, calls };
@@ -70,9 +74,57 @@ describe('startChromeCold', () => {
     const { fetchFn } = fakeFetch([new Error('ECONNREFUSED')]);
 
     await expect(startChromeCold({ adb, fetchFn, clock: fakeClock(), port: 9230, ceilingMs: 2_000 })).rejects.toThrow(
-      "Chrome's DevTools endpoint http://127.0.0.1:9230/json/version did not name a browser within 2000 ms; it last answered: ECONNREFUSED",
+      "Chrome's DevTools endpoint http://127.0.0.1:9230/json/version did not name a browser within 2000 ms; it last answered: ECONNREFUSED.",
     );
     expect(calls.filter((call) => call.startsWith('shell am start'))).toHaveLength(1);
+  });
+
+  it('names what the phone showed when the endpoint never named the browser: sockets, Chrome, command line, screen', async () => {
+    // pixel_tablet emulator, run 45067365988: the cdp route's endpoint answered UND_ERR_SOCKET for 30 s twice,
+    // with no Play update, and nothing said whether Chrome ran or under which socket name.
+    const { adb } = fakeAdb({
+      'shell grep -a devtools /proc/net/unix': '00000000: 00000002 0 10000 0001 01 12345 @webview_devtools_remote_4242',
+      'shell pidof com.android.chrome': '4242',
+      'shell ls /data/local/tmp/chrome-command-line': 'ls: /data/local/tmp/chrome-command-line: No such file or directory',
+      'shell dumpsys activity activities': 'junk\n  topResumedActivity=ActivityRecord{1 u0 com.android.chrome/.Main t9}\nmore',
+    });
+    const { fetchFn } = fakeFetch([new Error('UND_ERR_SOCKET')]);
+
+    const failure = startChromeCold({ adb, fetchFn, clock: fakeClock(), port: 9230, ceilingMs: 2_000 });
+
+    await expect(failure).rejects.toThrow(
+      [
+        "Chrome's DevTools endpoint http://127.0.0.1:9230/json/version did not name a browser within 2000 ms; it last answered: UND_ERR_SOCKET.",
+        'The phone showed: devtools sockets: @webview_devtools_remote_4242; Chrome pid: 4242;',
+        'command line file: ls: /data/local/tmp/chrome-command-line: No such file or directory;',
+        'on screen: topResumedActivity=ActivityRecord{1 u0 com.android.chrome/.Main t9}',
+      ].join(' '),
+    );
+  });
+
+  it('still names what the phone showed when its look-ups exit non-zero, as pidof, grep and ls do when nothing is there', async () => {
+    // pixel_tablet emulator, run 45353878042: no command-line file made `adb shell ls` exit 1, the real adb
+    // rejected, and that rejection replaced the endpoint's failure, so nothing said what the phone showed.
+    const { adb } = fakeAdb(
+      { 'shell dumpsys activity activities': '  topResumedActivity=ActivityRecord{1 u0 com.android.chrome/.Main t9}' },
+      {
+        'shell grep -a devtools /proc/net/unix': 'adb shell grep -a devtools /proc/net/unix failed: ',
+        'shell pidof com.android.chrome': 'adb shell pidof com.android.chrome failed: ',
+        'shell ls /data/local/tmp/chrome-command-line':
+          'adb shell ls /data/local/tmp/chrome-command-line failed: ls: /data/local/tmp/chrome-command-line: No such file or directory',
+      },
+    );
+    const { fetchFn } = fakeFetch([new Error('UND_ERR_SOCKET')]);
+
+    const failure = startChromeCold({ adb, fetchFn, clock: fakeClock(), port: 9230, ceilingMs: 2_000 });
+
+    await expect(failure).rejects.toThrow(
+      [
+        "Chrome's DevTools endpoint http://127.0.0.1:9230/json/version did not name a browser within 2000 ms; it last answered: UND_ERR_SOCKET.",
+        'The phone showed: devtools sockets: none; Chrome pid: none; command line file: none;',
+        'on screen: topResumedActivity=ActivityRecord{1 u0 com.android.chrome/.Main t9}',
+      ].join(' '),
+    );
   });
 
   it('fails at once when Chrome shows its first-run screen, which opens no DevTools socket, naming it and the fix', async () => {

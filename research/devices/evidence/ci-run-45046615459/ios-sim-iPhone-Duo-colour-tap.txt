@@ -1,0 +1,8 @@
+
+Running 2 tests using 1 worker
+
+  ✓  1 research/devices/probes/colour-tap.probe.ts:66:1 › the Colour tap after typing (22.0s)
+  ✓  2 research/devices/probes/colour-tap.probe.ts:150:1 › the Colour tap straight after typing, as the journey does (11.0s)
+
+  2 passed (34.9s)
+run-journey: ios-sim-09693AE6-5842-4CF5-B801-D905E896271E-colour-tap exit=0

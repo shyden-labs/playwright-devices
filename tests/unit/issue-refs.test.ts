@@ -13,7 +13,9 @@ import { withoutCommentLines, withoutTsComments, withoutYamlComments } from './s
 
 const BARE_REF = /(?<![\w/&-])#\d+\b/g;
 
-const IGNORED = ['node_modules/**', 'coverage/**', '.vite/**', '.git/**', '.claude/**', '.superpowers/**'];
+// The device runs' reports are program output, so data; reading them took this test past its 1 s under the
+// full suite with coverage (390 files, 2026-11-27).
+const IGNORED = ['node_modules/**', 'coverage/**', '.vite/**', '.git/**', '.claude/**', '.superpowers/**', 'research/devices/evidence/**'];
 
 const FILES = globSync(
   ['**/*.{ts,js,json,md}', '.github/**/*.{yml,md}', 'docker/node/Dockerfile', '.githooks/*', '.gitignore', '.npmrc', '.prettierignore'],

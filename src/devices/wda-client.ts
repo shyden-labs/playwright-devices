@@ -29,6 +29,8 @@ const REQUEST_CEILING_MS = 30_000;
 
 /** How often a wait asks WebDriverAgent again. */
 const POLL_MS = 100;
+/** A cell still moving after this is not sliding in; something keeps moving it. */
+const SETTLE_CEILING_MS = 10_000;
 
 /**
  * The keyboard showed 0.3-1.3 s after the tap on the iPad simulator; a slow
@@ -68,6 +70,9 @@ const VIEW_CHANGING = 'is not present in the current view anymore';
 
 /** W3C's key for an element reference; WebDriverAgent also sends the older `ELEMENT`. */
 const W3C_ELEMENT = 'element-6066-11e4-a52e-4f735466cecf';
+
+/** How long a swipe's finger takes to travel, in seconds. */
+const SWIPE_SECONDS = 0.3;
 
 /** One finger's W3C pointer actions. */
 function finger(actions: object[]) {
@@ -185,6 +190,11 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
       return Buffer.from((await call('GET', `${base}/screenshot`)) as string, 'base64');
     },
 
+    /** WebDriverAgent's description of the whole screen: kept with the screenshot when a test fails. */
+    async source(): Promise<string> {
+      return (await call('GET', `${base}/source`)) as string;
+    },
+
     /** Types `text` once the on-screen keyboard is listed: keys sent before it shows are lost. */
     async typeText(text: string): Promise<void> {
       await waitFor(
@@ -238,18 +248,21 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
     /** One real finger tap at a screen point. */
     tapAt,
 
-    /** One real finger dragged from `from` to `to`. */
+    /**
+     * One real finger dragged from `from` to `to`, through WebDriverAgent's drag endpoint: after the iPad
+     * photo picker closed, W3C /actions went unanswered for 30 s while this answered in 1.8 to 3.3 s and the
+     * page scrolled (iPad Pro 13 and iPad mini simulators, run 44974365844, 2026-11-22).
+     */
     async swipe(from: ScreenPoint, to: ScreenPoint): Promise<void> {
-      await call(
-        'POST',
-        `${base}/actions`,
-        finger([
-          { type: 'pointerMove', duration: 0, ...at(from) },
-          { type: 'pointerDown', button: 0 },
-          { type: 'pointerMove', duration: 300, ...at(to) },
-          { type: 'pointerUp', button: 0 },
-        ]),
-      );
+      const start = at(from);
+      const end = at(to);
+      await call('POST', `${base}/wda/dragfromtoforduration`, {
+        fromX: start.x,
+        fromY: start.y,
+        toX: end.x,
+        toY: end.y,
+        duration: SWIPE_SECONDS,
+      });
     },
 
     /**
@@ -297,13 +310,27 @@ export async function connectWda({ url, fetchFn = fetch, clock = realClock, requ
      */
     async tapCellIcon(name: string): Promise<void> {
       const predicate = `type == 'XCUIElementTypeCell' AND label BEGINSWITH '${name}, '`;
-      let ids: string[] = [];
+      let id = '';
       const listed = async (): Promise<boolean> => {
-        ids = await find('predicate string', predicate);
-        return ids.length > 0;
+        const [first] = await find('predicate string', predicate);
+        if (first === undefined) return false;
+        id = first;
+        return true;
       };
       await waitFor(listed, NATIVE_CEILING_MS, `no cell named "${name}" showed within ${NATIVE_CEILING_MS} ms; nothing was tapped`);
-      const cell = (await call('GET', `${base}/element/${encodeURIComponent(ids[0] as string)}/rect`)) as ScreenRect;
+      // A view sliding in moves its cells: tap only once two looks agree (shyden-labs/playwright-devices#38).
+      const rectPath = `${base}/element/${encodeURIComponent(id)}/rect`;
+      let cell = (await call('GET', rectPath)) as ScreenRect;
+      const started = clock.now();
+      for (;;) {
+        await clock.sleep(POLL_MS);
+        const again = (await call('GET', rectPath)) as ScreenRect;
+        if (again.x === cell.x && again.y === cell.y && again.width === cell.width && again.height === cell.height) break;
+        cell = again;
+        if (clock.now() - started >= SETTLE_CEILING_MS) {
+          throw new Error(`the cell named "${name}" was still moving after ${SETTLE_CEILING_MS} ms; nothing was tapped`);
+        }
+      }
       await tapAt({ x: cell.x + cell.width / 2, y: cell.y + cell.height / 4 });
     },
 

@@ -1,0 +1,62 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (2.0m)
+
+
+  1) research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input › choose a file › native: choose a file 
+
+    Error: none of "device-journey.txt" showed within 60000 ms; nothing was touched
+
+       at android-native.ts:101
+
+       99 |       const found = await look();
+      100 |       if (found !== undefined) return found;
+    > 101 |       if (clock.now() >= deadline) throw new Error(failure);
+          |                                          ^
+      102 |       await clock.sleep(POLL_MS);
+      103 |     }
+      104 |   }
+        at waitFor (/Users/shyden/Developer/Repos/playwright-devices-38/research/devices/android-native.ts:101:42)
+        at Object.tapFirstShown (/Users/shyden/Developer/Repos/playwright-devices-38/research/devices/android-native.ts:158:19)
+        at androidChooseFile (/Users/shyden/Developer/Repos/playwright-devices-38/research/devices/android-native.ts:239:3)
+        at /Users/shyden/Developer/Repos/playwright-devices-38/research/devices/journey.spec.ts:39:5
+        at /Users/shyden/Developer/Repos/playwright-devices-38/research/devices/journey.spec.ts:37:3
+
+    attachment #2: device screen source at failure (text/xml) ──────────────────────────────────────
+    <?xml version='1.0' encoding='UTF-8' standalone='yes' ?><displays><display id="0"><window index="0" title="Navigation bar" bounds="[3014,253][3168,1194]" active="false" focused="false" accessibility-focused="false" id="193925" layer="2" type="TYPE_SYSTEM"><hierarchy rotation="1"><node index="0" text...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: touches the page saw (text/plain) ───────────────────────────────────────────────
+    32 ms viewport resize height 310 offsetTop 0 pageTop 0
+    4754 ms pointerdown at 290,126 on tap view 310
+    4754 ms touchstart at 290,126 on tap view 310
+    4755 ms touchend at 290,126 on tap view 310
+    4755 ms focusin at scrollY 0 on tap view 310
+    4756 ms click at 290,126 on tap view 310
+    10055 ms pointerdown a...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #4: touches sent (text/plain) ───────────────────────────────────────────────────────
+    4788 ms aim at box {"x":16,"y":103.67411041259766,"width":548.3973388671875,"height":44.857139587402344} from viewport {"devicePixelRatio":3.5,"offsetLeft":0,"offsetTop":0,"scale":1,"height":309.71429443359375} and page area {"x":160,"y":160,"width":2854,"height":1280}
+    4809 ms tap at 1176,797
+    10107 ...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #5: device log (text/plain) ─────────────────────────────────────────────────────────
+    --------- beginning of events
+    11-24 23:37:14.655  3399  3544 I wm_set_keyguard_occluded: [0,0,0,setOccluded]
+    11-24 23:37:14.655  3399  3544 I wm_set_keyguard_occluded: [0,0,0,setOccluded]
+    11-24 23:37:14.655  5764  5764 I [36080] : [0,0]
+    11-24 23:37:14.655  5764 19834 I jank_cuj_events_cancel_request...
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #6: memory killer log (text/plain) ──────────────────────────────────────────────────
+    
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input/error-context.md
+
+  1 failed
+    research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-playwright-3b402284 exit=1
