@@ -105,17 +105,7 @@ export function desktopSession({ page, files }: DesktopSessionOptions): DeviceSe
       await (await nextChooser()).setFiles(files.document);
     },
     nativeChoosePhoto: async () => {
-      const chooser = await nextChooser();
-      await chooser.setFiles(files.photo);
-      // TEMPORARY diagnostic (shyden-labs/playwright-devices#68): what the input holds after setFiles.
-      const held = await chooser
-        .element()
-        .evaluate((input) =>
-          Array.from((input as HTMLInputElement).files ?? [], (file) => `${file.name} type "${file.type}" ${String(file.size)} B`),
-        );
-      console.log(
-        `DIAG photo input holds: ${JSON.stringify(held)}; result shows "${String(await page.getByTestId('photo-result').textContent())}"`,
-      );
+      await (await nextChooser()).setFiles(files.photo);
     },
     nativeChoose: async (option) => {
       const select = await page.evaluate(focusedSelect, undefined);
