@@ -1,0 +1,28 @@
+  Window #0 Window{30a119e u0 ScreenDecorOverlayBottom}:
+    mTouchableInsets=3 mGivenInsetsPending=false
+  Window #1 Window{21b0fab u0 ScreenDecorOverlay}:
+    mTouchableInsets=3 mGivenInsetsPending=false
+  Window #2 Window{ef342d4 u0 NavigationBar_displayId_0}:
+    mTouchableInsets=3 mGivenInsetsPending=false
+  Window #3 Window{b4311c6 u0 NotificationShade}:
+    mTouchableInsets=3 mGivenInsetsPending=false
+  Window #4 Window{d8bcb93 u0 StatusBar}:
+    mTouchableInsets=3 mGivenInsetsPending=false
+  Window #5 Window{dd104b0 u0 OplusOSEdgeFloatBar}:
+  Window #6 Window{3a1aa16 u0 ShellDropTarget}:
+  Window #7 Window{847b0c2 u0 FlexibleDropTarget}:
+    mTouchableInsets=3 mGivenInsetsPending=false
+  Window #8 Window{203e864 u0 InputMethod}:
+    mTouchableInsets=3 mGivenInsetsPending=false
+      mLeash=Surface(name=Surface(name=203e864 InputMethod#2000)/@0x88a8f82 - animation-leash of insets_animation#4535)/@0x1019b58 mAnimationType=insets_animation
+        ControlAdapter mCapturedLeash=Surface(name=Surface(name=203e864 InputMethod#2000)/@0x88a8f82 - animation-leash of insets_animation#4535)/@0x1019b58
+    WindowStateAnimator{77fbb38 InputMethod}:
+      mSurface=Surface(name=VRI-InputMethod#4542)/@0xdeacc4e
+  Window #9 Window{bbc13a5 u0 com.android.chrome/com.google.android.apps.chrome.Main}:
+  Window #10 Window{ef25837 u0 com.google.android.googlequicksearchbox}:
+  Window #11 Window{bd612aa u0 com.android.launcher/com.android.launcher.Launcher}:
+  Window #12 Window{f10fb65 u0 com.google.android.permissioncontroller/com.android.permissioncontroller.permission.ui.GrantPermissionsActivity}:
+  Window #13 Window{de7baaa u0 com.oplus.phonemanager/com.oplus.phonemanager.FakeActivity}:
+  Window #14 Window{699b6cd u0 com.android.settings/com.android.settings.Settings}:
+  Window #15 Window{289def u0 com.android.wallpaper.livepicker.service.video.op.Dodge2VideoWallpaper}:
+  mInputMethodWindow=Window{203e864 u0 InputMethod}

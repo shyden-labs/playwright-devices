@@ -1,0 +1,13 @@
+08:24:50.483 chrome 158.0.8127.42
+08:24:50.490 keyboard down: viewport {"devicePixelRatio":2.625,"offsetLeft":0,"offsetTop":0,"scale":1,"height":759.2380981445312}
+08:24:52.780 page area {"x":0,"y":120,"width":1080,"height":2140}; tap Name at screen 422,918
+08:24:57.436 keyboard up: focused #name
+08:24:57.437 keyboard up: viewport {"devicePixelRatio":2.625,"offsetLeft":0,"offsetTop":0,"scale":1,"height":406.8571472167969}; page area {"x":0,"y":120,"width":1080,"height":1383}
+08:24:57.463 #email box {"x":16,"y":350.21429443359375,"width":289.4047546386719,"height":42.4761962890625} maps to {"x":421.84374046325684,"y":1410.0625190734863}
+08:24:57.478 #agree box {"x":16,"y":447.08929443359375,"width":265.5952453613281,"height":16} maps to {"x":390.59375953674316,"y":1629.6093864440918}
+08:24:57.479 node com.android.chrome com.android.chrome:id/compositor_view_holder [] [0,120][1080,1503]
+08:24:57.479 node com.android.chrome com.android.chrome:id/control_container [] [0,120][1080,270]
+08:24:57.479 node com.android.chrome com.android.chrome:id/keyboard_accessory [Alternative filling options available above the keyboard] [0,1314][1080,1503]
+08:24:57.480 node com.android.chrome com.android.chrome:id/accessory_shadow [] [0,1314][1080,1335]
+08:24:57.480 node com.android.chrome com.android.chrome:id/accessory_bar_contents [] [0,1335][1080,1503]
+08:24:57.480 node com.android.chrome com.android.chrome:id/bar_items_view [] [0,1335][1080,1503]
