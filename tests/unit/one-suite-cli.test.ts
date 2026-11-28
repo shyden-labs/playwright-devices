@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { defaultIo, main, parseArgs } from '../../src/one-suite/cli.ts';
 
-const report = (projects: string[], titles: string[], status = 'expected') =>
+const report = (projects: string[], titles: string[], status = 'expected', spec = 'a.spec.ts') =>
   JSON.stringify({
     config: { projects: projects.map((name) => ({ name })) },
     suites: [
       {
-        title: 'a.spec.ts',
-        file: 'a.spec.ts',
+        title: spec,
+        file: spec,
         specs: titles.map((title) => ({
           title,
-          file: 'a.spec.ts',
+          file: spec,
           tags: [],
           tests: projects.map((projectName) => ({ projectName, annotations: [], status })),
         })),
@@ -103,6 +103,76 @@ describe('main', () => {
     expect(run([...args, '--assertions', 'a1.json', '--assertions', 'a2.json'], withCounts).err).toEqual([
       'one-suite: assertions in "a.spec.ts › reads" differ in the desktop group: chromium 3, firefox 2',
     ]);
+  });
+
+  it('combines the tests one target has across several list and report files (shyden-labs/playwright-devices#81)', () => {
+    // Measured on 0.2.2 by Shyden Site: one chromium test in each of two spec files, listed and run as two shards,
+    // printed "chromium: 1 tests"; only the last file's tests counted.
+    const shards = {
+      'la.json': report(['chromium'], ['reads'], 'expected', 'a.spec.ts'),
+      'lb.json': report(['chromium'], ['reads'], 'expected', 'b.spec.ts'),
+      'ra.json': report(['chromium'], ['reads'], 'expected', 'a.spec.ts'),
+      'rb.json': report(['chromium'], ['reads'], 'expected', 'b.spec.ts'),
+    };
+    const shardArgs = [
+      '--group',
+      'desktop=chromium',
+      '--list',
+      'la.json',
+      '--list',
+      'lb.json',
+      '--report',
+      'ra.json',
+      '--report',
+      'rb.json',
+    ];
+    expect(run(shardArgs, shards)).toEqual({ code: 0, out: ['one-suite: chromium: 2 tests'], err: [] });
+  });
+
+  it('judges every shard: a skip in the first of two report files still fails the check', () => {
+    const shards = {
+      'la.json': report(['chromium'], ['reads'], 'expected', 'a.spec.ts'),
+      'lb.json': report(['chromium'], ['reads'], 'expected', 'b.spec.ts'),
+      'ra.json': report(['chromium'], ['reads'], 'skipped', 'a.spec.ts'),
+      'rb.json': report(['chromium'], ['reads'], 'expected', 'b.spec.ts'),
+    };
+    const shardArgs = [
+      '--group',
+      'desktop=chromium',
+      '--list',
+      'la.json',
+      '--list',
+      'lb.json',
+      '--report',
+      'ra.json',
+      '--report',
+      'rb.json',
+    ];
+    expect(run(shardArgs, shards)).toEqual({
+      code: 1,
+      out: ['one-suite: chromium: 2 tests'],
+      err: ['one-suite: chromium skipped "a.spec.ts › reads"'],
+    });
+  });
+
+  it('fails, naming the target, the test and both files, when one target has the same test in two files', () => {
+    const twice = {
+      'list.json': report(['chromium'], ['reads']),
+      'ra.json': report(['chromium'], ['reads']),
+      'rb.json': report(['chromium'], ['reads']),
+    };
+    const twiceArgs = ['--group', 'desktop=chromium', '--list', 'list.json', '--report', 'ra.json', '--report', 'rb.json'];
+    expect(run(twiceArgs, twice)).toEqual({
+      code: 1,
+      out: [],
+      err: ['one-suite: chromium has "a.spec.ts › reads" in both ra.json and rb.json'],
+    });
+  });
+
+  it('accepts the same test twice for one target within one file, as a repeated run writes it', () => {
+    const repeated = { 'list.json': report(['chromium'], ['reads']), 'run.json': report(['chromium', 'chromium'], ['reads']) };
+    const repeatedArgs = ['--group', 'desktop=chromium', '--list', 'list.json', '--report', 'run.json'];
+    expect(run(repeatedArgs, repeated).code).toBe(0);
   });
 
   it('fails closed, naming the file, when a report cannot be read or is not JSON', () => {

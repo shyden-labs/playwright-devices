@@ -75,8 +75,27 @@ function readJson(io: Io, file: string): unknown {
   }
 }
 
+/**
+ * Every target's tests across all `files`, combined: a suite run in shards gives one report per shard, each holding
+ * the same targets (shyden-labs/playwright-devices#81). One target with the same test in two files is refused.
+ */
 function targetsOf(io: Io, files: NamedFile[]): Map<string, TargetTests> {
-  return new Map(files.flatMap(({ file, target }) => [...testsByTarget(readJson(io, file) as JSONReport, target)]));
+  const combined = new Map<string, TargetTests>();
+  const seenIn = new Map<string, string>();
+  for (const { file, target } of files) {
+    for (const [name, { tests }] of testsByTarget(readJson(io, file) as JSONReport, target)) {
+      for (const test of tests) {
+        const key = `${name}\u0000${test.id}`;
+        const earlier = seenIn.get(key);
+        if (earlier !== undefined && earlier !== file) throw new Error(`${name} has "${test.id}" in both ${earlier} and ${file}`);
+        seenIn.set(key, file);
+      }
+      const entry = combined.get(name) ?? { tests: [] };
+      entry.tests.push(...tests);
+      combined.set(name, entry);
+    }
+  }
+  return combined;
 }
 
 export function main(argv: string[], io: Io = defaultIo): number {
