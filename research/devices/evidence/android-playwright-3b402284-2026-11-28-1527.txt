@@ -1,0 +1,28 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [android-playwright] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (143ms)
+
+
+  1) [android-playwright] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    Error: Chrome is not the debug app (debug_app is "null"), so Playwright's launch would wait for a socket Chrome never opens: run adb shell am set-debug-app --persistent com.android.chrome
+
+       at ../../src/devices/android-chrome-start.ts:115
+
+      113 |   const found = (await adb(['shell', 'settings', 'get', 'global', 'debug_app'])).trim();
+      114 |   if (found === CHROME) return;
+    > 115 |   throw new Error(
+          |         ^
+      116 |     `Chrome is not the debug app (debug_app is "${found}"), so Playwright's launch would wait for a socket Chrome never opens: run adb shell am set-debug-app --persistent ${CHROME}`,
+      117 |   );
+      118 | }
+        at requireChromeDebugApp (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/android-chrome-start.ts:115:9)
+        at connectAndroidPlaywright (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phone-connect.ts:121:3)
+        at Object.phoneConnection (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phones.ts:47:24)
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-android-playwright/error-context.md
+
+  1 failed
+    [android-playwright] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-playwright-3b402284 exit=1

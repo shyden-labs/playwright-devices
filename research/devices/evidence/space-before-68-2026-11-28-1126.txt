@@ -1,0 +1,14 @@
+== before 2026-11-28 11:26:41 WIB
+/dev/block/dm-83 482217020 6601652 475484296   2% /data/user/0
+11	/sdcard/Download
+15	/sdcard/Pictures
+4	/data/local/tmp
+/sdcard/Download:
+update
+
+/sdcard/Pictures:
+Screenshots
+android packages:
+  none
+iphone TotalDataAvailable: 486940037120
+iphone apps:

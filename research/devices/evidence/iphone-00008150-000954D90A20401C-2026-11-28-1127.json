@@ -1,0 +1,207 @@
+{
+  "config": {
+    "argv": [
+      "/Users/shyden/.local/share/node/v26.13.0/bin/node",
+      "/Users/shyden/Developer/Repos/playwright-devices-68/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "playwright.devices.config.ts",
+      "--project",
+      "iphone"
+    ],
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices-68/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-68/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "iphone",
+        "name": "iphone",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      },
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-68/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "android-cdp",
+        "name": "android-cdp",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      },
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-68/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "android-playwright",
+        "name": "android-playwright",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-68/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "iphone",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+        "testIgnore": [],
+        "testMatch": "journey.spec.ts",
+        "timeout": 300000,
+        "use": {},
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "iphone"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/devices/ios-webkit.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a page is read, tapped, typed into and scrolled by real input",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "iphone",
+              "projectName": "iphone",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 32530,
+                  "error": {
+                    "message": "TimeoutError: browserType.connectOverCDP: Timeout 30000ms exceeded.",
+                    "stack": "TimeoutError: browserType.connectOverCDP: Timeout 30000ms exceeded.\n    at Object.webkitOverCDP (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phone-effects.ts:44:34)\n    at connectIphone (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phone-connect.ts:85:33)\n    at Object.phoneConnection (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phones.ts:47:24)",
+                    "location": {
+                      "file": "/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phone-effects.ts",
+                      "column": 34,
+                      "line": 44
+                    },
+                    "snippet": "\u001b[90m   at \u001b[39m../../src/devices/phone-effects.ts:44\n\n \u001b[90m 42 |\u001b[39m\n \u001b[90m 43 |\u001b[39m \u001b[36mexport\u001b[39m \u001b[36mconst\u001b[39m \u001b[33mREAL_EFFECTS\u001b[39m\u001b[33m:\u001b[39m \u001b[33mConnectEffects\u001b[39m \u001b[33m=\u001b[39m {\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 44 |\u001b[39m   webkitOverCDP\u001b[33m:\u001b[39m (url) \u001b[33m=>\u001b[39m webkit\u001b[33m.\u001b[39mconnectOverCDP(url)\u001b[33m,\u001b[39m\n \u001b[90m    |\u001b[39m                                  \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 45 |\u001b[39m   chromiumOverCDP\u001b[33m:\u001b[39m (url) \u001b[33m=>\u001b[39m chromium\u001b[33m.\u001b[39mconnectOverCDP(url)\u001b[33m,\u001b[39m\n \u001b[90m 46 |\u001b[39m   androidDevices\u001b[33m:\u001b[39m () \u001b[33m=>\u001b[39m _android\u001b[33m.\u001b[39mdevices()\u001b[33m,\u001b[39m\n \u001b[90m 47 |\u001b[39m   connectWda\u001b[33m:\u001b[39m (url) \u001b[33m=>\u001b[39m connectWda({ url })\u001b[33m,\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phone-effects.ts",
+                        "column": 34,
+                        "line": 44
+                      },
+                      "message": "TimeoutError: browserType.connectOverCDP: Timeout 30000ms exceeded.\n\n   at ../../src/devices/phone-effects.ts:44\n\n  42 |\n  43 | export const REAL_EFFECTS: ConnectEffects = {\n> 44 |   webkitOverCDP: (url) => webkit.connectOverCDP(url),\n     |                                  ^\n  45 |   chromiumOverCDP: (url) => chromium.connectOverCDP(url),\n  46 |   androidDevices: () => _android.devices(),\n  47 |   connectWda: (url) => connectWda({ url }),\n    at Object.webkitOverCDP (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phone-effects.ts:44:34)\n    at connectIphone (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phone-connect.ts:85:33)\n    at Object.phoneConnection (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phones.ts:47:24)"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-11-28T04:27:25.478Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "/Users/shyden/Developer/Repos/playwright-devices-68/test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-iphone/error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phone-effects.ts",
+                    "column": 34,
+                    "line": 44
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-d5aa91b8cc06db8bd5d5",
+          "file": "journey.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-28T04:27:24.826Z",
+    "duration": 34273.568,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

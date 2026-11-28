@@ -1,0 +1,28 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [iphone] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (32.5s)
+
+
+  1) [iphone] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    TimeoutError: browserType.connectOverCDP: Timeout 30000ms exceeded.
+
+       at ../../src/devices/phone-effects.ts:44
+
+      42 |
+      43 | export const REAL_EFFECTS: ConnectEffects = {
+    > 44 |   webkitOverCDP: (url) => webkit.connectOverCDP(url),
+         |                                  ^
+      45 |   chromiumOverCDP: (url) => chromium.connectOverCDP(url),
+      46 |   androidDevices: () => _android.devices(),
+      47 |   connectWda: (url) => connectWda({ url }),
+        at Object.webkitOverCDP (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phone-effects.ts:44:34)
+        at connectIphone (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phone-connect.ts:85:33)
+        at Object.phoneConnection (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/phones.ts:47:24)
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-iphone/error-context.md
+
+  1 failed
+    [iphone] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: iphone-00008150-000954D90A20401C exit=1
