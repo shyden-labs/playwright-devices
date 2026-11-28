@@ -55,6 +55,9 @@ jobs:
   # (shyden-labs/playwright-devices#16), equal totals printed per browser.
   desktop-e2e:
     runs-on: ubuntu-26.04
+    # It restores browsers from GitHub's cache, so it holds no secret and cannot write (shyden-labs/playwright-devices#72).
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       # The exact Node, from the one file Dependabot bumps (shyden-labs/repo-template#143).
@@ -80,6 +83,20 @@ jobs:
           test "$status" -ne 0
           grep -q "Executable doesn't exist at $RUNNER_TEMP/no-browsers/firefox" "$RUNNER_TEMP/no-firefox.txt"
           grep -q '\[firefox\]' "$RUNNER_TEMP/no-firefox.txt"
+      # Playwright's own browsers (Chromium, Firefox, WebKit, FFmpeg) are pinned by the playwright-core
+      # version in the lockfile, so that version keys the cache (shyden-labs/playwright-devices#72): a new
+      # Playwright misses it and downloads its new browsers. Branded Chrome and Edge install system-wide
+      # from Google's and Microsoft's latest stable, so they are not cached and stay on the latest.
+      - id: playwright
+        run: |
+          version=$(node -p "require('./package-lock.json').packages['node_modules/playwright-core'].version")
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        timeout-minutes: 5
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ steps.playwright.outputs.version }}-${{ runner.os }}-${{ runner.arch }}
       - name: Install the desktop browsers
         run: node_modules/.bin/playwright install --with-deps chromium chrome firefox webkit msedge
       - name: Run the sample config on every desktop browser
