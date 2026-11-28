@@ -137,6 +137,29 @@ describe('real input on Android', () => {
     expect(await screen.pageArea()).toEqual({ x: 0, y: 160, width: 1440, height: 2854 });
   });
 
+  it("pageArea ends the page at the top of Chrome's bar above the keyboard (shyden-labs/playwright-devices#77)", async () => {
+    // Measured on the OPPO CPH2653, Chrome 158, 2026-11-28 15:21 WIB, keyboard up after a tap on a field: the page
+    // area reached 1503 while the bar's contents began at 1335, and the page's visual viewport ended at 1338.
+    const keyboardUp: Node[] = [
+      { id: 'com.android.chrome:id/compositor_view_holder', bounds: [0, 120, 1080, 1503] },
+      { id: 'com.android.chrome:id/keyboard_accessory', bounds: [0, 1314, 1080, 1503] },
+      { id: 'com.android.chrome:id/accessory_shadow', bounds: [0, 1314, 1080, 1335] },
+      { id: 'com.android.chrome:id/accessory_bar_contents', bounds: [0, 1335, 1080, 1503] },
+    ];
+    const device = fakeAdb([keyboardUp]);
+    const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
+    expect(await screen.pageArea()).toEqual({ x: 0, y: 120, width: 1080, height: 1215 });
+  });
+
+  it('pageArea keeps the whole page area when the bar is listed outside it, at its bottom edge or above its top', async () => {
+    for (const barTop of [3014, 3100, 160, 100]) {
+      const bar: Node = { id: 'com.android.chrome:id/accessory_bar_contents', bounds: [0, barTop, 1440, barTop + 200] };
+      const device = fakeAdb([[PAGE_AREA, bar]]);
+      const screen = connectAndroidScreen({ adb: device.adb, clock: fakeClock() });
+      expect(await screen.pageArea(), `bar at ${barTop}`).toEqual({ x: 0, y: 160, width: 1440, height: 2854 });
+    }
+  });
+
   it("pageArea fails at 5 s when Chrome's page area is not on the screen", async () => {
     const device = fakeAdb([[]]);
     const clock = fakeClock();
