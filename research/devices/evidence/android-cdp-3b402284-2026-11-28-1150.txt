@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [android-cdp] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (2.6m)
+
+
+  1) [android-cdp] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  getByTestId('email-result')
+    Expected: "ana@example.test"
+    Received: ""
+    Timeout:  30000ms
+
+    Call log:
+      - Expect "soft toHaveText" getByTestId('email-result') with timeout 30000ms
+      - waiting for getByTestId('email-result')
+        63 × locator resolved to <output data-testid="email-result"></output>
+           - unexpected value ""
+
+
+      32 |   await test.step('type into a field in one go', async () => {
+      33 |     await page.getByLabel('Email').pressSequentially('ana@example.test');
+    > 34 |     await expect.soft(page.getByTestId('email-result')).toHaveText('ana@example.test');
+         |                                                         ^
+      35 |   });
+      36 |
+      37 |   await test.step('tick and untick a box', async () => {
+        at /Users/shyden/Developer/Repos/playwright-devices-68/research/devices/journey.spec.ts:34:57
+        at /Users/shyden/Developer/Repos/playwright-devices-68/research/devices/journey.spec.ts:32:3
+
+    Error: none of "Files" showed within 60000 ms; nothing was touched
+
+       at ../../src/devices/android-native.ts:80
+
+      78 |       const found = await look();
+      79 |       if (found !== undefined) return found;
+    > 80 |       if (clock.now() >= deadline) throw new Error(failure);
+         |                                          ^
+      81 |       await clock.sleep(POLL_MS);
+      82 |       return attempt();
+      83 |     };
+        at attempt (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/android-native.ts:80:42)
+        at Object.tapFirstShown (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/android-native.ts:127:19)
+        at androidChooseFile (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/android-native.ts:160:3)
+        at /Users/shyden/Developer/Repos/playwright-devices-68/research/devices/journey.spec.ts:60:5
+        at /Users/shyden/Developer/Repos/playwright-devices-68/research/devices/journey.spec.ts:58:3
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-android-cdp/error-context.md
+
+  1 failed
+    [android-cdp] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-cdp-3b402284 exit=1

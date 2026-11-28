@@ -24,6 +24,13 @@ describe('the README on real phones', () => {
     'Select debug app',
     'not routed to real input yet',
     'shyden-labs/playwright-devices#7',
+    // What shyden-labs/playwright-devices#67 routed: typing in one go, tick boxes and keys.
+    'pressSequentially',
+    'keyboard.press',
+    // One spec on the phones and on every desktop browser (shyden-labs/playwright-devices#68).
+    'desktopProjects()',
+    'the file chooser',
+    'mouse wheel',
   ])('names %s', (needle) => {
     expect(realPhonesSection()).toContain(needle);
   });

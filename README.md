@@ -78,7 +78,7 @@ test('a brief is attached', async ({ page, nativeChooseFile }) => {
 });
 ```
 
-`click` and `tap` on a locator become a real tap at its place on the screen, and `page.keyboard.type` becomes real keys. `nativeChoose(option)`, `nativeChooseFile()` and `nativeChoosePhoto()` work the phone's own pickers, and `fingerScroll()` swipes with one finger. Every read and assertion goes to the real page. Input that is not routed yet (`fill`, `press`, `hover`, `selectOption`, `setInputFiles` and the like) fails with `not routed to real input yet: <method>` and never falls back to synthetic events. The pickers offer the files in `phoneFiles` (`test.use({ phoneFiles: { document, photo } })`, absolute paths), by default a small text file and photo shipped with the package. On the iPhone, `nativeChoosePhoto` picks the Photo Library's first photo, so `photo` is used on Android only. The one-suite group for these projects is `phoneGroup()`.
+`click` and `tap` on a locator become a real tap at its place on the screen, first dragging the page by finger until the target shows when it is off the screen or under the keyboard. `page.keyboard.type` becomes real keys, and `pressSequentially(text)` taps the field and types the text. `check()`, `uncheck()` and `setChecked()` tap a box once, only when it is not already so, and fail by name if the tap did not change it. `keyboard.press(key)`, and `press(key)` on a locator that already has focus, press the phone's own key: Enter on the iPhone (its keyboard has no Escape key), Enter and Escape on Android; any other key fails by name. `nativeChoose(option)`, `nativeChooseFile()` and `nativeChoosePhoto()` work the phone's own pickers, and `fingerScroll()` swipes with one finger. Every read and assertion goes to the real page. Input that is not routed yet (`fill`, `hover`, `selectOption`, `setInputFiles` and the like) fails with `not routed to real input yet: <method>` and never falls back to synthetic events. The pickers offer the files in `phoneFiles` (`test.use({ phoneFiles: { document, photo } })`, absolute paths), by default a small text file and photo shipped with the package. On the iPhone, `nativeChoosePhoto` picks the Photo Library's first photo, so `photo` is used on Android only. The one-suite group for these projects is `phoneGroup()`.
 
 Run the tests through `playwright-devices start`, which starts the phone's side, runs the command, and stops everything it started, whether the tests pass, fail or are stopped with Ctrl-C:
 
@@ -88,6 +88,14 @@ npx playwright-devices start android <serial> -- npx playwright test --project a
 ```
 
 A phone project run without `start`, or under `start` for the other phone, fails at once, naming both.
+
+The same spec also runs on the desktop browsers (shyden-labs/playwright-devices#68): list `...desktopProjects()` beside `...phoneProjects()` in one config, and every test, file and total stays the same across both groups. On a desktop project nothing is connected and no `start` is needed. `page` is Playwright's own page, whose input is already real there, and a `tap` on a locator is a click (a desktop browser has no touch). Each phone step becomes its desktop equivalent:
+
+- `nativeChooseFile()` and `nativeChoosePhoto()` set `phoneFiles`' document or photo in the file chooser that the test's previous click opened, waiting up to 60 s for it to open.
+- `nativeChoose(option)` moves through the focused `<select>` with the arrow keys, then presses Enter.
+- `fingerScroll()` turns the mouse wheel over the middle of the page.
+
+Each phone project also gets Playwright's own page, unused there: one headless browser per worker (0.3 to 1.6 s to start and about 200 MB of memory) and 0.13 to 0.2 s per test, measured on the Mac that drives the phones, 27 November 2026.
 
 ### Setting up the Mac once
 

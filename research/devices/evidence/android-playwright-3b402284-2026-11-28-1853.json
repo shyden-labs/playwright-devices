@@ -1,0 +1,243 @@
+{
+  "config": {
+    "argv": [
+      "/Users/shyden/.local/share/node/v26.13.0/bin/node",
+      "/Users/shyden/Developer/Repos/playwright-devices-68/node_modules/.bin/playwright",
+      "test",
+      "--config",
+      "playwright.devices.config.ts",
+      "--project",
+      "android-playwright"
+    ],
+    "configFile": "/Users/shyden/Developer/Repos/playwright-devices-68/playwright.devices.config.ts",
+    "rootDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+    "failOnFlakyTests": false,
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-68/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "iphone",
+        "name": "iphone",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      },
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-68/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "android-cdp",
+        "name": "android-cdp",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      },
+      {
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-68/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "android-playwright",
+        "name": "android-playwright",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+        "testIgnore": [],
+        "testMatch": [
+          "journey.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "filteredProjects": [
+      {
+        "grep": {},
+        "grepInvert": null,
+        "outputDir": "/Users/shyden/Developer/Repos/playwright-devices-68/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "name": "android-playwright",
+        "testDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+        "snapshotDir": "/Users/shyden/Developer/Repos/playwright-devices-68/research/devices",
+        "testIgnore": [],
+        "testMatch": "journey.spec.ts",
+        "timeout": 300000,
+        "use": {},
+        "dependencies": [],
+        "ignoreSnapshots": false,
+        "__projectId": "android-playwright"
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/devices/android-playwright.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "default",
+    "updateSourceMethod": "patch",
+    "version": "1.65.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "journey.spec.ts",
+      "file": "journey.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a page is read, tapped, typed into and scrolled by real input",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "android-playwright",
+              "projectName": "android-playwright",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 75416,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "open the page",
+                      "duration": 104
+                    },
+                    {
+                      "title": "tap",
+                      "duration": 4357
+                    },
+                    {
+                      "title": "type",
+                      "duration": 5580
+                    },
+                    {
+                      "title": "type into a field in one go",
+                      "duration": 4432
+                    },
+                    {
+                      "title": "tick and untick a box",
+                      "duration": 19691
+                    },
+                    {
+                      "title": "press Enter",
+                      "duration": 4736
+                    },
+                    {
+                      "title": "choose a colour",
+                      "duration": 6552,
+                      "steps": [
+                        {
+                          "title": "native: choose \"Green\"",
+                          "duration": 2134
+                        }
+                      ]
+                    },
+                    {
+                      "title": "choose a file",
+                      "duration": 9139,
+                      "steps": [
+                        {
+                          "title": "native: choose a file",
+                          "duration": 4490
+                        }
+                      ]
+                    },
+                    {
+                      "title": "choose a photo",
+                      "duration": 12176,
+                      "steps": [
+                        {
+                          "title": "native: choose a photo",
+                          "duration": 6542
+                        }
+                      ]
+                    },
+                    {
+                      "title": "finger scroll",
+                      "duration": 618,
+                      "steps": [
+                        {
+                          "title": "native: finger scroll",
+                          "duration": 601
+                        }
+                      ]
+                    }
+                  ],
+                  "startTime": "2026-11-28T11:53:44.015Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "bf222bad70f76648f722-a24e9d7aa9ff0fc68468",
+          "file": "journey.spec.ts",
+          "line": 8,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-11-28T11:53:43.590Z",
+    "duration": 77046.517,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

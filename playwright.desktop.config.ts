@@ -1,11 +1,12 @@
 import { defineConfig } from '@playwright/test';
 import { desktopProjects } from './src/desktop/browsers.ts';
 
-// The README's sample, run by CI's desktop-e2e job on every desktop browser
-// (shyden-labs/playwright-devices#17): no retries, and the JSON report and assertion counts the
+// The README's sample and the phones' journey, run by CI's desktop-e2e job on every desktop browser
+// (shyden-labs/playwright-devices#17; shyden-labs/playwright-devices#68: one spec on phones and desktop alike): no retries, and the JSON report and assertion counts the
 // one-suite checks read (shyden-labs/playwright-devices#16).
 export default defineConfig({
-  testDir: 'e2e/desktop',
+  testDir: '.',
+  testMatch: ['e2e/desktop/**/*.spec.ts', 'research/devices/journey.spec.ts'],
   forbidOnly: true,
   retries: 0,
   reporter: [

@@ -1,0 +1,30 @@
+
+Running 1 test using 1 worker
+
+  ✘  1 [android-cdp] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input (1.9m)
+
+
+  1) [android-cdp] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input › choose a file › native: choose a file 
+
+    Error: none of "Files" showed within 60000 ms; nothing was touched
+
+       at ../../src/devices/android-native.ts:95
+
+      93 |       const found = await look();
+      94 |       if (found !== undefined) return found;
+    > 95 |       if (clock.now() >= deadline) throw new Error(failure);
+         |                                          ^
+      96 |       await clock.sleep(POLL_MS);
+      97 |       return attempt();
+      98 |     };
+        at attempt (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/android-native.ts:95:42)
+        at Object.tapFirstShown (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/android-native.ts:142:19)
+        at androidChooseFile (/Users/shyden/Developer/Repos/playwright-devices-68/src/devices/android-native.ts:175:3)
+        at /Users/shyden/Developer/Repos/playwright-devices-68/research/devices/journey.spec.ts:60:5
+        at /Users/shyden/Developer/Repos/playwright-devices-68/research/devices/journey.spec.ts:58:3
+
+    Error Context: test-results/journey-a-page-is-read-tap-5760b--and-scrolled-by-real-input-android-cdp/error-context.md
+
+  1 failed
+    [android-cdp] › research/devices/journey.spec.ts:8:1 › a page is read, tapped, typed into and scrolled by real input 
+run-journey: android-cdp-3b402284 exit=1
